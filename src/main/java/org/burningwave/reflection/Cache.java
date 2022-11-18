@@ -49,18 +49,18 @@ import org.burningwave.Throwables;
 import io.github.toolfactory.jvm.function.template.ThrowingBiConsumer;
 
 
-public class Cache {
+class Cache {
 
 	public final static Cache INSTANCE;
+
 	static {
 		INSTANCE = new Cache();
 	}
-	public final ObjectAndPathForResources<ClassLoader, Collection<Constructor<?>>> uniqueKeyForConstructors;
-	public final ObjectAndPathForResources<ClassLoader, Members.Handler.OfExecutable.Box<?>> uniqueKeyForExecutableAndMethodHandle;
 
-	public final ObjectAndPathForResources<ClassLoader, Collection<Field>> uniqueKeyForFields;
-
-	public final ObjectAndPathForResources<ClassLoader, Collection<Method>> uniqueKeyForMethods;
+	final ObjectAndPathForResources<ClassLoader, Collection<Constructor<?>>> uniqueKeyForConstructors;
+	final ObjectAndPathForResources<ClassLoader, Members.Handler.OfExecutable.Box<?>> uniqueKeyForExecutableAndMethodHandle;
+	final ObjectAndPathForResources<ClassLoader, Collection<Field>> uniqueKeyForFields;
+	final ObjectAndPathForResources<ClassLoader, Collection<Method>> uniqueKeyForMethods;
 
 	private Cache() {
 		uniqueKeyForFields = new ObjectAndPathForResources<>();
@@ -68,11 +68,6 @@ public class Cache {
 		uniqueKeyForConstructors = new ObjectAndPathForResources<>();
 		uniqueKeyForExecutableAndMethodHandle = new ObjectAndPathForResources<>();
 	}
-
-	public static Cache create() {
-		return new Cache();
-	}
-
 
 	public void clear(boolean destroyItems, Object... excluded) {
 		Set<Object> toBeExcluded = (excluded != null) && (excluded.length > 0) ?
