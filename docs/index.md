@@ -26,7 +26,7 @@ And now we will see:
 * [including Burningwave Reflection in your project](#Including-Burningwave-Reflection-in-your-project)
 * [handling privates and all other members of an object](#Handling-privates-and-all-other-members-of-an-object)
 * [getting and setting properties of a Java bean through path](#Getting-and-setting-properties-of-a-Java-bean-through-path)
-* [configuration](#Cconfiguration)
+* [configuration](#Configuration)
 * [**how to ask for assistance**](#Ask-for-assistance)
 
 <br/>
@@ -64,7 +64,7 @@ By default the JVM Driver is disabled and to enable it you need to add the follo
 requires jdk.unsupported;
 requires org.burningwave.jvm;
 ```
-It is also possible to [disable the use of the JVM Driver programmatically]().
+If you want to add the JVM Driver module it is also possible to [disable it programmatically](#Configuration).
 
 <br/>
 
