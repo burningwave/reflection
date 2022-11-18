@@ -59,45 +59,148 @@ import org.burningwave.function.TriFunction;
 
 @SuppressWarnings("unchecked")
 public class Members {
+	public static final Members INSTANCE;
+
+	static {
+		INSTANCE = new Members();
+	}
+
+	private Members() {}
+
+	public <M extends Member> Collection<M> findAll(MemberCriteria<M, ?, ?> criteria, Class<?> classFrom) {
+		Collection<M> result = findAll(
+			classFrom,
+			classFrom,
+			criteria.getScanUpToPredicate(),
+			criteria.getMembersSupplier(),
+			criteria.getPredicateOrTruePredicateIfPredicateIsNull(),
+			new HashSet<>(),
+			new LinkedHashSet<>()
+		);
+		Predicate<Collection<M>> resultPredicate = criteria.getResultPredicate();
+		return resultPredicate == null?
+				result :
+				resultPredicate.test(result)?
+					result :
+					new LinkedHashSet<>();
+	}
+
+	public <M extends Member> M findFirst(MemberCriteria<M, ?, ?> criteria, Class<?> classFrom) {
+		Predicate<Collection<M>> resultPredicate = criteria.getResultPredicate();
+		if (resultPredicate == null) {
+			return findFirst(
+				classFrom,
+				classFrom,
+				criteria.getScanUpToPredicate(),
+				criteria.getMembersSupplier(),
+				criteria.getPredicateOrTruePredicateIfPredicateIsNull(),
+				new HashSet<>()
+			);
+		} else {
+			Collection<M> result = findAll(
+				classFrom,
+				classFrom,
+				criteria.getScanUpToPredicate(),
+				criteria.getMembersSupplier(),
+				criteria.getPredicateOrTruePredicateIfPredicateIsNull(),
+				new HashSet<>(),
+				new LinkedHashSet<>()
+			);
+			return resultPredicate.test(result) ?
+				result.stream().findFirst().orElseGet(() -> null) :
+				null;
+		}
+	}
+
+	public <M extends Member> M findOne(MemberCriteria<M, ?, ?> criteria, Class<?> classFrom) {
+		Collection<M> members = findAll(criteria, classFrom);
+		if (members.size() > 1) {
+			Throwables.INSTANCE.throwException("More than one member found for class {}", classFrom.getName());
+		}
+		return members.stream().findFirst().orElse(null);
+	}
+
+	public <M extends Member> boolean match(MemberCriteria<M, ?, ?> criteria, Class<?> classFrom) {
+		return findFirst(criteria, classFrom) != null;
+	}
+
+	private <M extends Member> Collection<M> findAll(
+		Class<?> initialClsFrom,
+		Class<?> currentScannedClass,
+		BiPredicate<Class<?>, Class<?>> clsPredicate,
+		BiFunction<Class<?>, Class<?>, M[]> memberSupplier,
+		Predicate<M> predicate,
+		Set<Class<?>> visitedInterfaces,
+		Collection<M> collection
+	) {
+		for (M member : memberSupplier.apply(initialClsFrom, currentScannedClass)) {
+			if (predicate.test(member)) {
+				collection.add(member);
+			}
+		}
+		for (Class<?> interf : currentScannedClass.getInterfaces()) {
+			if (!visitedInterfaces.add(interf)) {
+				continue;
+			}
+			collection = findAll((Class<?>) initialClsFrom, interf, clsPredicate, memberSupplier, predicate, visitedInterfaces, collection);
+			if (!(collection instanceof Set)) {
+				return collection;
+			}
+			if (clsPredicate.test(initialClsFrom, currentScannedClass)) {
+				return Collections.unmodifiableCollection(collection);
+			}
+		}
+		Class<?> superClass = currentScannedClass.getSuperclass();
+		if (!(collection instanceof Set) || ((superClass = currentScannedClass.getSuperclass()) == null && currentScannedClass.isInterface())) {
+			return collection;
+		}
+		if (superClass == null || clsPredicate.test(initialClsFrom, currentScannedClass)) {
+			return Collections.unmodifiableCollection(collection);
+		}
+		return findAll(
+			initialClsFrom,
+			superClass,
+			clsPredicate,
+			memberSupplier,
+			predicate,
+			visitedInterfaces,
+			collection
+		);
+	}
+
+	private <M extends Member> M findFirst(
+		Class<?> initialClsFrom,
+		Class<?> currentScannedClass,
+		BiPredicate<Class<?>, Class<?>> clsPredicate,
+		BiFunction<Class<?>, Class<?>, M[]>
+		memberSupplier, Predicate<M> predicate,
+		Set<Class<?>> visitedInterfaces
+	) {
+		for (M member : memberSupplier.apply(initialClsFrom, currentScannedClass)) {
+			if (predicate.test(member)) {
+				return member;
+			}
+		}
+		for (Class<?> interf : currentScannedClass.getInterfaces()) {
+			if (!visitedInterfaces.add(interf)) {
+				continue;
+			}
+			M member = findFirst(initialClsFrom, interf, clsPredicate, memberSupplier, predicate, visitedInterfaces);
+			if (member != null || clsPredicate.test(initialClsFrom, currentScannedClass)) {
+				return member;
+			}
+		}
+		return
+			(clsPredicate.test(initialClsFrom, currentScannedClass) || currentScannedClass.getSuperclass() == null) ?
+				null :
+				findFirst(initialClsFrom, currentScannedClass.getSuperclass(), clsPredicate, memberSupplier, predicate, visitedInterfaces);
+	}
+
 	public static abstract class Handler<M extends Member, C extends MemberCriteria<M, C, ?>> {
 
 		public static abstract class OfExecutable<E extends Executable, C extends ExecutableMemberCriteria<E, C, ?>> extends Members.Handler<E, C> {
-			public static class Box<E extends Executable> {
-				MethodHandles.Lookup consulter;
-				E executable;
-				MethodHandle handler;
 
-				Box(MethodHandles.Lookup consulter, E executable, MethodHandle handler) {
-					super();
-					this.consulter = consulter;
-					this.executable = executable;
-					this.handler = handler;
-				}
-
-				public MethodHandles.Lookup getConsulter() {
-					return consulter;
-				}
-
-				public E getExecutable() {
-					return executable;
-				}
-
-				public MethodHandle getHandler() {
-					return handler;
-				}
-
-			}
-
-			private Collection<String> classNamesToIgnoreToDetectTheCallingMethod;
-
-			public OfExecutable() {
-				classNamesToIgnoreToDetectTheCallingMethod = new HashSet<>();
-				Class<?> cls = this.getClass();
-				while (!cls.getName().equals(OfExecutable.class.getSuperclass().getName())) {
-					classNamesToIgnoreToDetectTheCallingMethod.add(cls.getName());
-					cls = cls.getSuperclass();
-				}
-			}
+			OfExecutable() {}
 
 			public Collection<MethodHandle> findAllDirectHandle(C criteria, Class<?> clsFrom) {
 				return findAll(
@@ -306,6 +409,33 @@ public class Members {
 				}
 				return membersThatMatch;
 			}
+
+			public static class Box<E extends Executable> {
+				MethodHandles.Lookup consulter;
+				E executable;
+				MethodHandle handler;
+
+				Box(MethodHandles.Lookup consulter, E executable, MethodHandle handler) {
+					super();
+					this.consulter = consulter;
+					this.executable = executable;
+					this.handler = handler;
+				}
+
+				public MethodHandles.Lookup getConsulter() {
+					return consulter;
+				}
+
+				public E getExecutable() {
+					return executable;
+				}
+
+				public MethodHandle getHandler() {
+					return handler;
+				}
+
+			}
+
 		}
 
 		public Collection<M> findAll(C criteria, Class<?> classFrom) {
@@ -384,143 +514,6 @@ public class Members {
 				argumentsKey;
 			return cacheKey;
 		}
-	}
-
-	public static final Members INSTANCE;
-
-	static {
-		INSTANCE = new Members();
-	}
-
-	private Members() {}
-
-	public <M extends Member> Collection<M> findAll(MemberCriteria<M, ?, ?> criteria, Class<?> classFrom) {
-		Collection<M> result = findAll(
-			classFrom,
-			classFrom,
-			criteria.getScanUpToPredicate(),
-			criteria.getMembersSupplier(),
-			criteria.getPredicateOrTruePredicateIfPredicateIsNull(),
-			new HashSet<>(),
-			new LinkedHashSet<>()
-		);
-		Predicate<Collection<M>> resultPredicate = criteria.getResultPredicate();
-		return resultPredicate == null?
-				result :
-				resultPredicate.test(result)?
-					result :
-					new LinkedHashSet<>();
-	}
-
-	public <M extends Member> M findFirst(MemberCriteria<M, ?, ?> criteria, Class<?> classFrom) {
-		Predicate<Collection<M>> resultPredicate = criteria.getResultPredicate();
-		if (resultPredicate == null) {
-			return findFirst(
-				classFrom,
-				classFrom,
-				criteria.getScanUpToPredicate(),
-				criteria.getMembersSupplier(),
-				criteria.getPredicateOrTruePredicateIfPredicateIsNull(),
-				new HashSet<>()
-			);
-		} else {
-			Collection<M> result = findAll(
-				classFrom,
-				classFrom,
-				criteria.getScanUpToPredicate(),
-				criteria.getMembersSupplier(),
-				criteria.getPredicateOrTruePredicateIfPredicateIsNull(),
-				new HashSet<>(),
-				new LinkedHashSet<>()
-			);
-			return resultPredicate.test(result) ?
-				result.stream().findFirst().orElseGet(() -> null) :
-				null;
-		}
-	}
-
-	public <M extends Member> M findOne(MemberCriteria<M, ?, ?> criteria, Class<?> classFrom) {
-		Collection<M> members = findAll(criteria, classFrom);
-		if (members.size() > 1) {
-			Throwables.INSTANCE.throwException("More than one member found for class {}", classFrom.getName());
-		}
-		return members.stream().findFirst().orElse(null);
-	}
-
-	public <M extends Member> boolean match(MemberCriteria<M, ?, ?> criteria, Class<?> classFrom) {
-		return findFirst(criteria, classFrom) != null;
-	}
-
-	private <M extends Member> Collection<M> findAll(
-		Class<?> initialClsFrom,
-		Class<?> currentScannedClass,
-		BiPredicate<Class<?>, Class<?>> clsPredicate,
-		BiFunction<Class<?>, Class<?>, M[]> memberSupplier,
-		Predicate<M> predicate,
-		Set<Class<?>> visitedInterfaces,
-		Collection<M> collection
-	) {
-		for (M member : memberSupplier.apply(initialClsFrom, currentScannedClass)) {
-			if (predicate.test(member)) {
-				collection.add(member);
-			}
-		}
-		for (Class<?> interf : currentScannedClass.getInterfaces()) {
-			if (!visitedInterfaces.add(interf)) {
-				continue;
-			}
-			collection = findAll((Class<?>) initialClsFrom, interf, clsPredicate, memberSupplier, predicate, visitedInterfaces, collection);
-			if (!(collection instanceof Set)) {
-				return collection;
-			}
-			if (clsPredicate.test(initialClsFrom, currentScannedClass)) {
-				return Collections.unmodifiableCollection(collection);
-			}
-		}
-		Class<?> superClass = currentScannedClass.getSuperclass();
-		if (!(collection instanceof Set) || ((superClass = currentScannedClass.getSuperclass()) == null && currentScannedClass.isInterface())) {
-			return collection;
-		}
-		if (superClass == null || clsPredicate.test(initialClsFrom, currentScannedClass)) {
-			return Collections.unmodifiableCollection(collection);
-		}
-		return findAll(
-			initialClsFrom,
-			superClass,
-			clsPredicate,
-			memberSupplier,
-			predicate,
-			visitedInterfaces,
-			collection
-		);
-	}
-
-	private <M extends Member> M findFirst(
-		Class<?> initialClsFrom,
-		Class<?> currentScannedClass,
-		BiPredicate<Class<?>, Class<?>> clsPredicate,
-		BiFunction<Class<?>, Class<?>, M[]>
-		memberSupplier, Predicate<M> predicate,
-		Set<Class<?>> visitedInterfaces
-	) {
-		for (M member : memberSupplier.apply(initialClsFrom, currentScannedClass)) {
-			if (predicate.test(member)) {
-				return member;
-			}
-		}
-		for (Class<?> interf : currentScannedClass.getInterfaces()) {
-			if (!visitedInterfaces.add(interf)) {
-				continue;
-			}
-			M member = findFirst(initialClsFrom, interf, clsPredicate, memberSupplier, predicate, visitedInterfaces);
-			if (member != null || clsPredicate.test(initialClsFrom, currentScannedClass)) {
-				return member;
-			}
-		}
-		return
-			(clsPredicate.test(initialClsFrom, currentScannedClass) || currentScannedClass.getSuperclass() == null) ?
-				null :
-				findFirst(initialClsFrom, currentScannedClass.getSuperclass(), clsPredicate, memberSupplier, predicate, visitedInterfaces);
 	}
 
 }

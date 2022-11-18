@@ -38,7 +38,6 @@ import org.burningwave.Criteria;
 import org.burningwave.function.TriPredicate;
 
 
-@SuppressWarnings("resource")
 public class FieldCriteria extends MemberCriteria<
 	Field, FieldCriteria, Criteria.TestContext<Field, FieldCriteria>
 > {
