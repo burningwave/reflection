@@ -29,9 +29,9 @@
 module org.burningwave.core {
 
     requires java.base;
-    requires jdk.unsupported;
-    requires transitive io.github.toolfactory.jvm;
-    requires transitive org.burningwave.jvm;
+    requires static jdk.unsupported;
+    requires static io.github.toolfactory.jvm;
+    requires static org.burningwave.jvm;
 
     exports org.burningwave.function;
     exports org.burningwave.reflection;
