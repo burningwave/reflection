@@ -4,12 +4,12 @@
 <img src="https://raw.githubusercontent.com/burningwave/burningwave.github.io/main/logo.png" alt="logo.png" height="180px" align="right"/>
 </a>
 
-[![Maven Central with version prefix filter](https://img.shields.io/maven-central/v/org.burningwave/reflection/2)](https://maven-badges.herokuapp.com/maven-central/org.burningwave/reflection/)
+[![Maven Central with version prefix filter](https://img.shields.io/maven-central/v/org.burningwave/reflection/3)](https://maven-badges.herokuapp.com/maven-central/org.burningwave/reflection/)
 [![GitHub](https://img.shields.io/github/license/burningwave/reflection)](https://github.com/burningwave/reflection/blob/master/LICENSE)
 
-[![Platforms](https://img.shields.io/badge/platforms-Windows%2C%20Mac%20OS%2C%20Linux-orange)](https://github.com/burningwave/reflection/actions/runs/3500168653)
+[![Platforms](https://img.shields.io/badge/platforms-Windows%2C%20Mac%20OS%2C%20Linux-orange)](https://github.com/burningwave/reflection/actions/runs/3500353650)
 
-[![Supported JVM](https://img.shields.io/badge/supported%20JVM-8%2C%209+%20(19)-blueviolet)](https://github.com/burningwave/reflection/actions/runs/3500168653)
+[![Supported JVM](https://img.shields.io/badge/supported%20JVM-8%2C%209+%20(19)-blueviolet)](https://github.com/burningwave/reflection/actions/runs/3500353650)
 
 [![Coveralls github branch](https://img.shields.io/coveralls/github/burningwave/reflection/master)](https://coveralls.io/github/burningwave/core?branch=master)
 [![GitHub open issues](https://img.shields.io/github/issues/burningwave/core)](https://github.com/burningwave/reflection/issues)
@@ -18,7 +18,9 @@
 [![Repository dependents](https://badgen.net/github/dependents-repo/burningwave/reflection)](https://github.com/burningwave/reflection/network/dependents)
 [![HitCount](https://www.burningwave.org/generators/generate-visited-pages-badge.php)](https://www.burningwave.org#bw-counters)
 
-Extracted from [**Burningwave Core 12**](https://github.com/burningwave/core/releases/tag/core-12.62.2) is an advanced, free and open source Reflection engine.
+Extracted from [**Burningwave Core**](https://burningwave.github.io/core/) is an advanced, free and open source reflection engine.
+
+The main difference with Burningwave Core's reflection engine is that use of the [JVM driver](https://burningwave.github.io/jvm-driver/) is optional and disabled by default. 
 
 And now we will see:
 * [including Burningwave Reflection in your project](#Including-Burningwave-Reflection-in-your-project)
@@ -36,7 +38,7 @@ To include Burningwave Reflection library in your projects simply use with **Apa
 <dependency>
     <groupId>org.burningwave</groupId>
     <artifactId>reflection</artifactId>
-    <version>1.0.0</version>
+    <version>3.0.0</version>
 </dependency>
 ```
 
@@ -47,6 +49,22 @@ To use Burningwave Reflection as a Java module you need to add the following to 
 ```java
 requires org.burningwave.reflection;
 ```
+### Enabling the [JVM driver](https://burningwave.github.io/jvm-driver/)
+By default the JVM Driver is disabled and to enable it you need to add the following to your pom:
+```xml
+<dependency>
+    <groupId>org.burningwave</groupId>
+    <artifactId>jvm-driver</artifactId>
+    <version>8.10.1</version>
+</dependency>	
+```
+... And the following to your `module-info.java`: 
+
+```java
+requires jdk.unsupported;
+requires org.burningwave.jvm;
+```
+It is also possible to [disable the use of the JVM Driver programmatically]().
 
 <br/>
 
