@@ -7,9 +7,9 @@
 [![Maven Central with version prefix filter](https://img.shields.io/maven-central/v/org.burningwave/reflection/3)](https://maven-badges.herokuapp.com/maven-central/org.burningwave/reflection/)
 [![GitHub](https://img.shields.io/github/license/burningwave/reflection)](https://github.com/burningwave/reflection/blob/master/LICENSE)
 
-[![Platforms](https://img.shields.io/badge/platforms-Windows%2C%20Mac%20OS%2C%20Linux-orange)](https://github.com/burningwave/reflection/actions/runs/3500353650)
+[![Platforms](https://img.shields.io/badge/platforms-Windows%2C%20Mac%20OS%2C%20Linux-orange)](https://github.com/burningwave/reflection/actions/runs/3500618943)
 
-[![Supported JVM](https://img.shields.io/badge/supported%20JVM-8%2C%209+%20(19)-blueviolet)](https://github.com/burningwave/reflection/actions/runs/3500353650)
+[![Supported JVM](https://img.shields.io/badge/supported%20JVM-8%2C%209+%20(19)-blueviolet)](https://github.com/burningwave/reflection/actions/runs/3500618943)
 
 [![Coveralls github branch](https://img.shields.io/coveralls/github/burningwave/reflection/master)](https://coveralls.io/github/burningwave/core?branch=master)
 [![GitHub open issues](https://img.shields.io/github/issues/burningwave/core)](https://github.com/burningwave/reflection/issues)
@@ -26,19 +26,19 @@ And now we will see:
 * [including Burningwave Reflection in your project](#Including-Burningwave-Reflection-in-your-project)
 * [handling privates and all other members of an object](#Handling-privates-and-all-other-members-of-an-object)
 * [getting and setting properties of a Java bean through path](#Getting-and-setting-properties-of-a-Java-bean-through-path)
-* [architectural overview and configuration](#Architectural-overview-and-configuration)
+* [configuration](#Cconfiguration)
 * [**how to ask for assistance**](#Ask-for-assistance)
 
 <br/>
 
-# <a name="Including-Burningwave-Core-in-your-project"></a>Including Burningwave Reflection in your project 
+## <a name="Including-Burningwave-Core-in-your-project"></a>Including Burningwave Reflection in your project 
 To include Burningwave Reflection library in your projects simply use with **Apache Maven**:
 
 ```xml
 <dependency>
     <groupId>org.burningwave</groupId>
     <artifactId>reflection</artifactId>
-    <version>3.0.0</version>
+    <version>3.1.0</version>
 </dependency>
 ```
 
@@ -68,7 +68,7 @@ It is also possible to [disable the use of the JVM Driver programmatically]().
 
 <br/>
 
-# <a name="Handling-privates-and-all-other-members-of-an-object"></a>Handling privates and all other members of an object
+## <a name="Handling-privates-and-all-other-members-of-an-object"></a>Handling privates and all other members of an object
 Through **Fields**, **Constructors** and **Methods** components it is possible to get or set fields value, invoking or finding constructors or methods of an object.
 Members handlers use to cache all members for faster access.
 For fields handling we are going to use **Fields** component:
@@ -199,7 +199,7 @@ public class ConstructorsHandler {
 
 <br/>
 
-# <a name="Getting-and-setting-properties-of-a-Java-bean-through-path"></a>Getting and setting properties of a Java bean through path
+## <a name="Getting-and-setting-properties-of-a-Java-bean-through-path"></a>Getting and setting properties of a Java bean through path
 Through **ByFieldOrByMethodPropertyAccessor** and **ByMethodOrByFieldPropertyAccessor** it is possible to get and set properties of a Java bean by using path. So for this example we will use these Java beans:
 
 ```java
@@ -324,9 +324,12 @@ public class GetAndSetPropertiesThroughPath{
 
 <br/>
 
-# <a name="Architectural-overview-and-configuration"></a>Architectural overview and configuration
+## <a name="Configuration"></a>Configuration
 
-**Burningwave Reflection** is a reflection engine
+With Burningwave Reflection it is possible disable the use of the JVM Driver programmatically with the following line of code before you starting to use the reflection components:
+```java
+org.burningwave.reflection.Facade.Configuration.disableDriver();
+```
 
 
 ### [**Official site**](https://www.burningwave.org/)
