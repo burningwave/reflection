@@ -200,8 +200,8 @@ public class ConstructorsHandler {
 
 <br/>
 
-## <a name="Getting-and-setting-properties-of-a-Java-bean-through-path"></a>Getting and setting properties of a Java bean through path
-Through **ByFieldOrByMethodPropertyAccessor** and **ByMethodOrByFieldPropertyAccessor** it is possible to get and set properties of a Java bean by using path. So for this example we will use these Java beans:
+## <a name="Getting-and-setting-properties-of-a-Java-bean-through-path"></a>Getting and setting Field of an object through path
+Through **FieldAccessor** it is possible to get and set field of an object bean by using path. So for this example we will use these Java beans:
 
 ```java
 package org.burningwave.core.bean;
@@ -288,7 +288,7 @@ public class Complex {
     }
 }
 ```
-... And now we are going to get and set some properties:
+... And now we are going to get and set some fields:
 ```java
 import static org.burningwave.reflection.FieldAccessor;
 
@@ -298,19 +298,17 @@ public class GetAndSetPropertiesThroughPath{
     
     public void execute() {
         Complex complex = new Complex();
-        //This type of property accessor try to access by field introspection: if no field was found
+        //The field accessor try to access by field introspection: if no field was found
         //it will search getter method and invokes it
         String nameFromObjectInArray = FieldAccessor.INSTANCE.get(complex, "data.items[1][0].name");
         String nameFromObjectMap = FieldAccessor.INSTANCE.get(complex, "data.itemsMap[items][1][1].name");
         System.out.println(nameFromObjectInArray);
         System.out.println(nameFromObjectMap);
-        //This type of property accessor looks for getter method and invokes it: if no getter method was found
-        //it will search for field and try to retrieve it
         nameFromObjectInArray = FieldAccessor.INSTANCE.get(complex, "data.items[1][2].name");
         nameFromObjectMap = FieldAccessor.INSTANCE.get(complex, "data.itemsMap[items][1][1].name");
         System.out.println(nameFromObjectInArray);
         System.out.println(nameFromObjectMap);
-        ByMethodOrByFieldPropertyAccessor.set(complex, "data.itemsMap[items][1][1].name", "Good evening!");
+        FieldAccessor.INSTANCE.set(complex, "data.itemsMap[items][1][1].name", "Good evening!");
         nameFromObjectInArray = FieldAccessor.INSTANCE.get(complex, "data.itemsMap[items][1][1].name");
         System.out.println(nameFromObjectInArray);
     }
