@@ -186,9 +186,9 @@ public class ConstructorsHandler {
     
     public static void execute() {
         //Invoking constructor by using reflection
-        MemoryClassLoader classLoader = Constructors.newInstanceOf(MemoryClassLoader.class, Thread.currentThread().getContextClassLoader());
+        MemoryClassLoader classLoader = Constructors.INSTANCE.newInstanceOf(MemoryClassLoader.class, Thread.currentThread().getContextClassLoader());
         
-        classLoader = Constructors.newInstanceOf(MemoryClassLoader.class, null);
+        classLoader = Constructors.INSTANCE.newInstanceOf(MemoryClassLoader.class, null);
     }
     
     public static void main(String[] args) {
@@ -291,7 +291,6 @@ public class Complex {
 ... And now we are going to get and set some properties:
 ```java
 import static org.burningwave.reflection.FieldAccessor;
-import static org.burningwave.core.assembler.StaticComponentContainer.ByMethodOrByFieldPropertyAccessor;
 
 import org.burningwave.core.bean.Complex;
 
