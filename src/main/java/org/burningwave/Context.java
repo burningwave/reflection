@@ -43,6 +43,10 @@ public class Context {
 		return new Context();
 	}
 
+	public <T> T get(Enum<?> name) {
+		return ((T)context.get(name));
+	}
+
 	public Context put(Enum<?> name, Object parameter) {
 		if (parameter != null) {
 			context.put(name, parameter);
@@ -50,10 +54,6 @@ public class Context {
 			context.remove(name);
 		}
 		return this;
-	}
-
-	public <T> T get(Enum<?> name) {
-		return ((T)context.get(name));
 	}
 
 }

@@ -37,31 +37,12 @@ import java.util.function.Predicate;
 import org.burningwave.Criteria;
 import org.burningwave.function.TriPredicate;
 
-@SuppressWarnings("resource")
 public class MethodCriteria extends ExecutableMemberCriteria<
 	Method, MethodCriteria, Criteria.TestContext<Method, MethodCriteria>
 > {
+
 	private MethodCriteria() {
 		super();
-	}
-
-	public static MethodCriteria withoutConsideringParentClasses() {
-		return byScanUpTo((lastClassInHierarchy, currentScannedClass) -> {
-            return lastClassInHierarchy.equals(currentScannedClass);
-        });
-	}
-
-	@Override
-	Function<Class<?>, Method[]> getMembersSupplierFunction() {
-		return  Facade.INSTANCE::getDeclaredMethods;
-	}
-
-	public static MethodCriteria forEntireClassHierarchy() {
-		return new MethodCriteria();
-	}
-
-	public static MethodCriteria byScanUpTo(TriPredicate<Map<Class<?>, Class<?>>, Class<?>, Class<?>> predicate) {
-		return new MethodCriteria().scanUpTo(predicate);
 	}
 
 	public static MethodCriteria byScanUpTo(BiPredicate<Class<?>, Class<?>> predicate) {
@@ -72,11 +53,30 @@ public class MethodCriteria extends ExecutableMemberCriteria<
 		return new MethodCriteria().scanUpTo(predicate);
 	}
 
+	public static MethodCriteria byScanUpTo(TriPredicate<Map<Class<?>, Class<?>>, Class<?>, Class<?>> predicate) {
+		return new MethodCriteria().scanUpTo(predicate);
+	}
+
+	public static MethodCriteria forEntireClassHierarchy() {
+		return new MethodCriteria();
+	}
+
+	public static MethodCriteria withoutConsideringParentClasses() {
+		return byScanUpTo((lastClassInHierarchy, currentScannedClass) -> {
+            return lastClassInHierarchy.equals(currentScannedClass);
+        });
+	}
+
 	public MethodCriteria returnType(final Predicate<Class<?>> predicate) {
 		this.predicate = concat(
 			this.predicate,
 			(context, member) -> predicate.test(member.getReturnType())
 		);
 		return this;
+	}
+
+	@Override
+	Function<Class<?>, Method[]> getMembersSupplierFunction() {
+		return  Facade.INSTANCE::getDeclaredMethods;
 	}
 }

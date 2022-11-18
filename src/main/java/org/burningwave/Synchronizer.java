@@ -34,11 +34,27 @@ import java.util.function.Supplier;
 
 
 public class Synchronizer {
+	public class Mutex implements java.io.Closeable {
+		int clientsCount = 1;
+		String id;
+		Mutex(String id) {
+			this.id = id;
+		}
+
+		@Override
+		public void close() {
+			if (--clientsCount < 1) {
+				Synchronizer.this.mutexes.remove(id);
+			}
+		}
+	}
+
 	public final static Synchronizer INSTANCE;
 
 	static {
 		INSTANCE = new Synchronizer();
 	}
+
 
 	Map<String, Mutex> mutexes;
 
@@ -46,22 +62,6 @@ public class Synchronizer {
 	private Synchronizer() {
 		mutexes = new ConcurrentHashMap<>();
 	}
-
-
-	public Mutex getMutex(String id) {
-		Mutex newMutex = this.new Mutex(id);
-		while (true) {
-			Mutex oldMutex = mutexes.putIfAbsent(id, newMutex);
-	        if (oldMutex == null) {
-		        return newMutex;
-	        }
-	        if (++oldMutex.clientsCount > 1 && mutexes.get(id) == oldMutex) {
-	        	return oldMutex;
-        	}
-        	//logWarn("Unvalid mutex with id \"{}\": a new mutex will be created", id);
-        	continue;
-		}
-    }
 
 	public void execute(String id, Runnable executable) {
 		try (Mutex mutex = getMutex(id);) {
@@ -79,19 +79,19 @@ public class Synchronizer {
 		}
 	}
 
-	public class Mutex implements java.io.Closeable {
-		Mutex(String id) {
-			this.id = id;
+	public Mutex getMutex(String id) {
+		Mutex newMutex = this.new Mutex(id);
+		while (true) {
+			Mutex oldMutex = mutexes.putIfAbsent(id, newMutex);
+	        if (oldMutex == null) {
+		        return newMutex;
+	        }
+	        if (++oldMutex.clientsCount > 1 && mutexes.get(id) == oldMutex) {
+	        	return oldMutex;
+        	}
+        	//logWarn("Unvalid mutex with id \"{}\": a new mutex will be created", id);
+        	continue;
 		}
-		String id;
-		int clientsCount = 1;
-
-		@Override
-		public void close() {
-			if (--clientsCount < 1) {
-				Synchronizer.this.mutexes.remove(id);
-			}
-		}
-	}
+    }
 
 }

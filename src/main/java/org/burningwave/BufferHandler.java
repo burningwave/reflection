@@ -46,16 +46,16 @@ public class BufferHandler {
 		return buffer.duplicate();
 	}
 
+	public <T extends Buffer> T flip(T buffer) {
+		return (T)((Buffer)buffer).flip();
+	}
+
 	public <T extends Buffer> int limit(T buffer) {
 		return ((Buffer)buffer).limit();
 	}
 
 	public <T extends Buffer> int position(T buffer) {
 		return ((Buffer)buffer).position();
-	}
-
-	public <T extends Buffer> T flip(T buffer) {
-		return (T)((Buffer)buffer).flip();
 	}
 
 	public ByteBuffer shareContent(ByteBuffer byteBuffer) {
