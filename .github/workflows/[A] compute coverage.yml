@@ -3,7 +3,7 @@ name: Compute coverage
 on:
   push:
     branches:
-      - master
+      - main
     paths: 
       - "src/main/**.java"
       - "src/test/**.java"

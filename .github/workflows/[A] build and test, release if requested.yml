@@ -3,7 +3,7 @@ name: Build and test -> Release if requested
 on:
   push:
     branches:
-      - master
+      - main
     paths: 
       - "src/main/**.java"
       - "src/test/**.java"
