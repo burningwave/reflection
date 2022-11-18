@@ -34,20 +34,6 @@ import java.util.function.Supplier;
 
 
 public class Synchronizer {
-	public class Mutex implements java.io.Closeable {
-		int clientsCount = 1;
-		String id;
-		Mutex(String id) {
-			this.id = id;
-		}
-
-		@Override
-		public void close() {
-			if (--clientsCount < 1) {
-				Synchronizer.this.mutexes.remove(id);
-			}
-		}
-	}
 
 	public final static Synchronizer INSTANCE;
 
@@ -89,9 +75,23 @@ public class Synchronizer {
 	        if (++oldMutex.clientsCount > 1 && mutexes.get(id) == oldMutex) {
 	        	return oldMutex;
         	}
-        	//logWarn("Unvalid mutex with id \"{}\": a new mutex will be created", id);
         	continue;
 		}
     }
+
+	public class Mutex implements java.io.Closeable {
+		int clientsCount = 1;
+		String id;
+		Mutex(String id) {
+			this.id = id;
+		}
+
+		@Override
+		public void close() {
+			if (--clientsCount < 1) {
+				Synchronizer.this.mutexes.remove(id);
+			}
+		}
+	}
 
 }
