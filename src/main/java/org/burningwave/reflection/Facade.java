@@ -52,12 +52,10 @@ import org.burningwave.function.ThrowingFunction;
 import org.burningwave.function.ThrowingTriConsumer;
 import org.burningwave.function.ThrowingTriFunction;
 
-import io.github.toolfactory.jvm.Driver;
-
 @SuppressWarnings("unchecked")
 public class Facade {
 	public static final Facade INSTANCE;
-	private static Driver driver;
+	private static Object driver;
 	private static ThrowingBiFunction<MethodHandles.Lookup, Class<?>, MethodHandles.Lookup, Throwable> privateLookupIn;
 
 	static {
@@ -111,31 +109,31 @@ public class Facade {
 
 		if (driver != null) {
 			fieldRetrievers.add(clazz ->
-				driver.getDeclaredFields(clazz)
+				((io.github.toolfactory.jvm.Driver)driver).getDeclaredFields(clazz)
 			);
 			methodRetrievers.add(clazz ->
-				driver.getDeclaredMethods(clazz)
+				((io.github.toolfactory.jvm.Driver)driver).getDeclaredMethods(clazz)
 			);
 			constructorRetrievers.add(clazz ->
-				driver.getDeclaredConstructors(clazz)
+				((io.github.toolfactory.jvm.Driver)driver).getDeclaredConstructors(clazz)
 			);
 			accessibleSetters.add((accessibleObject, flag) ->
-				driver.setAccessible(accessibleObject, flag)
+				((io.github.toolfactory.jvm.Driver)driver).setAccessible(accessibleObject, flag)
 			);
 			fieldValueRetrievers.add((target, field) ->
-				driver.getFieldValue(target, field)
+				((io.github.toolfactory.jvm.Driver)driver).getFieldValue(target, field)
 			);
 			fieldValueSetters.add((target, field, value) ->
-				driver.setFieldValue(target, field, value)
+				((io.github.toolfactory.jvm.Driver)driver).setFieldValue(target, field, value)
 			);
 			methodInvokers.add((target, method, parameters) ->
-				driver.invoke(target, method, parameters)
+				((io.github.toolfactory.jvm.Driver)driver).invoke(target, method, parameters)
 			);
 			constructorInvokers.add((constructor, parameters) ->
-				driver.newInstance(constructor, parameters)
+				((io.github.toolfactory.jvm.Driver)driver).newInstance(constructor, parameters)
 			);
 			consulterRetrievers.add((lookup, clazz) ->
-				driver.getConsulter(clazz)
+				((io.github.toolfactory.jvm.Driver)driver).getConsulter(clazz)
 			);
 		}
 		fieldRetrievers.add(clazz ->
