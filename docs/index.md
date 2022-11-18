@@ -62,6 +62,7 @@ By default the JVM Driver is disabled and to enable it you need to add the follo
 
 ```java
 requires jdk.unsupported;
+requires io.github.toolfactory.jvm;
 requires org.burningwave.jvm;
 ```
 If you want to add the JVM Driver module it is also possible to [disable it programmatically](#Configuration).
