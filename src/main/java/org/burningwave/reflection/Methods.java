@@ -163,41 +163,6 @@ public class Methods extends Members.Handler.OfExecutable<Method, MethodCriteria
 		return members;
 	}
 
-	public 	<T> T invokeStatic(Class<?> targetClass, String methodName, Object... arguments) {
-		return invoke(
-			targetClass, null, methodName, method ->
-				(T)invoke(null,
-					method,
-					getArgumentArray(
-						method,
-						this::getArgumentListWithArrayForVarArgs,
-						ArrayList::new,
-						arguments
-					)
-				),
-			arguments
-		);
-	}
-
-	public <T> T invoke(Object target, String methodName, Object... arguments) {
-		return invoke(
-			Classes.INSTANCE.retrieveFrom(target),
-			null, methodName, method ->
-				invoke(
-						target, method, getArgumentArray(
-						method,
-						this::getArgumentListWithArrayForVarArgs,
-						ArrayList::new,
-						arguments
-					)
-				),
-			arguments
-		);
-	}
-
-	public <T> T invoke(Object target, Method method, Object... params) {
-		return Facade.INSTANCE.invoke(target, method, params);
-	}
 
 	private <T> T invoke(Class<?> targetClass, Object target, String methodName, ThrowingFunction<Method, T, Throwable> methodInvoker, Object... arguments) {
 		return Executor.get(() -> {
@@ -213,22 +178,6 @@ public class Methods extends Members.Handler.OfExecutable<Method, MethodCriteria
 			}
 			return methodInvoker.apply(method);
 		});
-	}
-
-	public 	<T> T invokeStaticDirect(Class<?> targetClass, String methodName, Object... arguments) {
-		return (T) invokeDirect(targetClass, null, methodName, ArrayList::new, arguments);
-	}
-
-	public <T> T invokeDirect(Object target, String methodName, Object... arguments) {
-		return (T) invokeDirect(
-			Classes.INSTANCE.retrieveFrom(target),
-			target, methodName, () -> {
-				List<Object> argumentList = new ArrayList<>();
-				argumentList.add(target);
-				return argumentList;
-			},
-			arguments
-		);
 	}
 
 	private <T> T invokeDirect(Class<?> targetClass, Object target, String methodName, Supplier<List<Object>> listSupplier,  Object... arguments) {
@@ -283,6 +232,58 @@ public class Methods extends Members.Handler.OfExecutable<Method, MethodCriteria
 				methodDeclaringClass, retrieveNameForCaching(method),
 				MethodType.methodType(method.getReturnType(), method.getParameterTypes())
 			);
+	}
+
+	public <T> T invoke(Object target, Method method, Object... params) {
+		return Facade.INSTANCE.invoke(target, method, params);
+	}
+
+	public 	<T> T invokeStatic(Class<?> targetClass, String methodName, Object... arguments) {
+		return Executor.getFirst(
+			() ->
+				(T)invokeDirect(targetClass, null, methodName, ArrayList::new, arguments),
+			() ->
+				invoke(
+					targetClass, null, methodName, method ->
+						(T)invoke(null,
+							method,
+							getArgumentArray(
+								method,
+								this::getArgumentListWithArrayForVarArgs,
+								ArrayList::new,
+								arguments
+							)
+						),
+					arguments
+				)
+		);
+	}
+
+	public <T> T invoke(Object target, String methodName, Object... arguments) {
+		return Executor.getFirst(() ->
+			(T)invokeDirect(
+				Classes.INSTANCE.retrieveFrom(target),
+				target, methodName, () -> {
+					List<Object> argumentList = new ArrayList<>();
+					argumentList.add(target);
+					return argumentList;
+				},
+				arguments
+			), () ->
+				invoke(
+					Classes.INSTANCE.retrieveFrom(target),
+					null, methodName, method ->
+						invoke(
+							target, method, getArgumentArray(
+							method,
+							this::getArgumentListWithArrayForVarArgs,
+							ArrayList::new,
+							arguments
+						)
+					),
+					arguments
+				)
+		);
 	}
 
 	@Override

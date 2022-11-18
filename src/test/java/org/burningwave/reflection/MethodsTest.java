@@ -1,8 +1,5 @@
 package org.burningwave.reflection;
 
-import org.burningwave.reflection.Classes;
-import org.burningwave.reflection.MethodCriteria;
-import org.burningwave.reflection.Methods;
 import org.burningwave.reflection.service.Service;
 import org.junit.jupiter.api.Test;
 
@@ -23,7 +20,7 @@ public class MethodsTest extends BaseTest {
 	public void invokeDirectTestOne() {
 		testNotNull(
 			() -> {
-				return Methods.INSTANCE.INSTANCE.invokeStaticDirect(Integer.class, "valueOf", 1);
+				return Methods.INSTANCE.invokeStatic(Integer.class, "valueOf", 1);
 			}
 		);
 	}
@@ -70,7 +67,7 @@ public class MethodsTest extends BaseTest {
 						System.out.println(value);
 					}
 				};
-				Methods.INSTANCE.invokeDirect(empty, "print", null);
+				Methods.INSTANCE.invoke(empty, "print", null);
 			}
 		);
 	}
@@ -79,7 +76,7 @@ public class MethodsTest extends BaseTest {
 	public void invokeDirectVoidTestTwo() {
 		testDoesNotThrow(
 			() -> {
-				Methods.INSTANCE.invokeDirect(System.out, "println", "Hello World");
+				Methods.INSTANCE.invoke(System.out, "println", "Hello World");
 			}
 		);
 	}
@@ -101,14 +98,14 @@ public class MethodsTest extends BaseTest {
 	@Test
 	public void invokeDirectInterfaceDefault() throws Throwable {
 		testDoesNotThrow(() -> {
-			Methods.INSTANCE.invokeDirect(new Service(), "printMyName");
+			Methods.INSTANCE.invoke(new Service(), "printMyName");
 		});
 	}
 
 	@Test
 	public void invokeDirectVoidWithVarArgsTestOne() throws Throwable {
 		testDoesNotThrow(() -> {
-			Methods.INSTANCE.invokeDirect(new Service(), "apply", "Hello", "World!", new String[]{"How are you?"});
+			Methods.INSTANCE.invoke(new Service(), "apply", "Hello", "World!", new String[]{"How are you?"});
 		});
 	}
 
@@ -122,7 +119,7 @@ public class MethodsTest extends BaseTest {
 	@Test
 	public void invokeDirectVoidWithVarArgsTestTwo() throws Throwable {
 		testDoesNotThrow(() -> {
-			Methods.INSTANCE.invokeDirect(new Service(), "apply", "Hello", "World!", null);
+			Methods.INSTANCE.invoke(new Service(), "apply", "Hello", "World!", null);
 		});
 	}
 
@@ -150,21 +147,21 @@ public class MethodsTest extends BaseTest {
 	@Test
 	public void invokeStaticDirectWithVarArgsTestOne() throws Throwable {
 		testDoesNotThrow(() -> {
-			Methods.INSTANCE.invokeStaticDirect(Service.class, "staticApply", "Hello", "World!", "How are you?", "I'm well");
+			Methods.INSTANCE.invokeStatic(Service.class, "staticApply", "Hello", "World!", "How are you?", "I'm well");
 		});
 	}
 
 	@Test
 	public void invokeDirectStaticTestOne() throws Throwable {
 		testDoesNotThrow(() -> {
-			Methods.INSTANCE.invokeStaticDirect(Service.class, "staticApply", "Hello", "World!", "How are you?");
+			Methods.INSTANCE.invokeStatic(Service.class, "staticApply", "Hello", "World!", "How are you?");
 		});
 	}
 
 	@Test
 	public void invokeDirectVoidWithVarArgsTestThree() throws Throwable {
 		testDoesNotThrow(() -> {
-			Methods.INSTANCE.invokeDirect(new Service(), "apply", "Hello", "World!", "");
+			Methods.INSTANCE.invoke(new Service(), "apply", "Hello", "World!", "");
 		});
 	}
 
@@ -178,7 +175,7 @@ public class MethodsTest extends BaseTest {
 	@Test
 	public void invokeDirectVoidWithVarArgsTestFour() throws Throwable {
 		testDoesNotThrow(() -> {
-			Methods.INSTANCE.invokeDirect(new Service(), "apply", "Hello", "World!", "Hello again", "... And again");
+			Methods.INSTANCE.invoke(new Service(), "apply", "Hello", "World!", "Hello again", "... And again");
 		});
 	}
 
@@ -192,7 +189,7 @@ public class MethodsTest extends BaseTest {
 	@Test
 	public void invokeDirectVoidWithVarArgsTestFive() throws Throwable {
 		testDoesNotThrow(() -> {
-			Methods.INSTANCE.invokeDirect(new Service(), "apply", "Hello", "World!", "Hello again");
+			Methods.INSTANCE.invoke(new Service(), "apply", "Hello", "World!", "Hello again");
 		});
 	}
 
@@ -206,7 +203,7 @@ public class MethodsTest extends BaseTest {
 	@Test
 	public void invokeDirectNoArgs() throws Throwable {
 		testDoesNotThrow(() -> {
-			Methods.INSTANCE.invokeDirect(new Service(), "supply");
+			Methods.INSTANCE.invoke(new Service(), "supply");
 		});
 	}
 
@@ -220,7 +217,7 @@ public class MethodsTest extends BaseTest {
 	@Test
 	public void invokeDirectMethodWithVarArgsTestOne() throws Throwable {
 		testDoesNotThrow(() -> {
-			Methods.INSTANCE.invokeDirect(new Service(), "methodWithVarArgs");
+			Methods.INSTANCE.invoke(new Service(), "methodWithVarArgs");
 		});
 	}
 
@@ -234,14 +231,14 @@ public class MethodsTest extends BaseTest {
 	@Test
 	public void invokeDirectMethodWithVarArgsTestTwo() throws Throwable {
 		testDoesNotThrow(() -> {
-			Methods.INSTANCE.invokeDirect(new Service(), "methodWithVarArgs", "Hello!");
+			Methods.INSTANCE.invoke(new Service(), "methodWithVarArgs", "Hello!");
 		});
 	}
 
 	@Test
 	public void invokeDirectMethodWithArrayTestOne() throws Throwable {
 		testDoesNotThrow(() -> {
-			Methods.INSTANCE.invokeDirect(new Service(), "withArray", new Object[] {new String[] {"methodWithArray"}});
+			Methods.INSTANCE.invoke(new Service(), "withArray", new Object[] {new String[] {"methodWithArray"}});
 		});
 	}
 

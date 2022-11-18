@@ -6,9 +6,6 @@ import static org.junit.Assert.assertTrue;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.burningwave.reflection.Facade;
-import org.burningwave.reflection.FieldCriteria;
-import org.burningwave.reflection.Fields;
 import org.junit.jupiter.api.Test;
 
 

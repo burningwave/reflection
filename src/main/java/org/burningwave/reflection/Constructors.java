@@ -56,34 +56,34 @@ public class Constructors extends Members.Handler.OfExecutable<Constructor<?>, C
 		Class<?> targetClass,
 		Object... arguments
 	) {
-		Constructor<?> ctor = findFirstAndMakeItAccessible(targetClass, Classes.INSTANCE.retrieveFrom(arguments));
-		if (ctor == null) {
-			Throwables.INSTANCE.throwException("Constructor not found in {}", targetClass.getName());
-		}
-		return (T)Facade.INSTANCE.newInstance(
-			ctor,
-			getArgumentArray(
-				ctor,
-				this::getArgumentListWithArrayForVarArgs,
-				ArrayList::new,
-				arguments
-			)
-		);
-	}
-
-	public <T> T newInstanceDirectOf(
-		Class<?> targetClass,
-		Object... arguments
-	) {
-		Class<?>[] argsType = Classes.INSTANCE.retrieveFrom(arguments);
-		Members.Handler.OfExecutable.Box<Constructor<?>> methodHandleBox = findDirectHandleBox(targetClass, argsType);
-		return Executor.get(() -> {
-				Constructor<?> ctor = methodHandleBox.getExecutable();
-				return (T)methodHandleBox.getHandler().invokeWithArguments(
-					getFlatArgumentList(ctor, ArrayList::new, arguments)
+		return Executor.getFirst(
+			() -> {
+				Class<?>[] argsType = Classes.INSTANCE.retrieveFrom(arguments);
+				Members.Handler.OfExecutable.Box<Constructor<?>> methodHandleBox = findDirectHandleBox(targetClass, argsType);
+				return Executor.get(() -> {
+						Constructor<?> ctor = methodHandleBox.getExecutable();
+						return (T)methodHandleBox.getHandler().invokeWithArguments(
+							getFlatArgumentList(ctor, ArrayList::new, arguments)
+						);
+					}
+				);
+			}, () -> {
+				Constructor<?> ctor = findFirstAndMakeItAccessible(targetClass, Classes.INSTANCE.retrieveFrom(arguments));
+				if (ctor == null) {
+					Throwables.INSTANCE.throwException("Constructor not found in {}", targetClass.getName());
+				}
+				return (T)Facade.INSTANCE.newInstance(
+					ctor,
+					getArgumentArray(
+						ctor,
+						this::getArgumentListWithArrayForVarArgs,
+						ArrayList::new,
+						arguments
+					)
 				);
 			}
 		);
+
 	}
 
 	public Constructor<?> findOneAndMakeItAccessible(Class<?> targetClass, Class<?>... argumentTypes) {

@@ -99,7 +99,7 @@ public class Criteria<E, C extends Criteria<E, C, T>, T extends Criteria.TestCon
 
 
 	protected C newInstance() {
-		return (C)Constructors.INSTANCE.newInstanceDirectOf(this.getClass());
+		return (C)Constructors.INSTANCE.newInstanceOf(this.getClass());
 	}
 
 	BiPredicate<T, E> getPredicateWrapper(
@@ -488,7 +488,7 @@ public class Criteria<E, C extends Criteria<E, C, T>, T extends Criteria.TestCon
 		}
 
 		protected C newInstance() {
-			return (C)Constructors.INSTANCE.newInstanceDirectOf(this.getClass());
+			return (C)Constructors.INSTANCE.newInstanceOf(this.getClass());
 		}
 	}
 }

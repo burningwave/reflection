@@ -1,7 +1,6 @@
 package org.burningwave.reflection;
 
 
-import org.burningwave.reflection.Constructors;
 import org.burningwave.reflection.service.ExtendedService;
 import org.junit.jupiter.api.Test;
 
@@ -10,12 +9,12 @@ public class ConstructorsTest extends BaseTest {
 
 	@Test
 	public void newInstanceDirectOfTestOne() {
-		testNotNull(() -> Constructors.INSTANCE.newInstanceDirectOf(ExtendedService.class));
+		testNotNull(() -> Constructors.INSTANCE.newInstanceOf(ExtendedService.class));
 	}
 
 	@Test
 	public void newInstanceDirectOfTestTwo() {
-		testNotNull(() -> Constructors.INSTANCE.newInstanceDirectOf(
+		testNotNull(() -> Constructors.INSTANCE.newInstanceOf(
 				ExtendedService.class,
 				"Extended service name"
 			)
