@@ -7,21 +7,18 @@
 [![Maven Central with version prefix filter](https://img.shields.io/maven-central/v/org.burningwave/reflection/1)](https://maven-badges.herokuapp.com/maven-central/org.burningwave/reflection/)
 [![GitHub](https://img.shields.io/github/license/burningwave/reflection)](https://github.com/burningwave/reflection/blob/master/LICENSE)
 
-[![Platforms](https://img.shields.io/badge/platforms-Windows%2C%20Mac%20OS%2C%20Linux-orange)](https://github.com/burningwave/reflection/actions/runs/3488993539)
+[![Platforms](https://img.shields.io/badge/platforms-Windows%2C%20Mac%20OS%2C%20Linux-orange)](https://github.com/burningwave/reflection/actions/runs/3500067177)
 
-[![Supported JVM](https://img.shields.io/badge/supported%20JVM-8%2C%209+%20(19)-blueviolet)](https://github.com/burningwave/reflection/actions/runs/3488993539)
+[![Supported JVM](https://img.shields.io/badge/supported%20JVM-8%2C%209+%20(19)-blueviolet)](https://github.com/burningwave/reflection/actions/runs/3500067177)
 
 [![Coveralls github branch](https://img.shields.io/coveralls/github/burningwave/core/master)](https://coveralls.io/github/burningwave/core?branch=master)
 [![GitHub open issues](https://img.shields.io/github/issues/burningwave/core)](https://github.com/burningwave/reflection/issues)
 [![GitHub closed issues](https://img.shields.io/github/issues-closed/burningwave/core)](https://github.com/burningwave/reflection/issues?q=is%3Aissue+is%3Aclosed)
 
-[![Artifact downloads](https://www.burningwave.org/generators/generate-burningwave-artifact-downloads-badge.php?artifactId=core)](https://www.burningwave.org/artifact-downloads/?show-overall-trend-chart=false&artifactId=core)
-[![Repository dependents](https://badgen.net/github/dependents-repo/burningwave/core)](https://github.com/burningwave/reflection/network/dependents)
+[![Repository dependents](https://badgen.net/github/dependents-repo/burningwave/reflection)](https://github.com/burningwave/reflection/network/dependents)
 [![HitCount](https://www.burningwave.org/generators/generate-visited-pages-badge.php)](https://www.burningwave.org#bw-counters)
 
-**Burningwave Reflection** is an advanced, free and open source Java frameworks building library and it is useful for scanning class paths, generating classes at runtime, facilitating the use of reflection, scanning the filesystem, executing stringified source code, iterating collections or arrays in parallel, executing tasks in parallel and much more...
-
-Burningwave Reflection contains **AN EXTREMELY POWERFUL CLASSPATH SCANNER**: it’s possible to search classes by every criteria that your imagination can make by using lambda expressions; **scan engine is highly optimized using direct allocated ByteBuffers to avoid heap saturation; searches are executed in multithreading context and are not affected by “_the issue of the same class loaded by different classloaders_”** (normally if you try to execute "isAssignableFrom" method on a same class loaded from different classloader it returns false).
+Extracted from [**Burningwave Core 12**](https://github.com/burningwave/core/releases/tag/core-12.62.2) is an advanced, free and open source Reflection engine.
 
 And now we will see:
 * [including Burningwave Reflection in your project](#Including-Burningwave-Reflection-in-your-project)
