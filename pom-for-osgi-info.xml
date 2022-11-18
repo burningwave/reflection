@@ -90,6 +90,7 @@
 		<repository.url>https://burningwave@github.com/burningwave/reflection.git</repository.url>
 
 		<coveralls-maven-plugin.version>4.3.0</coveralls-maven-plugin.version>
+		<logback.version>1.2.11</logback.version>
 		<jacoco-maven-plugin.version>0.7.6.201602180812</jacoco-maven-plugin.version>
 		<jakarta.validation.version>2.0.2</jakarta.validation.version>
 		<junit-jupiter.version>5.9.1</junit-jupiter.version>
@@ -198,6 +199,35 @@
 			</testResource>
 		</testResources>
 		<plugins>
+        	<plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <version>3.5.0</version>
+                <extensions>true</extensions> <!-- make sure this is present -->
+                <executions>
+                    <execution>
+                        <id>bundle-manifest</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>manifest</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <manifestLocation>${project.build.outputDirectory}/META-INF/</manifestLocation> <!-- make sure this is present! in the example of maven bundle plugin documentation, this piece is NOT present -->
+                    <exportScr>true</exportScr> <!-- be sure to add this line as well -->
+                    <supportedProjectTypes>
+                        <supportedProjectType>jar</supportedProjectType>
+                        <supportedProjectType>bundle</supportedProjectType>
+                        <supportedProjectType>war</supportedProjectType>
+                    </supportedProjectTypes>
+                    <instructions>
+                        <Bundle-SymbolicName>${project.groupId}.${project.artifactId}</Bundle-SymbolicName>
+                        <_dsannotations>*</_dsannotations>
+                    </instructions>
+                </configuration>
+            </plugin> 
+		
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
@@ -224,32 +254,9 @@
 				<artifactId>maven-jar-plugin</artifactId>
 				<version>${maven-jar-plugin.version}</version>
 				<configuration>
-					<excludes>
-						<exclude>module-info.class</exclude>
-						<exclude>META-INF/maven/</exclude>
-					</excludes>
-					<archive>
-						<addMavenDescriptor>false</addMavenDescriptor>
-						<manifest>
-							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-							<addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
-						</manifest>
-						<manifestEntries>
-							<built-by>Burningwave</built-by>
-							<Bundle-Category>Framework</Bundle-Category>
-							<Bundle-License>https://github.com/burningwave/reflection/blob/master/LICENSE</Bundle-License>
-							<Bundle-ManifestVersion>2</Bundle-ManifestVersion>
-							<Bundle-Name>Reflection</Bundle-Name>
-							<Bundle-SymbolicName>${project.groupId}.${project.artifactId}</Bundle-SymbolicName>
-							<Bundle-Vendor>Burningwave</Bundle-Vendor>
-							<Bundle-Description>${project.description}</Bundle-Description>
-							<Bundle-Version>${project.version}</Bundle-Version>
-							<Require-Capability>osgi.ee;filter:="(&amp;(osgi.ee=JavaSE)(version=1.8))"</Require-Capability>
-							<Import-Package>io.github.toolfactory.jvm;version="9.4.2";resolution:=optional,org.burningwave.jvm;version="8.10.1";resolution:=optional</Import-Package>
-							<Export-Package>org.burningwave.function;version="1.0.0",org.burningwave.reflection;version="1.0.0";uses:="io.github.toolfactory.jvm.function.template,org.burningwave,org.burningwave.function",org.burningwave;version="1.0.0";uses:="org.burningwave.function"</Export-Package>
-							<Multi-Release>true</Multi-Release>
-						</manifestEntries>
-					</archive>
+                    <archive>
+                        <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+                    </archive>
 				</configuration>
 			</plugin>
 			<plugin>
