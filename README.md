@@ -90,7 +90,7 @@ public class FieldsHandler {
     public static void execute() {
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         Collection<Class<?>> loadedClasses = Fields.INSTANCE.get(classLoader, "classes");
-        values = Fields.getAll(classLoader);
+        values = Fields.INSTANCE.getAll(classLoader);
         
         Object obj = new Object() {
             volatile List<Object> objectValue;
