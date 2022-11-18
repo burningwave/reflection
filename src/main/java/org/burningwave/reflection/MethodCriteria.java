@@ -29,13 +29,11 @@
 package org.burningwave.reflection;
 
 import java.lang.reflect.Method;
-import java.util.Map;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
 import org.burningwave.Criteria;
-import org.burningwave.function.TriPredicate;
 
 public class MethodCriteria extends ExecutableMemberCriteria<
 	Method, MethodCriteria, Criteria.TestContext<Method, MethodCriteria>
@@ -50,10 +48,6 @@ public class MethodCriteria extends ExecutableMemberCriteria<
 	}
 
 	public static MethodCriteria byScanUpTo(Predicate<Class<?>> predicate) {
-		return new MethodCriteria().scanUpTo(predicate);
-	}
-
-	public static MethodCriteria byScanUpTo(TriPredicate<Map<Class<?>, Class<?>>, Class<?>, Class<?>> predicate) {
 		return new MethodCriteria().scanUpTo(predicate);
 	}
 

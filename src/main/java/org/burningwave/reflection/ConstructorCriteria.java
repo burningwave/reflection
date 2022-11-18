@@ -29,12 +29,10 @@
 package org.burningwave.reflection;
 
 import java.lang.reflect.Constructor;
-import java.util.Map;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
 
 import org.burningwave.Criteria;
-import org.burningwave.function.TriPredicate;
 
 public class ConstructorCriteria extends ExecutableMemberCriteria<
 	Constructor<?>, ConstructorCriteria, Criteria.TestContext<Constructor<?>, ConstructorCriteria>
@@ -44,10 +42,6 @@ public class ConstructorCriteria extends ExecutableMemberCriteria<
 	}
 
 	public static ConstructorCriteria byScanUpTo(BiPredicate<Class<?>, Class<?>> predicate) {
-		return new ConstructorCriteria().scanUpTo(predicate);
-	}
-
-	public static ConstructorCriteria byScanUpTo(TriPredicate<Map<Class<?>, Class<?>>, Class<?>, Class<?>> predicate) {
 		return new ConstructorCriteria().scanUpTo(predicate);
 	}
 

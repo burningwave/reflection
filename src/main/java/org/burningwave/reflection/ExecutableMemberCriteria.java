@@ -32,7 +32,6 @@ import java.lang.reflect.Executable;
 import java.lang.reflect.Parameter;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 
@@ -57,18 +56,6 @@ public abstract class ExecutableMemberCriteria<
 		return (C)this;
 	}
 
-
-	public C parameter(final TriPredicate<Map<Class<?>, Class<?>>, Parameter[], Integer> predicate) {
-		this.predicate = concat(
-			this.predicate,
-			getPredicateWrapper(
-				(context, member) -> member.getParameters(),
-				(context, array, index) -> predicate.test(context.getCriteria().getUploadedClasses(), array, index)
-			)
-		);
-		return (C)this;
-	}
-
 	public C parameterType(final BiPredicate<Class<?>[], Integer> predicate) {
 		this.predicate = concat(
 			this.predicate,
@@ -80,16 +67,6 @@ public abstract class ExecutableMemberCriteria<
 		return (C)this;
 	}
 
-	public C parameterType(final TriPredicate<Map<Class<?>, Class<?>>, Class<?>[], Integer> predicate) {
-		this.predicate = concat(
-			this.predicate,
-			getPredicateWrapper(
-				(context, member) -> member.getParameterTypes(),
-				(context, array, index) -> predicate.test(context.getCriteria().getUploadedClasses(), array, index)
-			)
-		);
-		return (C)this;
-	}
 
 	public C parameterTypes(final Predicate<Class<?>[]> predicate) {
 		this.predicate = concat(
@@ -146,11 +123,7 @@ public abstract class ExecutableMemberCriteria<
 						}
 						Class<?>[] memberParameterTypes = Methods.INSTANCE.retrieveParameterTypes(member, argumentsClassesAsList);
 						if (argumentsClassesAsList.size() == memberParameterTypes.length) {
-							if (context.getCriteria().getClassSupplier() == null) {
-								return predicate.test(argumentsClassesAsList, memberParameterTypes, index);
-							} else {
-								return predicate.test(context.getCriteria().retrieveUploadedClasses(argumentsClasses), memberParameterTypes, index);
-							}
+							return predicate.test(argumentsClassesAsList, memberParameterTypes, index);
 						} else {
 							return false;
 						}

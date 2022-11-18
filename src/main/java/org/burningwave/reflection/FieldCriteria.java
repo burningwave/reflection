@@ -29,13 +29,11 @@
 package org.burningwave.reflection;
 
 import java.lang.reflect.Field;
-import java.util.Map;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
 import org.burningwave.Criteria;
-import org.burningwave.function.TriPredicate;
 
 
 public class FieldCriteria extends MemberCriteria<
@@ -46,10 +44,6 @@ public class FieldCriteria extends MemberCriteria<
 	}
 
 	public static FieldCriteria byScanUpTo(BiPredicate<Class<?>, Class<?>> predicate) {
-		return new FieldCriteria().scanUpTo(predicate);
-	}
-
-	public static FieldCriteria byScanUpTo(TriPredicate<Map<Class<?>, Class<?>>, Class<?>, Class<?>> predicate) {
 		return new FieldCriteria().scanUpTo(predicate);
 	}
 

@@ -31,7 +31,6 @@ package org.burningwave.reflection;
 
 import java.lang.reflect.Member;
 import java.util.Collection;
-import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
@@ -42,8 +41,8 @@ import org.burningwave.function.TriPredicate;
 
 
 @SuppressWarnings("unchecked")
-public abstract class MemberCriteria<M extends Member, C extends MemberCriteria<M, C, T>, T extends Criteria.TestContext<M, C>> extends CriteriaWithClassElementsSupplyingSupport<M, C, T> {
-	private static Member[] EMPTY_MEMBERS_ARRAY = new Member[]{};
+public abstract class MemberCriteria<M extends Member, C extends MemberCriteria<M, C, T>, T extends Criteria.TestContext<M, C>> extends Criteria<M, C, T> {
+	private static Member[] EMPTY_MEMBERS_ARRAY = {};
 	Predicate<Collection<M>> resultPredicate;
 	TriPredicate<C, Class<?>, Class<?>> scanUpToPredicate;
 	TriPredicate<C, Class<?>, Class<?>> skipClassPredicate;
@@ -81,17 +80,6 @@ public abstract class MemberCriteria<M extends Member, C extends MemberCriteria<
 		} else {
 			skipClassPredicate = (criteria, initialClassFrom, currentClass) ->
 				predicate.test(initialClassFrom, currentClass);
-		}
-		return (C)this;
-	}
-
-	public C skip(TriPredicate<Map<Class<?>, Class<?>>, Class<?>, Class<?>> predicate) {
-		if (skipClassPredicate != null) {
-			skipClassPredicate = skipClassPredicate.or((criteria, initialClassFrom, currentClass) ->
-				predicate.test(criteria.getUploadedClasses(), initialClassFrom, currentClass)
-			);
-		} else {
-			skipClassPredicate = (criteria, initialClassFrom, currentClass) -> predicate.test(criteria.getUploadedClasses(), initialClassFrom, currentClass);
 		}
 		return (C)this;
 	}
@@ -152,8 +140,4 @@ public abstract class MemberCriteria<M extends Member, C extends MemberCriteria<
 		return (C)this;
 	}
 
-	C scanUpTo(TriPredicate<Map<Class<?>, Class<?>>, Class<?>, Class<?>> predicate) {
-		this.scanUpToPredicate = (criteria, initialClassFrom, currentClass) -> predicate.test(criteria.getUploadedClasses(), initialClassFrom, currentClass);
-		return (C)this;
-	}
 }
