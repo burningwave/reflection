@@ -38,10 +38,11 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
 
+import org.burningwave.BufferHandler;
 import org.burningwave.Criteria;
 
 @SuppressWarnings("unchecked")
-abstract class CriteriaWithClassElementsSupplyingSupport<
+public abstract class CriteriaWithClassElementsSupplyingSupport<
 	E,
 	C extends CriteriaWithClassElementsSupplyingSupport<E, C, T>,
 	T extends Criteria.TestContext<E, C>
@@ -112,6 +113,20 @@ abstract class CriteriaWithClassElementsSupplyingSupport<
 	Function<Class<?>, Class<?>> getClassSupplier() {
 		return classSupplier;
 	}
+
+	Map<Class<?>, byte[]> getLoadedBytecode() {
+		if (loadedBytecode == null) {
+			synchronized (this) {
+				Map<Class<?>, byte[]> loadedBytecode = new HashMap<>();
+				for (Class<?> cls : classesToBeUploaded) {
+					loadedBytecode.put(cls, BufferHandler.INSTANCE.toByteArray(byteCodeSupplier.apply(cls)));
+				}
+				this.loadedBytecode = loadedBytecode;
+			}
+		}
+		return loadedBytecode;
+	}
+
 
 	Map<Class<?>, Class<?>> getUploadedClasses() {
 		if (uploadedClasses == null) {
