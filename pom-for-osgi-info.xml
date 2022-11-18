@@ -512,6 +512,11 @@
 								</goals>
 							</execution>
 						</executions>
+						<configuration>
+					        <excludes>
+					            <exclude>**/*org/burningwave/reflection/ConsulterHandlerForJava7.class</exclude>
+					        </excludes>
+					    </configuration>
 					</plugin>
 				</plugins>
 			</build>
