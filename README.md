@@ -11,8 +11,8 @@
 
 [![Supported JVM](https://img.shields.io/badge/supported%20JVM-8%2C%209+%20(19)-blueviolet)](https://github.com/burningwave/reflection/actions/runs/3500618943)
 
-[![Coveralls github branch](https://img.shields.io/coveralls/github/burningwave/reflection/master)](https://coveralls.io/github/burningwave/core?branch=master)
-[![GitHub open issues](https://img.shields.io/github/issues/burningwave/core)](https://github.com/burningwave/reflection/issues)
+[![Coveralls github branch](https://img.shields.io/coveralls/github/burningwave/reflection/main)](https://coveralls.io/github/burningwave/reflection?branch=main)
+[![GitHub open issues](https://img.shields.io/github/issues/burningwave/reflection)](https://github.com/burningwave/reflection/issues)
 [![GitHub closed issues](https://img.shields.io/github/issues-closed/burningwave/reflection)](https://github.com/burningwave/reflection/issues?q=is%3Aissue+is%3Aclosed)
 
 [![Repository dependents](https://badgen.net/github/dependents-repo/burningwave/reflection)](https://github.com/burningwave/reflection/network/dependents)
