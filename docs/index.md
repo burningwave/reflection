@@ -20,7 +20,7 @@
 
 Extracted from [**Burningwave Core**](https://burningwave.github.io/core/) is an advanced, free and open source reflection engine.
 
-The main difference with Burningwave Core's reflection engine is that use of the [JVM driver](https://burningwave.github.io/jvm-driver/) is optional and disabled by default. 
+The main difference with Burningwave Core's reflection engine is that **the use of the [JVM driver](https://burningwave.github.io/jvm-driver/) is optional and disabled by default**. 
 
 And now we will see:
 * [including Burningwave Reflection in your project](#Including-Burningwave-Reflection-in-your-project)
@@ -49,7 +49,7 @@ To use Burningwave Reflection as a Java module you need to add the following to 
 ```java
 requires org.burningwave.reflection;
 ```
-### Enabling the [JVM driver](https://burningwave.github.io/jvm-driver/)
+### Enabling the JVM driver
 By default the JVM Driver is disabled and to enable it you need to add the following to your pom:
 ```xml
 <dependency>
