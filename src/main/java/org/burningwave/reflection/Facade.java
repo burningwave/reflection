@@ -69,16 +69,19 @@ public class Facade {
 			}
 		}
 		MethodHandles.Lookup consulter = MethodHandles.lookup();
-		MethodHandle privateLookupIn = Executor.getFirst(() ->
-			consulter.findStatic(
-				MethodHandles.class, "privateLookupIn",
-				MethodType.methodType(MethodHandles.Lookup.class, Class.class, MethodHandles.Lookup.class)
-			), () ->
-			consulter.findSpecial(
-				MethodHandles.Lookup.class, "in",
-				MethodType.methodType(MethodHandles.Lookup.class, Class.class),
-				MethodHandles.Lookup.class
-			)
+		MethodHandle privateLookupIn = Executor.getFirst(
+			() ->
+				consulter.findStatic(
+					MethodHandles.class,
+					"privateLookupIn",
+					MethodType.methodType(MethodHandles.Lookup.class, Class.class, MethodHandles.Lookup.class)
+				),
+			() ->
+				consulter.findStatic(
+					Class.forName(Facade.class.getPackage().getName() + ".ConsulterHandlerForJava7"),
+					"privateLookupIn",
+					MethodType.methodType(MethodHandles.Lookup.class, Class.class, MethodHandles.Lookup.class)
+				)
 		);
 		Facade.privateLookupIn = (clazz, cons) ->
 			(MethodHandles.Lookup)privateLookupIn.invokeWithArguments(cons, clazz);

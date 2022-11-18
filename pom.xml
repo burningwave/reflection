@@ -82,7 +82,9 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<target_version>8</target_version>
 		<javadocExecutable.relativePath>bin/javadoc</javadocExecutable.relativePath>
+		<!--
 		<skipTests>true</skipTests>
+		-->
 		<project.test.testSuite>AllExceptHeavyTestsSuite</project.test.testSuite>
 		<project.test.includes>**/${project.test.testSuite}.java</project.test.includes>
 		<project.test.excludes>**/*Test.java</project.test.excludes>
