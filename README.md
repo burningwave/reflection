@@ -4,7 +4,7 @@
 <img src="https://raw.githubusercontent.com/burningwave/burningwave.github.io/main/logo.png" alt="logo.png" height="180px" align="right"/>
 </a>
 
-[![Maven Central with version prefix filter](https://img.shields.io/maven-central/v/org.burningwave/core/1)](https://maven-badges.herokuapp.com/maven-central/org.burningwave/core/)
+[![Maven Central with version prefix filter](https://img.shields.io/maven-central/v/org.burningwave/reflection/1)](https://maven-badges.herokuapp.com/maven-central/org.burningwave/reflection/)
 [![GitHub](https://img.shields.io/github/license/burningwave/reflection)](https://github.com/burningwave/reflection/blob/master/LICENSE)
 
 [![Platforms](https://img.shields.io/badge/platforms-Windows%2C%20Mac%20OS%2C%20Linux-orange)](https://github.com/burningwave/reflection/actions/runs/3488993539)
@@ -120,14 +120,10 @@ import org.burningwave.core.classes.MethodCriteria;
 public class MethodsHandler {
     
     public static void execute() {
-        //Invoking method by using reflection
         Methods.invoke(System.out, "println", "Hello World");
-
-        //Invoking static method by using MethodHandle
-        Integer number = Methods.INSTANCE.invokeStaticDirect(Integer.class, "valueOf", 1);
+        Integer number = Methods.INSTANCE.invokeStatic(Integer.class, "valueOf", 1);
         
-        //Invoking method by using MethodHandle
-        Methods.INSTANCE.invokeDirect(System.out, "println", number);
+        Methods.INSTANCE.invoke(System.out, "println", number);
         
         //Filtering and obtaining a MethodHandle reference
         MethodHandle methodHandle = Methods.INSTANCE.findFirstDirectHandle(
@@ -176,8 +172,7 @@ public class ConstructorsHandler {
         //Invoking constructor by using reflection
         MemoryClassLoader classLoader = Constructors.newInstanceOf(MemoryClassLoader.class, Thread.currentThread().getContextClassLoader());
         
-        //Invoking constructor with a null parameter value by using MethodHandle
-        classLoader = Constructors.newInstanceDirectOf(MemoryClassLoader.class, null);
+        classLoader = Constructors.newInstanceOf(MemoryClassLoader.class, null);
     }
     
     public static void main(String[] args) {
