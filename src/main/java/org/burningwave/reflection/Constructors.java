@@ -52,6 +52,78 @@ public class Constructors extends Members.Handler.OfExecutable<Constructor<?>, C
 
 	private Constructors() {}
 
+	public Collection<Constructor<?>> findAllAndMakeThemAccessible(
+		Class<?> targetClass
+	) {
+		String cacheKey = getCacheKey(targetClass, "all constructors");
+		ClassLoader targetClassClassLoader = Classes.INSTANCE.getClassLoader(targetClass);
+		Collection<Constructor<?>> members = Cache.INSTANCE.uniqueKeyForConstructors.getOrUploadIfAbsent(
+			targetClassClassLoader, cacheKey, () -> {
+				return findAllAndApply(
+					ConstructorCriteria.withoutConsideringParentClasses(), targetClass, (member) ->
+					setAccessible(member, true)
+				);
+			}
+		);
+		return members;
+	}
+
+	public Collection<Constructor<?>> findAllAndMakeThemAccessible(
+		Class<?> targetClass,
+		Class<?>... inputParameterTypesOrSubTypes
+	) {
+		String cacheKey = getCacheKey(targetClass, "all constructors by input parameters assignable from", inputParameterTypesOrSubTypes);
+		ClassLoader targetClassClassLoader = Classes.INSTANCE.getClassLoader(targetClass);
+		return Cache.INSTANCE.uniqueKeyForConstructors.getOrUploadIfAbsent(targetClassClassLoader, cacheKey, () -> {
+			ConstructorCriteria criteria = ConstructorCriteria.withoutConsideringParentClasses().parameterTypesAreAssignableFrom(inputParameterTypesOrSubTypes);
+			if (inputParameterTypesOrSubTypes != null && inputParameterTypesOrSubTypes.length == 0) {
+				criteria.or().parameter((parameters, idx) -> parameters.length == 1 && parameters[0].isVarArgs());
+			}
+			return findAllAndApply(
+				criteria,
+				targetClass,
+				(member) ->
+					setAccessible(member, true)
+			);
+		});
+	}
+
+	public MethodHandle findDirectHandle(Class<?> targetClass, Class<?>... inputParameterTypesOrSubTypes) {
+		return findDirectHandleBox(targetClass, inputParameterTypesOrSubTypes).getHandler();
+	}
+
+	public Constructor<?> findFirstAndMakeItAccessible(Class<?> targetClass, Class<?>... inputParameterTypesOrSubTypes) {
+		Collection<Constructor<?>> members = findAllAndMakeThemAccessible(targetClass, inputParameterTypesOrSubTypes);
+		if (members.size() == 1) {
+			return members.stream().findFirst().get();
+		} else if (members.size() > 1) {
+			Collection<Constructor<?>> membersThatMatch = searchForExactMatch(members, inputParameterTypesOrSubTypes);
+			if (!membersThatMatch.isEmpty()) {
+				return membersThatMatch.stream().findFirst().get();
+			}
+			return members.stream().findFirst().get();
+		}
+		return null;
+	}
+
+	public Constructor<?> findOneAndMakeItAccessible(Class<?> targetClass, Class<?>... argumentTypes) {
+		Collection<Constructor<?>> members = findAllAndMakeThemAccessible(targetClass, argumentTypes);
+		if (members.size() == 1) {
+			return members.stream().findFirst().get();
+		} else if (members.size() > 1) {
+			Collection<Constructor<?>> membersThatMatch = searchForExactMatch(members, argumentTypes);
+			if (membersThatMatch.size() == 1) {
+				return membersThatMatch.stream().findFirst().get();
+			}
+			Throwables.INSTANCE.throwException(
+				"Found more than one of constructor with argument types {} in {} class",
+				String.join(", ", Arrays.asList(argumentTypes).stream().map(cls -> cls.getName()).collect(Collectors.toList())),
+				targetClass.getName()
+			);
+		}
+		return null;
+	}
+
 	public <T> T newInstanceOf(
 		Class<?> targetClass,
 		Object... arguments
@@ -86,76 +158,21 @@ public class Constructors extends Members.Handler.OfExecutable<Constructor<?>, C
 
 	}
 
-	public Constructor<?> findOneAndMakeItAccessible(Class<?> targetClass, Class<?>... argumentTypes) {
-		Collection<Constructor<?>> members = findAllAndMakeThemAccessible(targetClass, argumentTypes);
-		if (members.size() == 1) {
-			return members.stream().findFirst().get();
-		} else if (members.size() > 1) {
-			Collection<Constructor<?>> membersThatMatch = searchForExactMatch(members, argumentTypes);
-			if (membersThatMatch.size() == 1) {
-				return membersThatMatch.stream().findFirst().get();
-			}
-			Throwables.INSTANCE.throwException(
-				"Found more than one of constructor with argument types {} in {} class",
-				String.join(", ", Arrays.asList(argumentTypes).stream().map(cls -> cls.getName()).collect(Collectors.toList())),
-				targetClass.getName()
-			);
-		}
-		return null;
-	}
-
-	public Constructor<?> findFirstAndMakeItAccessible(Class<?> targetClass, Class<?>... inputParameterTypesOrSubTypes) {
-		Collection<Constructor<?>> members = findAllAndMakeThemAccessible(targetClass, inputParameterTypesOrSubTypes);
-		if (members.size() == 1) {
-			return members.stream().findFirst().get();
-		} else if (members.size() > 1) {
-			Collection<Constructor<?>> membersThatMatch = searchForExactMatch(members, inputParameterTypesOrSubTypes);
-			if (!membersThatMatch.isEmpty()) {
-				return membersThatMatch.stream().findFirst().get();
-			}
-			return members.stream().findFirst().get();
-		}
-		return null;
-	}
-
-	public Collection<Constructor<?>> findAllAndMakeThemAccessible(
-		Class<?> targetClass,
-		Class<?>... inputParameterTypesOrSubTypes
-	) {
-		String cacheKey = getCacheKey(targetClass, "all constructors by input parameters assignable from", inputParameterTypesOrSubTypes);
-		ClassLoader targetClassClassLoader = Classes.INSTANCE.getClassLoader(targetClass);
-		return Cache.INSTANCE.uniqueKeyForConstructors.getOrUploadIfAbsent(targetClassClassLoader, cacheKey, () -> {
-			ConstructorCriteria criteria = ConstructorCriteria.withoutConsideringParentClasses().parameterTypesAreAssignableFrom(inputParameterTypesOrSubTypes);
-			if (inputParameterTypesOrSubTypes != null && inputParameterTypesOrSubTypes.length == 0) {
-				criteria.or().parameter((parameters, idx) -> parameters.length == 1 && parameters[0].isVarArgs());
-			}
-			return findAllAndApply(
-				criteria,
-				targetClass,
-				(member) ->
-					setAccessible(member, true)
-			);
-		});
-	}
-
-	public Collection<Constructor<?>> findAllAndMakeThemAccessible(
-		Class<?> targetClass
-	) {
-		String cacheKey = getCacheKey(targetClass, "all constructors");
-		ClassLoader targetClassClassLoader = Classes.INSTANCE.getClassLoader(targetClass);
-		Collection<Constructor<?>> members = Cache.INSTANCE.uniqueKeyForConstructors.getOrUploadIfAbsent(
-			targetClassClassLoader, cacheKey, () -> {
-				return findAllAndApply(
-					ConstructorCriteria.withoutConsideringParentClasses(), targetClass, (member) ->
-					setAccessible(member, true)
-				);
-			}
+	@Override
+	MethodHandle retrieveMethodHandle(MethodHandles.Lookup consulter, Constructor<?> constructor) throws NoSuchMethodException, IllegalAccessException {
+		return consulter.findConstructor(
+			constructor.getDeclaringClass(),
+			MethodType.methodType(void.class, constructor.getParameterTypes())
 		);
-		return members;
 	}
 
-	public MethodHandle findDirectHandle(Class<?> targetClass, Class<?>... inputParameterTypesOrSubTypes) {
-		return findDirectHandleBox(targetClass, inputParameterTypesOrSubTypes).getHandler();
+	String retrieveNameForCaching(Class<?> cls) {
+		return Classes.INSTANCE.retrieveSimpleName(cls.getName());
+	}
+
+	@Override
+	String retrieveNameForCaching(Constructor<?> constructor) {
+		return retrieveNameForCaching(constructor.getDeclaringClass());
 	}
 
 	private Members.Handler.OfExecutable.Box<Constructor<?>> findDirectHandleBox(Class<?> targetClass, Class<?>... inputParameterTypesOrSubTypes) {
@@ -171,22 +188,5 @@ public class Constructors extends Members.Handler.OfExecutable<Constructor<?>, C
 			);
 		}
 		return entry;
-	}
-
-	@Override
-	MethodHandle retrieveMethodHandle(MethodHandles.Lookup consulter, Constructor<?> constructor) throws NoSuchMethodException, IllegalAccessException {
-		return consulter.findConstructor(
-			constructor.getDeclaringClass(),
-			MethodType.methodType(void.class, constructor.getParameterTypes())
-		);
-	}
-
-	@Override
-	String retrieveNameForCaching(Constructor<?> constructor) {
-		return retrieveNameForCaching(constructor.getDeclaringClass());
-	}
-
-	String retrieveNameForCaching(Class<?> cls) {
-		return Classes.INSTANCE.retrieveSimpleName(cls.getName());
 	}
 }

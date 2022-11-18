@@ -44,44 +44,34 @@ import org.burningwave.function.TriPredicate;
 @SuppressWarnings("unchecked")
 public abstract class MemberCriteria<M extends Member, C extends MemberCriteria<M, C, T>, T extends Criteria.TestContext<M, C>> extends CriteriaWithClassElementsSupplyingSupport<M, C, T> {
 	private static Member[] EMPTY_MEMBERS_ARRAY = new Member[]{};
+	Predicate<Collection<M>> resultPredicate;
 	TriPredicate<C, Class<?>, Class<?>> scanUpToPredicate;
 	TriPredicate<C, Class<?>, Class<?>> skipClassPredicate;
-	Predicate<Collection<M>> resultPredicate;
 
 
-	BiPredicate<Class<?>, Class<?>> getScanUpToPredicate() {
-		return scanUpToPredicate != null?
-			(initialClassFrom, currentClass) -> this.scanUpToPredicate.test((C)this, initialClassFrom, currentClass):
-			(initialClassFrom, currentClass) -> currentClass.getName().equals(Object.class.getName()
+	@Override
+	public C createCopy() {
+		C copy = super.createCopy();
+		copy.scanUpToPredicate = this.scanUpToPredicate;
+		copy.skipClassPredicate = this.skipClassPredicate;
+		copy.resultPredicate = this.resultPredicate;
+		return copy;
+	}
+
+	public C name(final Predicate<String> predicate) {
+		this.predicate = concat(
+			this.predicate,
+			(context, member) ->
+				predicate.test(member.getName())
 		);
-	}
-
-	C scanUpTo(Predicate<Class<?>> predicate) {
-		this.scanUpToPredicate = (criteria, initialClassFrom, currentClass) -> predicate.test(currentClass);
 		return (C)this;
 	}
 
-	C scanUpTo(BiPredicate<Class<?>, Class<?>> predicate) {
-		this.scanUpToPredicate = (criteria, initialClassFrom, currentClass) -> predicate.test(initialClassFrom, currentClass);
+	public C result(Predicate<Collection<M>> resultPredicate) {
+		this.resultPredicate = resultPredicate;
 		return (C)this;
 	}
 
-
-	C scanUpTo(TriPredicate<Map<Class<?>, Class<?>>, Class<?>, Class<?>> predicate) {
-		this.scanUpToPredicate = (criteria, initialClassFrom, currentClass) -> predicate.test(criteria.getUploadedClasses(), initialClassFrom, currentClass);
-		return (C)this;
-	}
-
-	public C skip(TriPredicate<Map<Class<?>, Class<?>>, Class<?>, Class<?>> predicate) {
-		if (skipClassPredicate != null) {
-			skipClassPredicate = skipClassPredicate.or((criteria, initialClassFrom, currentClass) ->
-				predicate.test(criteria.getUploadedClasses(), initialClassFrom, currentClass)
-			);
-		} else {
-			skipClassPredicate = (criteria, initialClassFrom, currentClass) -> predicate.test(criteria.getUploadedClasses(), initialClassFrom, currentClass);
-		}
-		return (C)this;
-	}
 
 	public C skip(BiPredicate<Class<?>, Class<?>> predicate) {
 		if (skipClassPredicate != null) {
@@ -95,13 +85,15 @@ public abstract class MemberCriteria<M extends Member, C extends MemberCriteria<
 		return (C)this;
 	}
 
-	public C result(Predicate<Collection<M>> resultPredicate) {
-		this.resultPredicate = resultPredicate;
+	public C skip(TriPredicate<Map<Class<?>, Class<?>>, Class<?>, Class<?>> predicate) {
+		if (skipClassPredicate != null) {
+			skipClassPredicate = skipClassPredicate.or((criteria, initialClassFrom, currentClass) ->
+				predicate.test(criteria.getUploadedClasses(), initialClassFrom, currentClass)
+			);
+		} else {
+			skipClassPredicate = (criteria, initialClassFrom, currentClass) -> predicate.test(criteria.getUploadedClasses(), initialClassFrom, currentClass);
+		}
 		return (C)this;
-	}
-
-	Predicate<Collection<M>> getResultPredicate() {
-		return this.resultPredicate;
 	}
 
 	@Override
@@ -130,30 +122,38 @@ public abstract class MemberCriteria<M extends Member, C extends MemberCriteria<
 		return newCriteria;
 	}
 
-	public C name(final Predicate<String> predicate) {
-		this.predicate = concat(
-			this.predicate,
-			(context, member) ->
-				predicate.test(member.getName())
-		);
-		return (C)this;
-	}
-
-	@Override
-	public C createCopy() {
-		C copy = super.createCopy();
-		copy.scanUpToPredicate = this.scanUpToPredicate;
-		copy.skipClassPredicate = this.skipClassPredicate;
-		copy.resultPredicate = this.resultPredicate;
-		return copy;
-	}
-
-	abstract Function<Class<?>, M[]> getMembersSupplierFunction();
-
 	BiFunction<Class<?>, Class<?>, M[]> getMembersSupplier() {
 		return (initialClassFrom, currentClass) ->
 			!(skipClassPredicate != null && skipClassPredicate.test((C)this, initialClassFrom, currentClass)) ?
 				getMembersSupplierFunction().apply(currentClass) :
 				(M[]) EMPTY_MEMBERS_ARRAY;
+	}
+
+	abstract Function<Class<?>, M[]> getMembersSupplierFunction();
+
+	Predicate<Collection<M>> getResultPredicate() {
+		return this.resultPredicate;
+	}
+
+	BiPredicate<Class<?>, Class<?>> getScanUpToPredicate() {
+		return scanUpToPredicate != null?
+			(initialClassFrom, currentClass) -> this.scanUpToPredicate.test((C)this, initialClassFrom, currentClass):
+			(initialClassFrom, currentClass) -> currentClass.getName().equals(Object.class.getName()
+		);
+	}
+
+	C scanUpTo(BiPredicate<Class<?>, Class<?>> predicate) {
+		this.scanUpToPredicate = (criteria, initialClassFrom, currentClass) -> predicate.test(initialClassFrom, currentClass);
+		return (C)this;
+	}
+
+	C scanUpTo(Predicate<Class<?>> predicate) {
+		this.scanUpToPredicate = (criteria, initialClassFrom, currentClass) -> predicate.test(currentClass);
+		return (C)this;
+	}
+
+	C scanUpTo(TriPredicate<Map<Class<?>, Class<?>>, Class<?>, Class<?>> predicate) {
+		this.scanUpToPredicate = (criteria, initialClassFrom, currentClass) -> predicate.test(criteria.getUploadedClasses(), initialClassFrom, currentClass);
+		return (C)this;
 	}
 }

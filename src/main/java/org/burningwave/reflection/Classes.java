@@ -40,9 +40,9 @@ public class Classes {
 		INSTANCE = new Classes();
 	}
 
-	Field[] emtpyFieldsArray;
-	Method[] emptyMethodsArray;
 	Constructor<?>[] emptyConstructorsArray;
+	Method[] emptyMethodsArray;
+	Field[] emtpyFieldsArray;
 
 
 	private Classes() {
@@ -58,42 +58,6 @@ public class Classes {
 			clsLoader = ClassLoader.getSystemClassLoader();
 		}
 		return clsLoader;
-	}
-
-	public <T> Class<T> retrieveFrom(Object object) {
-		return object != null ? (Class<T>)object.getClass() : null;
-	}
-
-	public Class<?>[] retrieveFrom(Object... objects) {
-		Class<?>[] classes = null;
-		if (objects != null) {
-			classes = new Class[objects.length];
-			for (int i = 0; i < objects.length; i++) {
-				if (objects[i] != null) {
-					classes[i] = retrieveFrom(objects[i]);
-				}
-			}
-		} else {
-			classes = new Class[]{null};
-		}
-		return classes;
-	}
-
-	public String retrieveSimpleName(String className) {
-		String classSimpleName = null;
-		if (className.contains(("."))) {
-			classSimpleName = className.substring(className.lastIndexOf(".")+1);
-		} else {
-			classSimpleName = className;
-		}
-		if (classSimpleName.contains("$")) {
-			classSimpleName = classSimpleName.substring(classSimpleName.lastIndexOf("$")+1);
-		}
-		return classSimpleName;
-	}
-
-	public boolean isAssignableFrom(Class<?> cls_01, Class<?> cls_02) {
-		return getClassOrWrapper(cls_01).isAssignableFrom(getClassOrWrapper(cls_02));
 	}
 
 	public Class<?> getClassOrWrapper(Class<?> cls) {
@@ -119,12 +83,48 @@ public class Classes {
 		return cls;
 	}
 
+	public boolean isAssignableFrom(Class<?> cls_01, Class<?> cls_02) {
+		return getClassOrWrapper(cls_01).isAssignableFrom(getClassOrWrapper(cls_02));
+	}
+
+	public <T> Class<T> retrieveFrom(Object object) {
+		return object != null ? (Class<T>)object.getClass() : null;
+	}
+
+	public Class<?>[] retrieveFrom(Object... objects) {
+		Class<?>[] classes = null;
+		if (objects != null) {
+			classes = new Class[objects.length];
+			for (int i = 0; i < objects.length; i++) {
+				if (objects[i] != null) {
+					classes[i] = retrieveFrom(objects[i]);
+				}
+			}
+		} else {
+			classes = new Class[]{null};
+		}
+		return classes;
+	}
+
 	public String retrievePackageName(String className) {
 		String packageName = null;
 		if (className.contains(("."))) {
 			packageName = className.substring(0, className.lastIndexOf("."));
 		}
 		return packageName;
+	}
+
+	public String retrieveSimpleName(String className) {
+		String classSimpleName = null;
+		if (className.contains(("."))) {
+			classSimpleName = className.substring(className.lastIndexOf(".")+1);
+		} else {
+			classSimpleName = className;
+		}
+		if (classSimpleName.contains("$")) {
+			classSimpleName = classSimpleName.substring(classSimpleName.lastIndexOf("$")+1);
+		}
+		return classSimpleName;
 	}
 
 }

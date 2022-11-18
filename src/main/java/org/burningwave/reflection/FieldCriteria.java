@@ -46,21 +46,6 @@ public class FieldCriteria extends MemberCriteria<
 		super();
 	}
 
-	public static FieldCriteria withoutConsideringParentClasses() {
-		return byScanUpTo((lastClassInHierarchy, currentScannedClass) -> {
-            return lastClassInHierarchy.equals(currentScannedClass);
-        });
-	}
-
-	public static FieldCriteria forEntireClassHierarchy() {
-		return new FieldCriteria();
-	}
-
-	@Override
-	Function<Class<?>, Field[]> getMembersSupplierFunction() {
-		return Facade.INSTANCE::getDeclaredFields;
-	}
-
 	public static FieldCriteria byScanUpTo(BiPredicate<Class<?>, Class<?>> predicate) {
 		return new FieldCriteria().scanUpTo(predicate);
 	}
@@ -69,6 +54,15 @@ public class FieldCriteria extends MemberCriteria<
 		return new FieldCriteria().scanUpTo(predicate);
 	}
 
+	public static FieldCriteria forEntireClassHierarchy() {
+		return new FieldCriteria();
+	}
+
+	public static FieldCriteria withoutConsideringParentClasses() {
+		return byScanUpTo((lastClassInHierarchy, currentScannedClass) -> {
+            return lastClassInHierarchy.equals(currentScannedClass);
+        });
+	}
 
 	public FieldCriteria type(final Predicate<Class<?>> predicate) {
 		this.predicate = concat(
@@ -76,5 +70,11 @@ public class FieldCriteria extends MemberCriteria<
 			(context, member) -> predicate.test(member.getType())
 		);
 		return this;
+	}
+
+
+	@Override
+	Function<Class<?>, Field[]> getMembersSupplierFunction() {
+		return Facade.INSTANCE::getDeclaredFields;
 	}
 }

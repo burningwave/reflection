@@ -54,8 +54,50 @@ import org.burningwave.function.ThrowingTriFunction;
 
 @SuppressWarnings("unchecked")
 public class Facade {
+	public static final class Configuration {
+
+		public static final class Key {
+
+			private static final String JVM_DRIVER_ENABLED = "jvm-driver.enabled";
+
+			private Key() {}
+		}
+
+		private static boolean freezed;
+		private static Map<String, Object> values;
+
+		static {
+			values = new LinkedHashMap<>();
+			putConfigurationValue(Configuration.Key.JVM_DRIVER_ENABLED, true);
+		}
+
+		private Configuration() {}
+
+		public static void disableOriginalObjectRetriever() {
+			putConfigurationValue(Configuration.Key.JVM_DRIVER_ENABLED, false);
+		}
+
+		private static Map<String, Object> freezeAndGet() {
+			if (!freezed) {
+				values = Collections.unmodifiableMap(Configuration.values);
+			}
+			return values;
+		}
+
+		private static void putConfigurationValue(String key, Object value) {
+			try {
+				values.put(key, value);
+			} catch (UnsupportedOperationException exc) {
+				throw new UnsupportedOperationException("Cannot add configuration value after that the " + Facade.class.getSimpleName() + " has been initialized");
+			}
+		}
+
+	}
+
 	public static final Facade INSTANCE;
+
 	private static Object driver;
+
 	private static ThrowingBiFunction<MethodHandles.Lookup, Class<?>, MethodHandles.Lookup, Throwable> privateLookupIn;
 
 	static {
@@ -85,16 +127,16 @@ public class Facade {
 			(MethodHandles.Lookup)privateLookupIn.invokeWithArguments(cons, clazz);
 		INSTANCE = new Facade();
 	}
-
-	private Collection<ThrowingFunction<Class<?>, Field[], Throwable>> fieldRetrievers;
-	private Collection<ThrowingFunction<Class<?>, Method[], Throwable>> methodRetrievers;
-	private Collection<ThrowingFunction<Class<?>, Constructor<?>[], Throwable>> constructorRetrievers;
 	private Collection<ThrowingBiConsumer<AccessibleObject, Boolean, Throwable>> accessibleSetters;
+	private Collection<ThrowingBiFunction<Constructor<?>, Object[], Object, Throwable>> constructorInvokers;
+	private Collection<ThrowingFunction<Class<?>, Constructor<?>[], Throwable>> constructorRetrievers;
+	private Collection<ThrowingBiFunction<MethodHandles.Lookup, Class<?>, MethodHandles.Lookup, Throwable>> consulterRetrievers;
+	private Collection<ThrowingFunction<Class<?>, Field[], Throwable>> fieldRetrievers;
 	private Collection<ThrowingBiFunction<Object, Field, Object, Throwable>> fieldValueRetrievers;
 	private Collection<ThrowingTriConsumer<Object, Field, Object, Throwable>> fieldValueSetters;
 	private Collection<ThrowingTriFunction<Object, Method, Object[], Object, Throwable>> methodInvokers;
-	private Collection<ThrowingBiFunction<Constructor<?>, Object[], Object, Throwable>> constructorInvokers;
-	private Collection<ThrowingBiFunction<MethodHandles.Lookup, Class<?>, MethodHandles.Lookup, Throwable>> consulterRetrievers;
+
+	private Collection<ThrowingFunction<Class<?>, Method[], Throwable>> methodRetrievers;
 
 	private Facade() {
 		fieldRetrievers = new ArrayList<>();
@@ -180,11 +222,15 @@ public class Facade {
 		);
 	}
 
-	public Field[] getDeclaredFields(Class<?> clazz) {
+	public <R> Map.Entry<MethodHandles.Lookup, R> executeWithConsulter(Class<?> cls, ThrowingFunction<MethodHandles.Lookup, R, ? extends Throwable> executor) {
 		Throwable exception = null;
-		for (ThrowingFunction<Class<?>, Field[], Throwable> fieldRetriever : fieldRetrievers) {
+		MethodHandles.Lookup consulter = null;
+		for (ThrowingBiFunction<Lookup, Class<?>, Lookup, Throwable> consulterRetriever : consulterRetrievers) {
 			try {
-				return fieldRetriever.apply(clazz);
+				return new AbstractMap.SimpleEntry<>(
+					consulter = consulterRetriever.apply(consulter, cls),
+					executor.apply(consulter)
+				);
 			} catch (Throwable exc) {
 				exception = exc;
 			}
@@ -204,6 +250,18 @@ public class Facade {
 		return Throwables.INSTANCE.throwException(exception);
 	}
 
+	public Field[] getDeclaredFields(Class<?> clazz) {
+		Throwable exception = null;
+		for (ThrowingFunction<Class<?>, Field[], Throwable> fieldRetriever : fieldRetrievers) {
+			try {
+				return fieldRetriever.apply(clazz);
+			} catch (Throwable exc) {
+				exception = exc;
+			}
+		}
+		return Throwables.INSTANCE.throwException(exception);
+	}
+
 	public Method[] getDeclaredMethods(Class<?> clazz) {
 		Throwable exception = null;
 		for (ThrowingFunction<Class<?>, Method[], Throwable> methodRetriever : methodRetrievers) {
@@ -216,15 +274,11 @@ public class Facade {
 		return Throwables.INSTANCE.throwException(exception);
 	}
 
-	public <R> Map.Entry<MethodHandles.Lookup, R> executeWithConsulter(Class<?> cls, ThrowingFunction<MethodHandles.Lookup, R, ? extends Throwable> executor) {
+	public <T> T getFieldValue(Object target, Field field) {
 		Throwable exception = null;
-		MethodHandles.Lookup consulter = null;
-		for (ThrowingBiFunction<Lookup, Class<?>, Lookup, Throwable> consulterRetriever : consulterRetrievers) {
+		for (ThrowingBiFunction<Object, Field, Object, Throwable> fieldValueRetriever : fieldValueRetrievers) {
 			try {
-				return new AbstractMap.SimpleEntry<>(
-					consulter = consulterRetriever.apply(consulter, cls),
-					executor.apply(consulter)
-				);
+				return (T)fieldValueRetriever.apply(target, field);
 			} catch (Throwable exc) {
 				exception = exc;
 			}
@@ -232,12 +286,14 @@ public class Facade {
 		return Throwables.INSTANCE.throwException(exception);
 	}
 
-	public <A extends AccessibleObject> A setAccessible(A accessibleObject, boolean flag) {
+	public <T> T invoke(Object target, Method method, Object[] params) {
+		if (params == null) {
+			params = new Object[] {null};
+		}
 		Throwable exception = null;
-		for (ThrowingBiConsumer<AccessibleObject, Boolean, Throwable> accessibleSetter : accessibleSetters) {
+		for (ThrowingTriFunction<Object, Method, Object[], Object, Throwable> methodInvoker : methodInvokers) {
 			try {
-				accessibleSetter.accept(accessibleObject, flag);
-				return accessibleObject;
+				return (T)methodInvoker.apply(target, method, params);
 			} catch (Throwable exc) {
 				exception = exc;
 			}
@@ -260,11 +316,12 @@ public class Facade {
 		return Throwables.INSTANCE.throwException(exception);
 	}
 
-	public <T> T getFieldValue(Object target, Field field) {
+	public <A extends AccessibleObject> A setAccessible(A accessibleObject, boolean flag) {
 		Throwable exception = null;
-		for (ThrowingBiFunction<Object, Field, Object, Throwable> fieldValueRetriever : fieldValueRetrievers) {
+		for (ThrowingBiConsumer<AccessibleObject, Boolean, Throwable> accessibleSetter : accessibleSetters) {
 			try {
-				return (T)fieldValueRetriever.apply(target, field);
+				accessibleSetter.accept(accessibleObject, flag);
+				return accessibleObject;
 			} catch (Throwable exc) {
 				exception = exc;
 			}
@@ -283,61 +340,6 @@ public class Facade {
 			}
 		}
 		Throwables.INSTANCE.throwException(exception);
-	}
-
-	public <T> T invoke(Object target, Method method, Object[] params) {
-		if (params == null) {
-			params = new Object[] {null};
-		}
-		Throwable exception = null;
-		for (ThrowingTriFunction<Object, Method, Object[], Object, Throwable> methodInvoker : methodInvokers) {
-			try {
-				return (T)methodInvoker.apply(target, method, params);
-			} catch (Throwable exc) {
-				exception = exc;
-			}
-		}
-		return Throwables.INSTANCE.throwException(exception);
-	}
-
-	public static final class Configuration {
-
-		private Configuration() {}
-
-		private static Map<String, Object> values;
-		private static boolean freezed;
-
-		public static final class Key {
-
-			private Key() {}
-
-			private static final String JVM_DRIVER_ENABLED = "jvm-driver.enabled";
-		}
-
-		static {
-			values = new LinkedHashMap<>();
-			putConfigurationValue(Configuration.Key.JVM_DRIVER_ENABLED, true);
-		}
-
-		public static void disableOriginalObjectRetriever() {
-			putConfigurationValue(Configuration.Key.JVM_DRIVER_ENABLED, false);
-		}
-
-		private static void putConfigurationValue(String key, Object value) {
-			try {
-				values.put(key, value);
-			} catch (UnsupportedOperationException exc) {
-				throw new UnsupportedOperationException("Cannot add configuration value after that the " + Facade.class.getSimpleName() + " has been initialized");
-			}
-		}
-
-		private static Map<String, Object> freezeAndGet() {
-			if (!freezed) {
-				values = Collections.unmodifiableMap(Configuration.values);
-			}
-			return values;
-		}
-
 	}
 
 }

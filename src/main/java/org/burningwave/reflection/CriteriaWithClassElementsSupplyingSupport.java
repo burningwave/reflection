@@ -47,28 +47,43 @@ public abstract class CriteriaWithClassElementsSupplyingSupport<
 	C extends CriteriaWithClassElementsSupplyingSupport<E, C, T>,
 	T extends Criteria.TestContext<E, C>
 > extends Criteria<E, C, T>  {
-	Map<Class<?>[], List<Class<?>>> uploadedClassesMap;
+	Map<Class<?>[], List<ByteBuffer>> byteCodeForClasses;
+	Function<Class<?>, ByteBuffer> byteCodeSupplier;
 	List<Class<?>> classesToBeUploaded;
-	Map<Class<?>, Class<?>> uploadedClasses;
 	Function<Class<?>, Class<?>> classSupplier;
 
-	Map<Class<?>[], List<ByteBuffer>> byteCodeForClasses;
 	Map<Class<?>, byte[]> loadedBytecode;
-	Function<Class<?>, ByteBuffer> byteCodeSupplier;
+	Map<Class<?>, Class<?>> uploadedClasses;
+	Map<Class<?>[], List<Class<?>>> uploadedClassesMap;
 
 	CriteriaWithClassElementsSupplyingSupport() {
 		byteCodeForClasses = new ConcurrentHashMap<>();
 	}
 
-	C init(Function<Class<?>, Class<?>> classSupplier, Function<Class<?>, ByteBuffer> byteCodeSupplier) {
-		if (classSupplier != null) {
-			this.classSupplier = classSupplier;
-			this.uploadedClassesMap = new HashMap<>();
+	@Override
+	public C createCopy() {
+		C copy = super.createCopy();
+		if (this.classesToBeUploaded != null) {
+			copy.useClasses(this.classesToBeUploaded);
 		}
-		if (byteCodeSupplier != null) {
-			this.byteCodeSupplier = byteCodeSupplier;
-			this.byteCodeForClasses = new HashMap<>();
+		return copy;
+	}
+
+	public C useClasses(Class<?>... classes) {
+		if (classesToBeUploaded == null) {
+			classesToBeUploaded = new CopyOnWriteArrayList<>();
 		}
+		for (Class<?> cls : classes) {
+			classesToBeUploaded.add(cls);
+		}
+		return (C)this;
+	}
+
+	public C useClasses(Collection<Class<?>> classes) {
+		if (classesToBeUploaded == null) {
+			classesToBeUploaded = new CopyOnWriteArrayList<>();
+		}
+		classesToBeUploaded.addAll(classes);
 		return (C)this;
 	}
 
@@ -87,20 +102,31 @@ public abstract class CriteriaWithClassElementsSupplyingSupport<
 		return newCriteria;
 	}
 
-	Function<Class<?>, Class<?>> getClassSupplier() {
-		return classSupplier;
-	}
-
 	Function<Class<?>, ByteBuffer> getByteCodeSupplier() {
 		return byteCodeSupplier;
 	}
 
-	Class<?> retrieveClass(Class<?> cls) {
-		if (classSupplier != null) {
-			return classSupplier.apply(cls);
-		}
-		return cls;
+	List<Class<?>> getClassesToBeUploaded() {
+		return classesToBeUploaded;
 	}
+
+	Function<Class<?>, Class<?>> getClassSupplier() {
+		return classSupplier;
+	}
+
+	Map<Class<?>, byte[]> getLoadedBytecode() {
+		if (loadedBytecode == null) {
+			synchronized (this) {
+				Map<Class<?>, byte[]> loadedBytecode = new HashMap<>();
+				for (Class<?> cls : classesToBeUploaded) {
+					loadedBytecode.put(cls, BufferHandler.INSTANCE.toByteArray(byteCodeSupplier.apply(cls)));
+				}
+				this.loadedBytecode = loadedBytecode;
+			}
+		}
+		return loadedBytecode;
+	}
+
 
 	Map<Class<?>, Class<?>> getUploadedClasses() {
 		if (uploadedClasses == null) {
@@ -117,58 +143,16 @@ public abstract class CriteriaWithClassElementsSupplyingSupport<
 		return uploadedClasses;
 	}
 
-	List<Class<?>> getClassesToBeUploaded() {
-		return classesToBeUploaded;
-	}
-
-	public C useClasses(Class<?>... classes) {
-		if (classesToBeUploaded == null) {
-			classesToBeUploaded = new CopyOnWriteArrayList<>();
+	C init(Function<Class<?>, Class<?>> classSupplier, Function<Class<?>, ByteBuffer> byteCodeSupplier) {
+		if (classSupplier != null) {
+			this.classSupplier = classSupplier;
+			this.uploadedClassesMap = new HashMap<>();
 		}
-		for (Class<?> cls : classes) {
-			classesToBeUploaded.add(cls);
+		if (byteCodeSupplier != null) {
+			this.byteCodeSupplier = byteCodeSupplier;
+			this.byteCodeForClasses = new HashMap<>();
 		}
 		return (C)this;
-	}
-
-
-	public C useClasses(Collection<Class<?>> classes) {
-		if (classesToBeUploaded == null) {
-			classesToBeUploaded = new CopyOnWriteArrayList<>();
-		}
-		classesToBeUploaded.addAll(classes);
-		return (C)this;
-	}
-
-	List<Class<?>> retrieveUploadedClasses(Class<?>... classes) {
-		List<Class<?>> uploadedClasses = uploadedClassesMap.get(classes);
-		if (uploadedClasses == null) {
-			synchronized(uploadedClassesMap) {
-				if ((uploadedClasses = uploadedClassesMap.get(classes)) == null) {
-					uploadedClasses = new CopyOnWriteArrayList<>();
-					for (Class<?> element : classes) {
-						uploadedClasses.add(element.isPrimitive()? element :classSupplier.apply(element));
-					}
-					uploadedClassesMap.put(
-						classes, uploadedClasses
-					);
-				}
-			}
-		}
-		return uploadedClasses;
-	}
-
-	Map<Class<?>, byte[]> getLoadedBytecode() {
-		if (loadedBytecode == null) {
-			synchronized (this) {
-				Map<Class<?>, byte[]> loadedBytecode = new HashMap<>();
-				for (Class<?> cls : classesToBeUploaded) {
-					loadedBytecode.put(cls, BufferHandler.INSTANCE.toByteArray(byteCodeSupplier.apply(cls)));
-				}
-				this.loadedBytecode = loadedBytecode;
-			}
-		}
-		return loadedBytecode;
 	}
 
 	List<ByteBuffer> retrieveByteCode(C criteria, Class<?>[] classes) {
@@ -188,13 +172,29 @@ public abstract class CriteriaWithClassElementsSupplyingSupport<
 		return byteCode;
 	}
 
-	@Override
-	public C createCopy() {
-		C copy = super.createCopy();
-		if (this.classesToBeUploaded != null) {
-			copy.useClasses(this.classesToBeUploaded);
+	Class<?> retrieveClass(Class<?> cls) {
+		if (classSupplier != null) {
+			return classSupplier.apply(cls);
 		}
-		return copy;
+		return cls;
+	}
+
+	List<Class<?>> retrieveUploadedClasses(Class<?>... classes) {
+		List<Class<?>> uploadedClasses = uploadedClassesMap.get(classes);
+		if (uploadedClasses == null) {
+			synchronized(uploadedClassesMap) {
+				if ((uploadedClasses = uploadedClassesMap.get(classes)) == null) {
+					uploadedClasses = new CopyOnWriteArrayList<>();
+					for (Class<?> element : classes) {
+						uploadedClasses.add(element.isPrimitive()? element :classSupplier.apply(element));
+					}
+					uploadedClassesMap.put(
+						classes, uploadedClasses
+					);
+				}
+			}
+		}
+		return uploadedClasses;
 	}
 
 }

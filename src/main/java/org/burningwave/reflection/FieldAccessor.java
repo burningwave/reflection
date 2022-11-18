@@ -48,19 +48,20 @@ import io.github.toolfactory.jvm.function.template.ThrowingBiFunction;
 
 @SuppressWarnings("unchecked")
 public abstract class FieldAccessor {
+
 	public final static FieldAccessor INSTANCE;
+
+	private final static String REG_EXP_FOR_INDEXES_OF_INDEXED_FIELDS = "\\[([a-zA-Z0-9]*)\\]";
+	private final static String REG_EXP_FOR_SIMPLE_FIELDS = "([a-zA-Z\\$\\_\\-0-9]*)(\\[*.*)";
 
 	static {
 		INSTANCE = new ByFieldOrByMethod();
 	}
-
-	private final static String REG_EXP_FOR_SIMPLE_FIELDS = "([a-zA-Z\\$\\_\\-0-9]*)(\\[*.*)";
-	private final static String REG_EXP_FOR_INDEXES_OF_INDEXED_FIELDS = "\\[([a-zA-Z0-9]*)\\]";
-
 	private List<ThrowingBiFunction<Object, String, Object, Throwable>> fieldRetrievers;
 	private List<ThrowingFunction<Object[], Boolean, Throwable>> fieldSetters;
-	private Pattern simpleFieldSearcher;
 	private Pattern indexesSearcherForIndexedField;
+
+	private Pattern simpleFieldSearcher;
 
 	FieldAccessor() {
 		this.fieldRetrievers = getFieldRetrievers();
@@ -68,10 +69,6 @@ public abstract class FieldAccessor {
 		this.simpleFieldSearcher = Pattern.compile(REG_EXP_FOR_SIMPLE_FIELDS);
 		this.indexesSearcherForIndexedField = Pattern.compile(REG_EXP_FOR_INDEXES_OF_INDEXED_FIELDS);
 	}
-
-	abstract List<ThrowingFunction<Object[], Boolean, Throwable>> getFieldSetters();
-
-	abstract List<ThrowingBiFunction<Object, String, Object, Throwable>> getFieldRetrievers();
 
 	public <T> T get(Object obj, String path) {
 		if (path == null) {
@@ -83,6 +80,61 @@ public abstract class FieldAccessor {
 			objToReturn = getField(j != 0 ? objToReturn : obj, pathSegments[j]);
 		}
 		return (T)objToReturn;
+	}
+
+	public void set(Object obj, String path, Object value) {
+		if (path == null) {
+			throw new IllegalArgumentException("Field path cannot be null");
+		}
+		if (path.trim().isEmpty()) {
+			return;
+		}
+		Object target =
+				path.contains(".")?
+						get(obj, path.substring(0, path.lastIndexOf("."))) :
+							obj;
+		String targetPathSegment =
+				path.contains(".")?
+						path.substring(path.lastIndexOf(".") + 1, path.length()) :
+							path;
+		setField(target, targetPathSegment, value);
+	}
+
+	abstract List<ThrowingBiFunction<Object, String, Object, Throwable>> getFieldRetrievers();
+
+	abstract List<ThrowingFunction<Object[], Boolean, Throwable>> getFieldSetters();
+
+	Object retrieveFieldByDirectAccess(Object target, String pathSegment) throws IllegalAccessException {
+		if (pathSegment.trim().isEmpty()) {
+			return target;
+		}
+		return Fields.INSTANCE.get(target, pathSegment);
+	}
+
+	Boolean setFieldByDirectAccess(Object target, String pathSegment, Object value) throws IllegalAccessException {
+		Matcher matcher = simpleFieldSearcher.matcher(pathSegment);
+		matcher.find();
+		if (matcher.group(2).isEmpty()) {
+			Field field = Fields.INSTANCE.findOneAndMakeItAccessible(target.getClass(), matcher.group(1));
+			Fields.INSTANCE.set(target, field, value);
+		} else {
+			if (target.getClass().isArray() || target instanceof Map || target instanceof Collection) {
+				setInIndexedField(target, matcher.group(2), value);
+			} else {
+				Field field = Fields.INSTANCE.findOneAndMakeItAccessible(target.getClass(), matcher.group(1));
+				setInIndexedField(field.get(target), matcher.group(2), value);
+			}
+		}
+		return Boolean.TRUE;
+	}
+
+
+	private <T> int convertAndCheckIndex(Collection<T> collection, String indexAsString) {
+		int index = Integer.valueOf(indexAsString);
+		if (collection.size() < index) {
+			throw new IndexOutOfBoundsException(("Illegal index "+ indexAsString +", collection size " + collection.size()));
+		}
+		return index;
 	}
 
 	private Object getField(Object obj, String pathSegment) {
@@ -111,53 +163,10 @@ public abstract class FieldAccessor {
 	}
 
 	private void manageGetFieldExceptions(List<Throwable> exceptions) {
-		if (exceptions.size() > 0) {
-			String message = "";
-			for (Throwable exception : exceptions) {
-				message += exception.getMessage() + "\n";
-			}
-			message = message.substring(0, message.length() - 1);
-			if (exceptions.size() == fieldRetrievers.size()) {
-				//TODO aggiungere logging
-				//ManagedLoggerRepository.logError(getClass()::getName, message.toString());
-				Throwables.INSTANCE.throwException(exceptions.iterator().next());
-			} else {
-				//logDebug("Warning: " + message);
-			}
+		if (exceptions.size() == fieldRetrievers.size()) {
+			Throwables.INSTANCE.throwException(exceptions.iterator().next());
 		}
 	}
-
-	public void set(Object obj, String path, Object value) {
-		if (path == null) {
-			throw new IllegalArgumentException("Field path cannot be null");
-		}
-		if (path.trim().isEmpty()) {
-			return;
-		}
-		Object target =
-				path.contains(".")?
-						get(obj, path.substring(0, path.lastIndexOf("."))) :
-							obj;
-		String targetPathSegment =
-				path.contains(".")?
-						path.substring(path.lastIndexOf(".") + 1, path.length()) :
-							path;
-		setField(target, targetPathSegment, value);
-	}
-
-	private void setField(Object target, String pathSegment, Object value) {
-		List<Throwable> exceptions = new ArrayList<>();
-		for (ThrowingFunction<Object[], Boolean, Throwable> setter : fieldSetters) {
-			try {
-				setter.apply(new Object[] {target, pathSegment, value});
-				break;
-			} catch (Throwable exc) {
-				exceptions.add(exc);
-			}
-		}
-		manageGetFieldExceptions(exceptions);
-	}
-
 
 	private <T> Object retrieveFromIndexedField(Object fieldValue, String indexes) {
 		Matcher matcher = indexesSearcherForIndexedField.matcher(indexes);
@@ -195,33 +204,17 @@ public abstract class FieldAccessor {
 		return fieldValue;
 	}
 
-	Object retrieveFieldByDirectAccess(Object target, String pathSegment) throws IllegalAccessException {
-		if (pathSegment.trim().isEmpty()) {
-			return target;
+	private void setField(Object target, String pathSegment, Object value) {
+		List<Throwable> exceptions = new ArrayList<>();
+		for (ThrowingFunction<Object[], Boolean, Throwable> setter : fieldSetters) {
+			try {
+				setter.apply(new Object[] {target, pathSegment, value});
+				break;
+			} catch (Throwable exc) {
+				exceptions.add(exc);
+			}
 		}
-		return Fields.INSTANCE.get(target, pathSegment);
-	}
-
-	private <T> void setInIndexedField(Object fieldValue, String indexes, Object value) {
-		Matcher matcher = indexesSearcherForIndexedField.matcher(indexes);
-		int lastIndexOf = 0;
-		String index = null;
-		while (matcher.find()) {
-			index = matcher.group(1);
-			lastIndexOf = matcher.start();
-		}
-		Object targetObject = retrieveFromIndexedField(fieldValue, indexes.substring(0, lastIndexOf));
-		if (targetObject.getClass().isArray()) {
-			Array.set(targetObject, Integer.valueOf(index), value);
-		} else if (targetObject instanceof List) {
-			((List<T>)targetObject).set(Integer.valueOf(index), (T)value);
-		} else if (targetObject instanceof Map) {
-			((Map<String, T>)targetObject).put(index, (T)value);
-		} else if (targetObject instanceof Collection) {
-			setIndexedValue((Collection<T>) targetObject, index, value);
-		} else {
-			Throwables.INSTANCE.throwException("indexed property {} of type {} is not supporterd", fieldValue, fieldValue.getClass());
-		}
+		manageGetFieldExceptions(exceptions);
 	}
 
 	private <T> void setIndexedValue(Collection<T> collection, String index, Object value) {
@@ -244,29 +237,26 @@ public abstract class FieldAccessor {
 		}
 	}
 
-	private <T> int convertAndCheckIndex(Collection<T> collection, String indexAsString) {
-		int index = Integer.valueOf(indexAsString);
-		if (collection.size() < index) {
-			throw new IndexOutOfBoundsException(("Illegal index "+ indexAsString +", collection size " + collection.size()));
+	private <T> void setInIndexedField(Object fieldValue, String indexes, Object value) {
+		Matcher matcher = indexesSearcherForIndexedField.matcher(indexes);
+		int lastIndexOf = 0;
+		String index = null;
+		while (matcher.find()) {
+			index = matcher.group(1);
+			lastIndexOf = matcher.start();
 		}
-		return index;
-	}
-
-	Boolean setFieldByDirectAccess(Object target, String pathSegment, Object value) throws IllegalAccessException {
-		Matcher matcher = simpleFieldSearcher.matcher(pathSegment);
-		matcher.find();
-		if (matcher.group(2).isEmpty()) {
-			Field field = Fields.INSTANCE.findOneAndMakeItAccessible(target.getClass(), matcher.group(1));
-			Fields.INSTANCE.set(target, field, value);
+		Object targetObject = retrieveFromIndexedField(fieldValue, indexes.substring(0, lastIndexOf));
+		if (targetObject.getClass().isArray()) {
+			Array.set(targetObject, Integer.valueOf(index), value);
+		} else if (targetObject instanceof List) {
+			((List<T>)targetObject).set(Integer.valueOf(index), (T)value);
+		} else if (targetObject instanceof Map) {
+			((Map<String, T>)targetObject).put(index, (T)value);
+		} else if (targetObject instanceof Collection) {
+			setIndexedValue((Collection<T>) targetObject, index, value);
 		} else {
-			if (target.getClass().isArray() || target instanceof Map || target instanceof Collection) {
-				setInIndexedField(target, matcher.group(2), value);
-			} else {
-				Field field = Fields.INSTANCE.findOneAndMakeItAccessible(target.getClass(), matcher.group(1));
-				setInIndexedField(field.get(target), matcher.group(2), value);
-			}
+			Throwables.INSTANCE.throwException("indexed property {} of type {} is not supporterd", fieldValue, fieldValue.getClass());
 		}
-		return Boolean.TRUE;
 	}
 
 	private static class ByFieldOrByMethod extends FieldAccessor {

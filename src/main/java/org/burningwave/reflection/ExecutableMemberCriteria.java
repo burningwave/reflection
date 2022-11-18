@@ -46,6 +46,51 @@ public abstract class ExecutableMemberCriteria<
 	T extends Criteria.TestContext<E, C>
 > extends MemberCriteria<E, C, T> {
 
+	public C parameter(final BiPredicate<Parameter[], Integer> predicate) {
+		this.predicate = concat(
+			this.predicate,
+			getPredicateWrapper(
+				(criteria, member) -> member.getParameters(),
+				(criteria, array, index) -> predicate.test(array, index)
+			)
+		);
+		return (C)this;
+	}
+
+
+	public C parameter(final TriPredicate<Map<Class<?>, Class<?>>, Parameter[], Integer> predicate) {
+		this.predicate = concat(
+			this.predicate,
+			getPredicateWrapper(
+				(context, member) -> member.getParameters(),
+				(context, array, index) -> predicate.test(context.getCriteria().getUploadedClasses(), array, index)
+			)
+		);
+		return (C)this;
+	}
+
+	public C parameterType(final BiPredicate<Class<?>[], Integer> predicate) {
+		this.predicate = concat(
+			this.predicate,
+			getPredicateWrapper(
+				(criteria, member) -> member.getParameterTypes(),
+				(criteria, array, index) -> predicate.test(array, index)
+			)
+		);
+		return (C)this;
+	}
+
+	public C parameterType(final TriPredicate<Map<Class<?>, Class<?>>, Class<?>[], Integer> predicate) {
+		this.predicate = concat(
+			this.predicate,
+			getPredicateWrapper(
+				(context, member) -> member.getParameterTypes(),
+				(context, array, index) -> predicate.test(context.getCriteria().getUploadedClasses(), array, index)
+			)
+		);
+		return (C)this;
+	}
+
 	public C parameterTypes(final Predicate<Class<?>[]> predicate) {
 		this.predicate = concat(
 			this.predicate,
@@ -53,7 +98,6 @@ public abstract class ExecutableMemberCriteria<
 		);
 		return (C)this;
 	}
-
 
 	public C parameterTypesAreAssignableFrom(Class<?>... argumentsClasses) {
 		return parameterTypesMatch(
@@ -63,6 +107,11 @@ public abstract class ExecutableMemberCriteria<
 		);
 	}
 
+	public C parameterTypesAreAssignableFromTypesOf(Object... arguments) {
+		return parameterTypesAreAssignableFrom(Classes.INSTANCE.retrieveFrom(arguments));
+	}
+
+
 	public C parameterTypesExactlyMatch(Class<?>... argumentsClasses) {
 		return parameterTypesMatch(
 			(argClasses, paramTypes, innerIdx) ->
@@ -71,9 +120,6 @@ public abstract class ExecutableMemberCriteria<
 		);
 	}
 
-	public C parameterTypesAreAssignableFromTypesOf(Object... arguments) {
-		return parameterTypesAreAssignableFrom(Classes.INSTANCE.retrieveFrom(arguments));
-	}
 
 	public C parameterTypesExactlyMatchTypesOf(Object... arguments) {
 		return parameterTypesAreAssignableFrom(Classes.INSTANCE.retrieveFrom(arguments));
@@ -120,52 +166,6 @@ public abstract class ExecutableMemberCriteria<
 				parameters.length == 0
 			);
 		}
-		return (C)this;
-	}
-
-	public C parameterType(final BiPredicate<Class<?>[], Integer> predicate) {
-		this.predicate = concat(
-			this.predicate,
-			getPredicateWrapper(
-				(criteria, member) -> member.getParameterTypes(),
-				(criteria, array, index) -> predicate.test(array, index)
-			)
-		);
-		return (C)this;
-	}
-
-
-	public C parameterType(final TriPredicate<Map<Class<?>, Class<?>>, Class<?>[], Integer> predicate) {
-		this.predicate = concat(
-			this.predicate,
-			getPredicateWrapper(
-				(context, member) -> member.getParameterTypes(),
-				(context, array, index) -> predicate.test(context.getCriteria().getUploadedClasses(), array, index)
-			)
-		);
-		return (C)this;
-	}
-
-
-	public C parameter(final BiPredicate<Parameter[], Integer> predicate) {
-		this.predicate = concat(
-			this.predicate,
-			getPredicateWrapper(
-				(criteria, member) -> member.getParameters(),
-				(criteria, array, index) -> predicate.test(array, index)
-			)
-		);
-		return (C)this;
-	}
-
-	public C parameter(final TriPredicate<Map<Class<?>, Class<?>>, Parameter[], Integer> predicate) {
-		this.predicate = concat(
-			this.predicate,
-			getPredicateWrapper(
-				(context, member) -> member.getParameters(),
-				(context, array, index) -> predicate.test(context.getCriteria().getUploadedClasses(), array, index)
-			)
-		);
 		return (C)this;
 	}
 }
