@@ -73,7 +73,7 @@ public class Facade {
 
 		private Configuration() {}
 
-		public static void disableOriginalObjectRetriever() {
+		public static void disableDriver() {
 			putConfigurationValue(Configuration.Key.JVM_DRIVER_ENABLED, false);
 		}
 
@@ -220,6 +220,10 @@ public class Facade {
 		consulterRetrievers.add((consulter, clazz) ->
 			privateLookupIn.apply(consulter, clazz)
 		);
+	}
+
+	public <D> D getDriver() {
+		return (D)driver;
 	}
 
 	public <R> Map.Entry<MethodHandles.Lookup, R> executeWithConsulter(Class<?> cls, ThrowingFunction<MethodHandles.Lookup, R, ? extends Throwable> executor) {
