@@ -38,16 +38,16 @@ public class Throwables {
 
 	private Throwables() {}
 
-	public <T> T throwException(String exc, Object... placeHolderReplacements) {
+	public <T> T throwException(final String exc, final Object... placeHolderReplacements) {
         return throwException(Strings.INSTANCE.compile(exc, placeHolderReplacements));
     }
 
-	public <T> T throwException(Throwable exc) {
-		sneakyThrow(exc);
+	public <T> T throwException(final Throwable exc) {
+		//sneakyThrow(exc);
         return null;
     }
 
-    private <E extends Throwable> void sneakyThrow(Throwable exc) throws E {
+    private <E extends Throwable> void sneakyThrow(final Throwable exc) throws E {
         throw (E)exc;
     }
 
