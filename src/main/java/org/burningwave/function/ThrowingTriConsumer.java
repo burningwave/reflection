@@ -28,7 +28,6 @@
  */
 package org.burningwave.function;
 
-@FunctionalInterface
 public interface ThrowingTriConsumer<P0, P1, P2, E extends Throwable> {
 
     void accept(P0 p0, P1 p1, P2 p2) throws Throwable;
