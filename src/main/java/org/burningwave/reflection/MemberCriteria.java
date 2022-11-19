@@ -33,6 +33,7 @@ import java.util.Collection;
 
 import org.burningwave.Criteria;
 import org.burningwave.function.Function;
+import org.burningwave.function.Handler;
 import org.burningwave.function.ThrowingBiPredicate;
 import org.burningwave.function.ThrowingFunction;
 import org.burningwave.function.ThrowingPredicate;
@@ -79,12 +80,14 @@ public abstract class MemberCriteria<M extends Member, C extends MemberCriteria<
 
 	public C skip(ThrowingBiPredicate<Class<?>, Class<?>, ? extends Throwable> predicate) {
 		if (skipClassPredicate != null) {
-			skipClassPredicate = skipClassPredicate.or((ThrowingTriPredicate)new ThrowingTriPredicate<C, Class<?>, Class<?>, Throwable>() {
-				@Override
-				public boolean test(C criteria, Class<?> initialClassFrom, Class<?> currentClass) throws Throwable {
-					return predicate.test(initialClassFrom, currentClass);
+			skipClassPredicate = Handler.or(
+				skipClassPredicate,
+				(ThrowingTriPredicate)new ThrowingTriPredicate<C, Class<?>, Class<?>, Throwable>() {
+					@Override
+					public boolean test(C criteria, Class<?> initialClassFrom, Class<?> currentClass) throws Throwable {
+						return predicate.test(initialClassFrom, currentClass);
+					}
 				}
-			}
 			);
 		} else {
 			skipClassPredicate = new ThrowingTriPredicate<C, Class<?>, Class<?>, Throwable>() {
@@ -106,13 +109,13 @@ public abstract class MemberCriteria<M extends Member, C extends MemberCriteria<
 		newCriteria.scanUpToPredicate =
 			leftCriteria.scanUpToPredicate != null?
 				rightCriteria.scanUpToPredicate != null?
-					leftCriteria.scanUpToPredicate.or((ThrowingTriPredicate)rightCriteria.scanUpToPredicate) :
+					Handler.or(leftCriteria.scanUpToPredicate, (ThrowingTriPredicate)rightCriteria.scanUpToPredicate) :
 					null :
 				null;
 		newCriteria.skipClassPredicate =
 			leftCriteria.skipClassPredicate != null?
 				rightCriteria.skipClassPredicate != null?
-					leftCriteria.skipClassPredicate.or((ThrowingTriPredicate)rightCriteria.skipClassPredicate) :
+					Handler.or(leftCriteria.skipClassPredicate, (ThrowingTriPredicate)rightCriteria.skipClassPredicate) :
 					leftCriteria.skipClassPredicate :
 				rightCriteria.skipClassPredicate;
 //		newCriteria.resultPredicate =

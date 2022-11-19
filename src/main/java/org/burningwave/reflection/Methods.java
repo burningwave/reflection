@@ -42,7 +42,7 @@ import java.util.List;
 import org.burningwave.Strings;
 import org.burningwave.Throwables;
 import org.burningwave.function.Consumer;
-import org.burningwave.function.Executor;
+import org.burningwave.function.Handler;
 import org.burningwave.function.Function;
 import org.burningwave.function.Supplier;
 import org.burningwave.function.ThrowingBiPredicate;
@@ -167,7 +167,7 @@ public class Methods extends Members.Handler.OfExecutable<Method, MethodCriteria
 	}
 
 	public <T> T invoke(Object target, String methodName, Object... arguments) {
-		return Executor.getFirst(new ThrowingSupplier<T, RuntimeException>() {
+		return Handler.getFirst(new ThrowingSupplier<T, RuntimeException>() {
 			@Override
 			public T get() throws RuntimeException {
 				return (T)invokeDirect(
@@ -211,7 +211,7 @@ public class Methods extends Members.Handler.OfExecutable<Method, MethodCriteria
 	}
 
 	public 	<T> T invokeStatic(Class<?> targetClass, String methodName, Object... arguments) {
-		return Executor.getFirst(
+		return Handler.getFirst(
 			new ThrowingSupplier<T, RuntimeException>() {
 				@Override
 				public T get() throws RuntimeException {
@@ -364,7 +364,7 @@ public class Methods extends Members.Handler.OfExecutable<Method, MethodCriteria
 	}
 
 	private <T> T invoke(Class<?> targetClass, Object target, String methodName, ThrowingFunction<Method, T, Throwable> methodInvoker, Object... arguments) {
-		return Executor.get(new ThrowingSupplier<T, Throwable>() {
+		return Handler.get(new ThrowingSupplier<T, Throwable>() {
 			@Override
 			public T get() throws Throwable {
 				Method method = findFirstAndMakeItAccessible(targetClass, methodName, Classes.INSTANCE.retrieveFrom(arguments));
@@ -385,7 +385,7 @@ public class Methods extends Members.Handler.OfExecutable<Method, MethodCriteria
 	private <T> T invokeDirect(Class<?> targetClass, Object target, String methodName, Supplier<List<Object>> listSupplier,  Object... arguments) {
 		Class<?>[] argsType = Classes.INSTANCE.retrieveFrom(arguments);
 		Members.Handler.OfExecutable.Box<Method> methodHandleBox = findDirectHandleBox(targetClass, methodName, argsType);
-		return Executor.get(new ThrowingSupplier<T, Throwable>() {
+		return Handler.get(new ThrowingSupplier<T, Throwable>() {
 			@Override
 			public T get() throws Throwable {
 					Method method = methodHandleBox.getExecutable();

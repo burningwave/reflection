@@ -28,20 +28,8 @@
  */
 package org.burningwave.function;
 
-import java.util.Objects;
-
-
 public interface ThrowingBiFunction<P0, P1, R, E extends Throwable> {
 
     R apply(P0 p0, P1 p1) throws E;
 
-    default <V> ThrowingBiFunction<P0, P1, V, E> andThen(ThrowingFunction<? super R, ? extends V, ? extends E> after) {
-    	Objects.requireNonNull(after);
-    	return new ThrowingBiFunction<P0, P1, V, E>() {
-			@Override
-			public V apply(P0 p0, P1 p1) throws E {
-				return after.apply((R)ThrowingBiFunction.this.apply(p0, p1));
-			}
-		};
-    }
 }

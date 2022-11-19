@@ -29,6 +29,7 @@
 package org.burningwave;
 
 import org.burningwave.function.Function;
+import org.burningwave.function.Handler;
 import org.burningwave.function.ThrowingBiFunction;
 import org.burningwave.function.ThrowingBiPredicate;
 import org.burningwave.function.ThrowingPredicate;
@@ -78,7 +79,7 @@ public class Criteria<E, C extends Criteria<E, C, T>, T extends Criteria.TestCon
 		logicalOperator = new Function<ThrowingBiPredicate<T, E, ? extends Throwable>, ThrowingBiPredicate<T, E, ? extends Throwable>>() {
 			@Override
 			public ThrowingBiPredicate<T, E, ? extends Throwable> apply(ThrowingBiPredicate<T, E, ? extends Throwable> predicate) {
-				return Criteria.this.predicate.and((ThrowingBiPredicate)predicate);
+				return Handler.and(Criteria.this.predicate, (ThrowingBiPredicate)predicate);
 			}
 		};
 		return (C)this;
@@ -108,7 +109,7 @@ public class Criteria<E, C extends Criteria<E, C, T>, T extends Criteria.TestCon
 						public ThrowingBiPredicate<T, E, ? extends Throwable> apply (
 							ThrowingBiPredicate<? super T, ? super E, ? extends Throwable> otherPredicate
 						) {
-							return predicate.and((ThrowingBiPredicate)otherPredicate);
+							return Handler.and(predicate, (ThrowingBiPredicate)otherPredicate);
 						}
 					};
 				}
@@ -142,7 +143,7 @@ public class Criteria<E, C extends Criteria<E, C, T>, T extends Criteria.TestCon
 		logicalOperator = new Function<ThrowingBiPredicate<T, E, ? extends Throwable>, ThrowingBiPredicate<T, E, ? extends Throwable>>() {
 			@Override
 			public ThrowingBiPredicate<T, E, ? extends Throwable> apply(ThrowingBiPredicate<T, E, ? extends Throwable> predicate) {
-				return Criteria.this.predicate.or((ThrowingBiPredicate) predicate);
+				return Handler.or(Criteria.this.predicate, (ThrowingBiPredicate) predicate);
 			}
 		};
 		return (C)this;
@@ -172,7 +173,7 @@ public class Criteria<E, C extends Criteria<E, C, T>, T extends Criteria.TestCon
 						public ThrowingBiPredicate<T, E, ? extends Throwable> apply (
 							ThrowingBiPredicate<? super T, ? super E, ? extends Throwable> otherPredicate
 						) {
-							return predicate.or((ThrowingBiPredicate)otherPredicate);
+							return Handler.or(predicate, (ThrowingBiPredicate)otherPredicate);
 						}
 					};
 				}
@@ -413,7 +414,7 @@ public class Criteria<E, C extends Criteria<E, C, T>, T extends Criteria.TestCon
 			logicalOperator = new Function<ThrowingPredicate<E, ? extends Throwable>, ThrowingPredicate<E, ? extends Throwable>>() {
 				@Override
 				public ThrowingPredicate<E, ? extends Throwable> apply(ThrowingPredicate<E, ? extends Throwable> predicate) {
-					return Simple.this.predicate.and((ThrowingPredicate)predicate);
+					return Handler.and(Simple.this.predicate, (ThrowingPredicate)predicate);
 				}
 			};
 			return (C)this;
@@ -433,7 +434,7 @@ public class Criteria<E, C extends Criteria<E, C, T>, T extends Criteria.TestCon
 						public ThrowingPredicate<E, ? extends Throwable> apply(
 							ThrowingPredicate<? super E, ? extends Throwable> otherPredicate
 						) {
-							return predicate.and((ThrowingPredicate) otherPredicate);
+							return Handler.and(predicate, (ThrowingPredicate) otherPredicate);
 						}
 
 					};
@@ -465,7 +466,7 @@ public class Criteria<E, C extends Criteria<E, C, T>, T extends Criteria.TestCon
 			logicalOperator = new Function<ThrowingPredicate<E, ? extends Throwable>, ThrowingPredicate<E, ? extends Throwable>>() {
 				@Override
 				public ThrowingPredicate<E, ? extends Throwable> apply(ThrowingPredicate<E, ? extends Throwable> predicate) {
-					return Simple.this.predicate.or((ThrowingPredicate)predicate);
+					return Handler.or(Simple.this.predicate, (ThrowingPredicate)predicate);
 				}
 			};
 			return (C)this;
@@ -485,7 +486,7 @@ public class Criteria<E, C extends Criteria<E, C, T>, T extends Criteria.TestCon
 							public ThrowingPredicate<E, ? extends Throwable> apply(
 								ThrowingPredicate<? super E, ? extends Throwable> otherPredicate
 							) {
-								return predicate.or((ThrowingPredicate)otherPredicate);
+								return Handler.or(predicate, (ThrowingPredicate)otherPredicate);
 							}
 						};
 					}

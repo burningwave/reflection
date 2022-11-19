@@ -28,20 +28,9 @@
  */
 package org.burningwave.function;
 
-import java.util.Objects;
-
-
 public interface ThrowingConsumer<T, E extends Throwable> {
 
     void accept(T t) throws E;
-
-    default ThrowingConsumer<T, E> andThen(ThrowingConsumer<? super T, ? extends E> after) {
-        Objects.requireNonNull(after);
-        return new ThrowingConsumer<T, E>() {
-			@Override
-			public void accept(T t) throws E { ThrowingConsumer.this.accept(t); after.accept(t); }
-		};
-    }
 
 }
 

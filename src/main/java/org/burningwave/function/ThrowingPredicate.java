@@ -28,40 +28,9 @@
  */
 package org.burningwave.function;
 
-import java.util.Objects;
-
 public interface ThrowingPredicate<T, E extends Throwable> {
 
     boolean test(T t) throws E;
-
-    default ThrowingPredicate<T, E> and(ThrowingPredicate<? super T, ? extends E> other) {
-        Objects.requireNonNull(other);
-        return new ThrowingPredicate<T, E>() {
-			@Override
-			public boolean test(T t) throws E {
-				return ThrowingPredicate.this.test(t) && other.test(t);
-			}
-		};
-    }
-
-    default ThrowingPredicate<T, E> negate() {
-        return new ThrowingPredicate<T, E>() {
-			@Override
-			public boolean test(T t) throws E {
-				return !ThrowingPredicate.this.test(t);
-			}
-		};
-    }
-
-    default ThrowingPredicate<T, E> or(ThrowingPredicate<? super T, ? extends E> other) {
-        Objects.requireNonNull(other);
-        return new ThrowingPredicate<T, E>() {
-			@Override
-			public boolean test(T t) throws E {
-				return ThrowingPredicate.this.test(t) || other.test(t);
-			}
-		};
-    }
 
 }
 

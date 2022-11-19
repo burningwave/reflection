@@ -41,7 +41,7 @@ import java.util.List;
 import org.burningwave.Strings;
 import org.burningwave.Throwables;
 import org.burningwave.function.Consumer;
-import org.burningwave.function.Executor;
+import org.burningwave.function.Handler;
 import org.burningwave.function.Function;
 import org.burningwave.function.Supplier;
 import org.burningwave.function.ThrowingBiPredicate;
@@ -159,13 +159,13 @@ public class Constructors extends Members.Handler.OfExecutable<Constructor<?>, C
 		Class<?> targetClass,
 		Object... arguments
 	) {
-		return Executor.getFirst(
+		return Handler.getFirst(
 			new ThrowingSupplier<T, RuntimeException>() {
 				@Override
 				public T get() throws RuntimeException {
 					Class<?>[] argsType = Classes.INSTANCE.retrieveFrom(arguments);
 					Members.Handler.OfExecutable.Box<Constructor<?>> methodHandleBox = findDirectHandleBox(targetClass, argsType);
-					return Executor.get(new ThrowingSupplier<T, Throwable>() {
+					return Handler.get(new ThrowingSupplier<T, Throwable>() {
 						@Override
 						public T get() throws Throwable {
 								Constructor<?> ctor = methodHandleBox.getExecutable();

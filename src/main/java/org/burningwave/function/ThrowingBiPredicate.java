@@ -28,40 +28,8 @@
  */
 package org.burningwave.function;
 
-import java.util.Objects;
-
-
 public interface ThrowingBiPredicate<T, U, E extends Throwable> {
-
 
     boolean test(T t, U u) throws E;
 
-    default ThrowingBiPredicate<T, U, E> and(ThrowingBiPredicate<? super T, ? super U, ? extends E> other) {
-        Objects.requireNonNull(other);
-        return new ThrowingBiPredicate<T, U, E>() {
-			@Override
-			public boolean test(T t, U u) throws E {
-				return ThrowingBiPredicate.this.test(t, u) && other.test(t, u);
-			}
-		};
-    }
-
-    default ThrowingBiPredicate<T, U, E> negate() {
-        return new ThrowingBiPredicate<T, U, E>() {
-			@Override
-			public boolean test(T t, U u) throws E {
-				return !ThrowingBiPredicate.this.test(t, u);
-			}
-		};
-    }
-
-    default ThrowingBiPredicate<T, U, E> or(ThrowingBiPredicate<? super T, ? super U, ? extends E> other) {
-        Objects.requireNonNull(other);
-        return new ThrowingBiPredicate<T, U, E>() {
-			@Override
-			public boolean test(T t, U u) throws E {
-				return ThrowingBiPredicate.this.test(t, u) || other.test(t, u);
-			}
-		};
-    }
 }

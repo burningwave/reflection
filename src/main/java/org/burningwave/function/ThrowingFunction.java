@@ -28,35 +28,8 @@
  */
 package org.burningwave.function;
 
-
-import java.util.Objects;
-
-
 public interface ThrowingFunction<T, R, E extends Throwable> {
 
-
     R apply(T t) throws E;
-
-
-    default <V> ThrowingFunction<V, R, E> compose(ThrowingFunction<? super V, ? extends T, ? extends E> before) {
-        Objects.requireNonNull(before);
-        return new ThrowingFunction<V, R, E>() {
-			@Override
-			public R apply(V v) throws E {
-				return ThrowingFunction.this.apply(before.apply(v));
-			}
-		};
-    }
-
-
-    default <V> ThrowingFunction<T, V, E> andThen(ThrowingFunction<? super R, ? extends V, ? extends E> after) {
-        Objects.requireNonNull(after);
-        return new ThrowingFunction<T, V, E>() {
-			@Override
-			public V apply(T t) throws E {
-				return after.apply(ThrowingFunction.this.apply(t));
-			}
-		};
-    }
 
 }

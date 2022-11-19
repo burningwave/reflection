@@ -45,7 +45,7 @@ import java.util.Map;
 
 import org.burningwave.Strings;
 import org.burningwave.Throwables;
-import org.burningwave.function.Executor;
+import org.burningwave.function.Handler;
 import org.burningwave.function.ThrowingBiConsumer;
 import org.burningwave.function.ThrowingBiFunction;
 import org.burningwave.function.ThrowingFunction;
@@ -110,7 +110,7 @@ public class Facade {
 			}
 		}
 		MethodHandles.Lookup consulter = MethodHandles.lookup();
-		MethodHandle privateLookupIn = Executor.getFirst(
+		MethodHandle privateLookupIn = Handler.getFirst(
 			new ThrowingSupplier<MethodHandle, ReflectiveOperationException>() {
 				@Override
 				public MethodHandle get() throws ReflectiveOperationException {
