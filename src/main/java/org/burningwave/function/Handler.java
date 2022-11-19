@@ -35,20 +35,20 @@ import org.burningwave.Throwables;
 @SuppressWarnings("unchecked")
 public abstract class Handler {
 
-	public static <T, E extends Throwable> T get(ThrowingSupplier<T, ? extends E> supplier) {
+	public static <T, E extends Throwable> T get(final ThrowingSupplier<T, ? extends E> supplier) {
 		try {
 			return supplier.get();
-		} catch (Throwable exc) {
+		} catch (final Throwable exc) {
 			return Throwables.INSTANCE.throwException(exc);
 		}
 	}
 
-	public static <T, E extends Throwable> T getFirst(ThrowingSupplier<T, ? extends E>... suppliers) {
+	public static <T, E extends Throwable> T getFirst(final ThrowingSupplier<T, ? extends E>... suppliers) {
 		Throwable exception = null;
-		for (ThrowingSupplier<T, ? extends E> supplier : suppliers) {
+		for (final ThrowingSupplier<T, ? extends E> supplier : suppliers) {
 			try {
 				return supplier.get();
-			} catch (Throwable exc) {
+			} catch (final Throwable exc) {
 				exception = exc;
 			}
 		}
@@ -56,100 +56,100 @@ public abstract class Handler {
 	}
 
     public static <P0, P1, P2, E extends Throwable> ThrowingTriPredicate<P0, P1, P2, E> and(
-		ThrowingTriPredicate<P0, P1, P2, E> left, ThrowingTriPredicate<? super P0, ? super P1, ? super P2, ? extends E> right
+		final ThrowingTriPredicate<P0, P1, P2, E> left, final ThrowingTriPredicate<? super P0, ? super P1, ? super P2, ? extends E> right
 	) {
         return new ThrowingTriPredicate<P0, P1, P2, E>() {
 			@Override
-			public boolean test(P0 p0, P1 p1, P2 p2) throws E {
+			public boolean test(final P0 p0, final P1 p1, final P2 p2) throws E {
 				return left.test(p0, p1, p2) && right.test(p0, p1, p2);
 			}
 		};
     }
 
-    public static <P0, P1, P2, E extends Throwable> ThrowingTriPredicate<P0, P1, P2, E> negate(ThrowingTriPredicate<P0, P1, P2, E> predicate) {
+    public static <P0, P1, P2, E extends Throwable> ThrowingTriPredicate<P0, P1, P2, E> negate(final ThrowingTriPredicate<P0, P1, P2, E> predicate) {
         return new ThrowingTriPredicate<P0, P1, P2, E>() {
 			@Override
-			public boolean test(P0 p0, P1 p1, P2 p2) throws E {
+			public boolean test(final P0 p0, final P1 p1, final P2 p2) throws E {
 				return !predicate.test(p0, p1, p2);
 			}
 		};
     }
 
     public static <P0, P1, P2, E extends Throwable> ThrowingTriPredicate<P0, P1, P2, E> or(
-		ThrowingTriPredicate<P0, P1, P2, E> left, ThrowingTriPredicate<? super P0, ? super P1, ? super P2, ? extends E> right
+		final ThrowingTriPredicate<P0, P1, P2, E> left, final ThrowingTriPredicate<? super P0, ? super P1, ? super P2, ? extends E> right
 	) {
         return new ThrowingTriPredicate<P0, P1, P2, E>() {
 			@Override
-			public boolean test(P0 p0, P1 p1, P2 p2) throws E {
+			public boolean test(final P0 p0, final P1 p1, final P2 p2) throws E {
 				return left.test(p0, p1, p2) || right.test(p0, p1, p2);
 			}
 		};
     }
 
     public static <T, E extends Throwable> ThrowingPredicate<T, E> and(
-    	ThrowingPredicate<T, E> left,
-		ThrowingPredicate<? super T, ? extends E> right
+    	final ThrowingPredicate<T, E> left,
+		final ThrowingPredicate<? super T, ? extends E> right
 	) {
         return new ThrowingPredicate<T, E>() {
 			@Override
-			public boolean test(T t) throws E {
+			public boolean test(final T t) throws E {
 				return left.test(t) && right.test(t);
 			}
 		};
     }
 
-    public static <T, E extends Throwable> ThrowingPredicate<T, E> negate(ThrowingPredicate<T, E> predicate) {
+    public static <T, E extends Throwable> ThrowingPredicate<T, E> negate(final ThrowingPredicate<T, E> predicate) {
         return new ThrowingPredicate<T, E>() {
 			@Override
-			public boolean test(T t) throws E {
+			public boolean test(final T t) throws E {
 				return !predicate.test(t);
 			}
 		};
     }
 
     public static <T, E extends Throwable> ThrowingPredicate<T, E> or(
-    	ThrowingPredicate<T, E> left,
-		ThrowingPredicate<? super T, ? extends E> right
+    	final ThrowingPredicate<T, E> left,
+		final ThrowingPredicate<? super T, ? extends E> right
 	) {
         return new ThrowingPredicate<T, E>() {
 			@Override
-			public boolean test(T t) throws E {
+			public boolean test(final T t) throws E {
 				return left.test(t) || right.test(t);
 			}
 		};
     }
 
     public static <T, U, E extends Throwable> ThrowingBiPredicate<T, U, E> and(
-		ThrowingBiPredicate<T, U, E> left,
-		ThrowingBiPredicate<? super T, ? super U, ? extends E> right
+		final ThrowingBiPredicate<T, U, E> left,
+		final ThrowingBiPredicate<? super T, ? super U, ? extends E> right
 	) {
         Objects.requireNonNull(right);
         return new ThrowingBiPredicate<T, U, E>() {
 			@Override
-			public boolean test(T t, U u) throws E {
+			public boolean test(final T t, final U u) throws E {
 				return left.test(t, u) && right.test(t, u);
 			}
 		};
     }
 
     public static <T, U, E extends Throwable>  ThrowingBiPredicate<T, U, E> negate(
-		ThrowingBiPredicate<T, U, E> predicate
+		final ThrowingBiPredicate<T, U, E> predicate
 	) {
         return new ThrowingBiPredicate<T, U, E>() {
 			@Override
-			public boolean test(T t, U u) throws E {
+			public boolean test(final T t, final U u) throws E {
 				return !predicate.test(t, u);
 			}
 		};
     }
 
     public static <T, U, E extends Throwable> ThrowingBiPredicate<T, U, E> or(
-		ThrowingBiPredicate<T, U, E> left,
-		ThrowingBiPredicate<? super T, ? super U, ? extends E> right
+		final ThrowingBiPredicate<T, U, E> left,
+		final ThrowingBiPredicate<? super T, ? super U, ? extends E> right
 	) {
         return new ThrowingBiPredicate<T, U, E>() {
 			@Override
-			public boolean test(T t, U u) throws E {
+			public boolean test(final T t, final U u) throws E {
 				return left.test(t, u) || right.test(t, u);
 			}
 		};

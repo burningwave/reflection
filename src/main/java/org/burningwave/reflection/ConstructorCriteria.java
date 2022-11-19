@@ -41,7 +41,7 @@ public class ConstructorCriteria extends ExecutableMemberCriteria<
 		super();
 	}
 
-	public static ConstructorCriteria byScanUpTo(ThrowingBiPredicate<Class<?>, Class<?>, ? extends Throwable> predicate) {
+	public static ConstructorCriteria byScanUpTo(final ThrowingBiPredicate<Class<?>, Class<?>, ? extends Throwable> predicate) {
 		return new ConstructorCriteria().scanUpTo(predicate);
 	}
 
@@ -52,7 +52,7 @@ public class ConstructorCriteria extends ExecutableMemberCriteria<
 	public static ConstructorCriteria withoutConsideringParentClasses() {
 		return byScanUpTo(new ThrowingBiPredicate<Class<?>, Class<?>, Throwable>() {
 			@Override
-			public boolean test(Class<?> lastClassInHierarchy, Class<?> currentScannedClass) {
+			public boolean test(final Class<?> lastClassInHierarchy, final Class<?> currentScannedClass) {
 			    return lastClassInHierarchy.equals(currentScannedClass);
 			}
 		});
@@ -60,9 +60,9 @@ public class ConstructorCriteria extends ExecutableMemberCriteria<
 
 	@Override
 	ThrowingFunction<Class<?>, Constructor<?>[], ? extends Throwable> getMembersSupplierFunction() {
-		return new ThrowingFunction<>() {
+		return new ThrowingFunction<Class<?>, Constructor<?>[], Throwable>() {
 			@Override
-			public Constructor<?>[] apply(Class<?> clazz) throws Throwable {
+			public Constructor<?>[] apply(final Class<?> clazz) throws Throwable {
 				return Facade.INSTANCE.getDeclaredConstructors(clazz);
 			}
 		};

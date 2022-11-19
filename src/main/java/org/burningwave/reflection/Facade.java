@@ -85,10 +85,10 @@ public class Facade {
 			return values;
 		}
 
-		private static void putConfigurationValue(String key, Object value) {
+		private static void putConfigurationValue(final String key, final Object value) {
 			try {
 				values.put(key, value);
-			} catch (UnsupportedOperationException exc) {
+			} catch (final UnsupportedOperationException exc) {
 				throw new UnsupportedOperationException("Cannot add configuration value after that the " + Facade.class.getSimpleName() + " has been initialized");
 			}
 		}
@@ -105,12 +105,12 @@ public class Facade {
 		if ((boolean)Configuration.freezeAndGet().get(Configuration.Key.JVM_DRIVER_ENABLED)) {
 			try {
 				driver = io.github.toolfactory.jvm.Driver.Factory.getNewDynamic();
-			} catch (Throwable exc) {
+			} catch (final Throwable exc) {
 				System.err.println(Strings.INSTANCE.compile("JVM driver not instantiated: {}", exc.getMessage()));
 			}
 		}
-		MethodHandles.Lookup consulter = MethodHandles.lookup();
-		MethodHandle privateLookupIn = Handler.getFirst(
+		final MethodHandles.Lookup consulter = MethodHandles.lookup();
+		final MethodHandle privateLookupIn = Handler.getFirst(
 			new ThrowingSupplier<MethodHandle, ReflectiveOperationException>() {
 				@Override
 				public MethodHandle get() throws ReflectiveOperationException {
@@ -134,7 +134,7 @@ public class Facade {
 		);
 		Facade.privateLookupIn = new ThrowingBiFunction<Lookup, Class<?>, Lookup, Throwable>() {
 			@Override
-			public Lookup apply(Lookup clazz, Class<?> cons) throws Throwable {
+			public Lookup apply(final Lookup clazz, final Class<?> cons) throws Throwable {
 				return (MethodHandles.Lookup)privateLookupIn.invokeWithArguments(cons, clazz);
 			}
 		};
@@ -165,63 +165,63 @@ public class Facade {
 		if (driver != null) {
 			fieldRetrievers.add(new ThrowingFunction<Class<?>, Field[], Throwable>() {
 				@Override
-				public Field[] apply(Class<?> clazz) throws Throwable {
+				public Field[] apply(final Class<?> clazz) throws Throwable {
 					return ((io.github.toolfactory.jvm.Driver)driver).getDeclaredFields(clazz);
 				}
 			}
 			);
 			methodRetrievers.add(new ThrowingFunction<Class<?>, Method[], Throwable>() {
 				@Override
-				public Method[] apply(Class<?> clazz) throws Throwable {
+				public Method[] apply(final Class<?> clazz) throws Throwable {
 					return ((io.github.toolfactory.jvm.Driver)driver).getDeclaredMethods(clazz);
 				}
 			}
 			);
 			constructorRetrievers.add(new ThrowingFunction<Class<?>, Constructor<?>[], Throwable>() {
 				@Override
-				public Constructor<?>[] apply(Class<?> clazz) throws Throwable {
+				public Constructor<?>[] apply(final Class<?> clazz) throws Throwable {
 					return ((io.github.toolfactory.jvm.Driver)driver).getDeclaredConstructors(clazz);
 				}
 			}
 			);
 			accessibleSetters.add(new ThrowingBiConsumer<AccessibleObject, Boolean, Throwable>() {
 				@Override
-				public void accept(AccessibleObject accessibleObject, Boolean flag) throws Throwable {
+				public void accept(final AccessibleObject accessibleObject, final Boolean flag) throws Throwable {
 					((io.github.toolfactory.jvm.Driver)driver).setAccessible(accessibleObject, flag);
 				}
 			}
 			);
 			fieldValueRetrievers.add(new ThrowingBiFunction<Object, Field, Object, Throwable>() {
 				@Override
-				public Object apply(Object target, Field field) throws Throwable {
+				public Object apply(final Object target, final Field field) throws Throwable {
 					return ((io.github.toolfactory.jvm.Driver)driver).getFieldValue(target, field);
 				}
 			}
 			);
 			fieldValueSetters.add(new ThrowingTriConsumer<Object, Field, Object, Throwable>() {
 				@Override
-				public void accept(Object target, Field field, Object value) throws Throwable {
+				public void accept(final Object target, final Field field, final Object value) throws Throwable {
 					((io.github.toolfactory.jvm.Driver)driver).setFieldValue(target, field, value);
 				}
 			}
 			);
 			methodInvokers.add(new ThrowingTriFunction<Object, Method, Object[], Object, Throwable>() {
 				@Override
-				public Object apply(Object target, Method method, Object[] parameters) throws Throwable {
+				public Object apply(final Object target, final Method method, final Object[] parameters) throws Throwable {
 					return ((io.github.toolfactory.jvm.Driver)driver).invoke(target, method, parameters);
 				}
 			}
 			);
 			constructorInvokers.add(new ThrowingBiFunction<Constructor<?>, Object[], Object, Throwable>() {
 				@Override
-				public Object apply(Constructor<?> constructor, Object[] parameters) throws Throwable {
+				public Object apply(final Constructor<?> constructor, final Object[] parameters) throws Throwable {
 					return ((io.github.toolfactory.jvm.Driver)driver).newInstance(constructor, parameters);
 				}
 			}
 			);
 			consulterRetrievers.add(new ThrowingBiFunction<Lookup, Class<?>, Lookup, Throwable>() {
 				@Override
-				public Lookup apply(Lookup lookup, Class<?> clazz) throws Throwable {
+				public Lookup apply(final Lookup lookup, final Class<?> clazz) throws Throwable {
 					return ((io.github.toolfactory.jvm.Driver)driver).getConsulter(clazz);
 				}
 			}
@@ -229,98 +229,98 @@ public class Facade {
 		}
 		fieldRetrievers.add(new ThrowingFunction<Class<?>, Field[], Throwable>() {
 			@Override
-			public Field[] apply(Class<?> clazz) throws Throwable {
+			public Field[] apply(final Class<?> clazz) throws Throwable {
 				return clazz.getDeclaredFields();
 			}
 		}
 		);
 		methodRetrievers.add(new ThrowingFunction<Class<?>, Method[], Throwable>() {
 			@Override
-			public Method[] apply(Class<?> clazz) throws Throwable {
+			public Method[] apply(final Class<?> clazz) throws Throwable {
 				return clazz.getDeclaredMethods();
 			}
 		}
 		);
 		constructorRetrievers.add(new ThrowingFunction<Class<?>, Constructor<?>[], Throwable>() {
 			@Override
-			public Constructor<?>[] apply(Class<?> clazz) throws Throwable {
+			public Constructor<?>[] apply(final Class<?> clazz) throws Throwable {
 				return clazz.getDeclaredConstructors();
 			}
 		}
 		);
 		accessibleSetters.add(new ThrowingBiConsumer<AccessibleObject, Boolean, Throwable>() {
 			@Override
-			public void accept(AccessibleObject accessibleObject, Boolean flag) throws Throwable {
+			public void accept(final AccessibleObject accessibleObject, final Boolean flag) throws Throwable {
 				accessibleObject.setAccessible(flag);
 			}
 		}
 		);
 		fieldValueRetrievers.add(new ThrowingBiFunction<Object, Field, Object, Throwable>() {
 			@Override
-			public Object apply(Object target, Field field) throws Throwable {
+			public Object apply(final Object target, final Field field) throws Throwable {
 				return field.get(target);
 			}
 		}
 		);
 		fieldValueRetrievers.add(new ThrowingBiFunction<Object, Field, Object, Throwable>() {
 			@Override
-			public Object apply(Object target, Field field) throws Throwable {
+			public Object apply(final Object target, final Field field) throws Throwable {
 				return setAccessible(field, true).get(target);
 			}
 		}
 		);
 		fieldValueSetters.add(new ThrowingTriConsumer<Object, Field, Object, Throwable>() {
 			@Override
-			public void accept(Object target, Field field, Object value) throws Throwable {
+			public void accept(final Object target, final Field field, final Object value) throws Throwable {
 				field.set(target, value);
 			}
 		}
 		);
 		fieldValueSetters.add(new ThrowingTriConsumer<Object, Field, Object, Throwable>() {
 			@Override
-			public void accept(Object target, Field field, Object value) throws Throwable {
+			public void accept(final Object target, final Field field, final Object value) throws Throwable {
 				setAccessible(field, true).set(target, value);
 			}
 		}
 		);
 		methodInvokers.add(new ThrowingTriFunction<Object, Method, Object[], Object, Throwable>() {
 			@Override
-			public Object apply(Object target, Method method, Object[] parameters) throws Throwable {
+			public Object apply(final Object target, final Method method, final Object[] parameters) throws Throwable {
 				return method.invoke(target, parameters);
 			}
 		}
 		);
 		methodInvokers.add(new ThrowingTriFunction<Object, Method, Object[], Object, Throwable>() {
 			@Override
-			public Object apply(Object target, Method method, Object[] parameters) throws Throwable {
+			public Object apply(final Object target, final Method method, final Object[] parameters) throws Throwable {
 				return setAccessible(method, true).invoke(target, parameters);
 			}
 		}
 		);
 		constructorInvokers.add(new ThrowingBiFunction<Constructor<?>, Object[], Object, Throwable>() {
 			@Override
-			public Object apply(Constructor<?> constructor, Object[] parameters) throws Throwable {
+			public Object apply(final Constructor<?> constructor, final Object[] parameters) throws Throwable {
 				return constructor.newInstance(parameters);
 			}
 		}
 		);
 		constructorInvokers.add(new ThrowingBiFunction<Constructor<?>, Object[], Object, Throwable>() {
 			@Override
-			public Object apply(Constructor<?> constructor, Object[] parameters) throws Throwable {
+			public Object apply(final Constructor<?> constructor, final Object[] parameters) throws Throwable {
 				return setAccessible(constructor, true).newInstance(parameters);
 			}
 		}
 		);
 		consulterRetrievers.add(new ThrowingBiFunction<Lookup, Class<?>, Lookup, Throwable>() {
 			@Override
-			public Lookup apply(Lookup consulter, Class<?> clazz) throws Throwable {
+			public Lookup apply(final Lookup consulter, final Class<?> clazz) throws Throwable {
 				return MethodHandles.lookup();
 			}
 		}
 		);
 		consulterRetrievers.add(new ThrowingBiFunction<Lookup, Class<?>, Lookup, Throwable>() {
 			@Override
-			public Lookup apply(Lookup consulter, Class<?> clazz) throws Throwable {
+			public Lookup apply(final Lookup consulter, final Class<?> clazz) throws Throwable {
 				return privateLookupIn.apply(consulter, clazz);
 			}
 		}
@@ -331,120 +331,120 @@ public class Facade {
 		return (D)driver;
 	}
 
-	public <R> Map.Entry<MethodHandles.Lookup, R> executeWithConsulter(Class<?> cls, ThrowingFunction<MethodHandles.Lookup, R, ? extends Throwable> executor) {
+	public <R> Map.Entry<MethodHandles.Lookup, R> executeWithConsulter(final Class<?> cls, final ThrowingFunction<MethodHandles.Lookup, R, ? extends Throwable> executor) {
 		Throwable exception = null;
 		MethodHandles.Lookup consulter = null;
-		for (ThrowingBiFunction<Lookup, Class<?>, Lookup, Throwable> consulterRetriever : consulterRetrievers) {
+		for (final ThrowingBiFunction<Lookup, Class<?>, Lookup, Throwable> consulterRetriever : consulterRetrievers) {
 			try {
 				return new AbstractMap.SimpleEntry<>(
 					consulter = consulterRetriever.apply(consulter, cls),
 					executor.apply(consulter)
 				);
-			} catch (Throwable exc) {
+			} catch (final Throwable exc) {
 				exception = exc;
 			}
 		}
 		return Throwables.INSTANCE.throwException(exception);
 	}
 
-	public <T> Constructor<T>[] getDeclaredConstructors(Class<T> clazz) {
+	public <T> Constructor<T>[] getDeclaredConstructors(final Class<T> clazz) {
 		Throwable exception = null;
-		for (ThrowingFunction<Class<?>, Constructor<?>[], Throwable> constructorRetriever : constructorRetrievers) {
+		for (final ThrowingFunction<Class<?>, Constructor<?>[], Throwable> constructorRetriever : constructorRetrievers) {
 			try {
 				return (Constructor<T>[])constructorRetriever.apply(clazz);
-			} catch (Throwable exc) {
+			} catch (final Throwable exc) {
 				exception = exc;
 			}
 		}
 		return Throwables.INSTANCE.throwException(exception);
 	}
 
-	public Field[] getDeclaredFields(Class<?> clazz) {
+	public Field[] getDeclaredFields(final Class<?> clazz) {
 		Throwable exception = null;
-		for (ThrowingFunction<Class<?>, Field[], Throwable> fieldRetriever : fieldRetrievers) {
+		for (final ThrowingFunction<Class<?>, Field[], Throwable> fieldRetriever : fieldRetrievers) {
 			try {
 				return fieldRetriever.apply(clazz);
-			} catch (Throwable exc) {
+			} catch (final Throwable exc) {
 				exception = exc;
 			}
 		}
 		return Throwables.INSTANCE.throwException(exception);
 	}
 
-	public Method[] getDeclaredMethods(Class<?> clazz) {
+	public Method[] getDeclaredMethods(final Class<?> clazz) {
 		Throwable exception = null;
-		for (ThrowingFunction<Class<?>, Method[], Throwable> methodRetriever : methodRetrievers) {
+		for (final ThrowingFunction<Class<?>, Method[], Throwable> methodRetriever : methodRetrievers) {
 			try {
 				return methodRetriever.apply(clazz);
-			} catch (Throwable exc) {
+			} catch (final Throwable exc) {
 				exception = exc;
 			}
 		}
 		return Throwables.INSTANCE.throwException(exception);
 	}
 
-	public <T> T getFieldValue(Object target, Field field) {
+	public <T> T getFieldValue(final Object target, final Field field) {
 		Throwable exception = null;
-		for (ThrowingBiFunction<Object, Field, Object, Throwable> fieldValueRetriever : fieldValueRetrievers) {
+		for (final ThrowingBiFunction<Object, Field, Object, Throwable> fieldValueRetriever : fieldValueRetrievers) {
 			try {
 				return (T)fieldValueRetriever.apply(target, field);
-			} catch (Throwable exc) {
+			} catch (final Throwable exc) {
 				exception = exc;
 			}
 		}
 		return Throwables.INSTANCE.throwException(exception);
 	}
 
-	public <T> T invoke(Object target, Method method, Object[] params) {
+	public <T> T invoke(final Object target, final Method method, Object[] params) {
 		if (params == null) {
 			params = new Object[] {null};
 		}
 		Throwable exception = null;
-		for (ThrowingTriFunction<Object, Method, Object[], Object, Throwable> methodInvoker : methodInvokers) {
+		for (final ThrowingTriFunction<Object, Method, Object[], Object, Throwable> methodInvoker : methodInvokers) {
 			try {
 				return (T)methodInvoker.apply(target, method, params);
-			} catch (Throwable exc) {
+			} catch (final Throwable exc) {
 				exception = exc;
 			}
 		}
 		return Throwables.INSTANCE.throwException(exception);
 	}
 
-	public <T> T newInstance(Constructor<T> constructor, Object... parameters) {
+	public <T> T newInstance(final Constructor<T> constructor, Object... parameters) {
 		if (parameters == null) {
 			parameters = new Object[] {null};
 		}
 		Throwable exception = null;
-		for (ThrowingBiFunction<Constructor<?>, Object[], Object, Throwable> constructorInvoker : constructorInvokers) {
+		for (final ThrowingBiFunction<Constructor<?>, Object[], Object, Throwable> constructorInvoker : constructorInvokers) {
 			try {
 				return (T)constructorInvoker.apply(constructor, parameters);
-			} catch (Throwable exc) {
+			} catch (final Throwable exc) {
 				exception = exc;
 			}
 		}
 		return Throwables.INSTANCE.throwException(exception);
 	}
 
-	public <A extends AccessibleObject> A setAccessible(A accessibleObject, boolean flag) {
+	public <A extends AccessibleObject> A setAccessible(final A accessibleObject, final boolean flag) {
 		Throwable exception = null;
-		for (ThrowingBiConsumer<AccessibleObject, Boolean, Throwable> accessibleSetter : accessibleSetters) {
+		for (final ThrowingBiConsumer<AccessibleObject, Boolean, Throwable> accessibleSetter : accessibleSetters) {
 			try {
 				accessibleSetter.accept(accessibleObject, flag);
 				return accessibleObject;
-			} catch (Throwable exc) {
+			} catch (final Throwable exc) {
 				exception = exc;
 			}
 		}
 		return Throwables.INSTANCE.throwException(exception);
 	}
 
-	public void setFieldValue(Object target, Field field, Object value) {
+	public void setFieldValue(final Object target, final Field field, final Object value) {
 		Throwable exception = null;
-		for (ThrowingTriConsumer<Object, Field, Object, Throwable> fieldValueSetter : fieldValueSetters) {
+		for (final ThrowingTriConsumer<Object, Field, Object, Throwable> fieldValueSetter : fieldValueSetters) {
 			try {
 				fieldValueSetter.accept(target, field, value);
 				return;
-			} catch (Throwable exc) {
+			} catch (final Throwable exc) {
 				exception = exc;
 			}
 		}

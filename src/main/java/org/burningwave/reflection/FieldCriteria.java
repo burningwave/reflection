@@ -43,7 +43,7 @@ public class FieldCriteria extends MemberCriteria<
 		super();
 	}
 
-	public static FieldCriteria byScanUpTo(ThrowingBiPredicate<Class<?>, Class<?>, ? extends Throwable> predicate) {
+	public static FieldCriteria byScanUpTo(final ThrowingBiPredicate<Class<?>, Class<?>, ? extends Throwable> predicate) {
 		return new FieldCriteria().scanUpTo(predicate);
 	}
 
@@ -54,7 +54,7 @@ public class FieldCriteria extends MemberCriteria<
 	public static FieldCriteria withoutConsideringParentClasses() {
 		return byScanUpTo(new ThrowingBiPredicate<Class<?>, Class<?>, Throwable>() {
 			@Override
-			public boolean test(Class<?> lastClassInHierarchy, Class<?> currentScannedClass) {
+			public boolean test(final Class<?> lastClassInHierarchy, final Class<?> currentScannedClass) {
 			    return lastClassInHierarchy.equals(currentScannedClass);
 			}
 		});
@@ -65,7 +65,7 @@ public class FieldCriteria extends MemberCriteria<
 			this.predicate,
 			new ThrowingBiPredicate<TestContext<Field, FieldCriteria>, Field, Throwable>() {
 				@Override
-				public boolean test(TestContext<Field, FieldCriteria> context, Field member) throws Throwable {
+				public boolean test(final TestContext<Field, FieldCriteria> context, final Field member) throws Throwable {
 					return predicate.test(member.getType());
 				}
 			}
@@ -76,9 +76,9 @@ public class FieldCriteria extends MemberCriteria<
 
 	@Override
 	ThrowingFunction<Class<?>, Field[], ? extends Throwable> getMembersSupplierFunction() {
-		return new ThrowingFunction<>() {
+		return new ThrowingFunction<Class<?>, Field[], Throwable>() {
 			@Override
-			public Field[] apply(Class<?> clazz) throws Throwable {
+			public Field[] apply(final Class<?> clazz) throws Throwable {
 				return Facade.INSTANCE.getDeclaredFields(clazz);
 			}
 		};

@@ -67,33 +67,30 @@ public class Members {
 
 	private Members() {}
 
-	public <M extends Member> Collection<M> findAll(MemberCriteria<M, ?, ?> criteria, Class<?> classFrom) {
-		ThrowingBiPredicate<Class<?>, Class<?>, ? extends Throwable> clsPredicate = criteria.getScanUpToPredicate();
-		ThrowingBiFunction<Class<?>, Class<?>, M[], ? extends Throwable> memberSupplier = criteria.getMembersSupplier();
-		ThrowingPredicate<M, ? extends Throwable> predicate = criteria.getPredicateOrTruePredicateIfPredicateIsNull();
-		Collection<M> result = findAll(
+	public <M extends Member> Collection<M> findAll(final MemberCriteria<M, ?, ?> criteria, final Class<?> classFrom) {
+		final Collection<M> result = findAll(
 			classFrom,
 			classFrom,
-			clsPredicate,
-			memberSupplier,
-			predicate,
-			new HashSet<>(),
-			new LinkedHashSet<>()
+			criteria.getScanUpToPredicate(),
+			criteria.getMembersSupplier(),
+			criteria.getPredicateOrTruePredicateIfPredicateIsNull(),
+			new HashSet<Class<?>>(),
+			new LinkedHashSet<M>()
 		);
-		ThrowingPredicate<Collection<M>, ? extends Throwable> resultPredicate = criteria.getResultPredicate();
+		final ThrowingPredicate<Collection<M>, ? extends Throwable> resultPredicate = criteria.getResultPredicate();
 		try {
 			return resultPredicate == null?
 					result :
 					resultPredicate.test(result)?
 						result :
-						new LinkedHashSet<>();
-		} catch (Throwable exc) {
+						new LinkedHashSet<M>();
+		} catch (final Throwable exc) {
 			return Throwables.INSTANCE.throwException(exc);
 		}
 	}
 
-	public <M extends Member> M findFirst(MemberCriteria<M, ?, ?> criteria, Class<?> classFrom) {
-		ThrowingPredicate<Collection<M>, ? extends Throwable> resultPredicate = criteria.getResultPredicate();
+	public <M extends Member> M findFirst(final MemberCriteria<M, ?, ?> criteria, final Class<?> classFrom) {
+		final ThrowingPredicate<Collection<M>, ? extends Throwable> resultPredicate = criteria.getResultPredicate();
 		if (resultPredicate == null) {
 			return findFirst(
 				classFrom,
@@ -101,31 +98,31 @@ public class Members {
 				criteria.getScanUpToPredicate(),
 				criteria.getMembersSupplier(),
 				criteria.getPredicateOrTruePredicateIfPredicateIsNull(),
-				new HashSet<>()
+				new HashSet<Class<?>>()
 			);
 		} else {
-			Collection<M> result = findAll(
+			final Collection<M> result = findAll(
 				classFrom,
 				classFrom,
 				criteria.getScanUpToPredicate(),
 				criteria.getMembersSupplier(),
 				criteria.getPredicateOrTruePredicateIfPredicateIsNull(),
-				new HashSet<>(),
-				new LinkedHashSet<>()
+				new HashSet<Class<?>>(),
+				new LinkedHashSet<M>()
 			);
 			try {
 				if (resultPredicate.test(result)) {
 					return result.iterator().next();
 				}
 				return null;
-			} catch (Throwable exc) {
+			} catch (final Throwable exc) {
 				return Throwables.INSTANCE.throwException(exc);
 			}
 		}
 	}
 
-	public <M extends Member> M findOne(MemberCriteria<M, ?, ?> criteria, Class<?> classFrom) {
-		Collection<M> members = findAll(criteria, classFrom);
+	public <M extends Member> M findOne(final MemberCriteria<M, ?, ?> criteria, final Class<?> classFrom) {
+		final Collection<M> members = findAll(criteria, classFrom);
 		if (members.size() > 1) {
 			Throwables.INSTANCE.throwException("More than one member found for class {}", classFrom.getName());
 		}
@@ -135,26 +132,26 @@ public class Members {
 		return null;
 	}
 
-	public <M extends Member> boolean match(MemberCriteria<M, ?, ?> criteria, Class<?> classFrom) {
+	public <M extends Member> boolean match(final MemberCriteria<M, ?, ?> criteria, final Class<?> classFrom) {
 		return findFirst(criteria, classFrom) != null;
 	}
 
 	private <M extends Member> Collection<M> findAll(
-		Class<?> initialClsFrom,
-		Class<?> currentScannedClass,
-		ThrowingBiPredicate<Class<?>, Class<?>, ? extends Throwable> clsPredicate,
-		ThrowingBiFunction<Class<?>, Class<?>, M[], ? extends Throwable> memberSupplier,
-		ThrowingPredicate<M, ? extends Throwable> predicate,
-		Set<Class<?>> visitedInterfaces,
+		final Class<?> initialClsFrom,
+		final Class<?> currentScannedClass,
+		final ThrowingBiPredicate<Class<?>, Class<?>, ? extends Throwable> clsPredicate,
+		final ThrowingBiFunction<Class<?>, Class<?>, M[], ? extends Throwable> memberSupplier,
+		final ThrowingPredicate<M, ? extends Throwable> predicate,
+		final Set<Class<?>> visitedInterfaces,
 		Collection<M> collection
 	) {
 		try {
-			for (M member : memberSupplier.apply(initialClsFrom, currentScannedClass)) {
+			for (final M member : memberSupplier.apply(initialClsFrom, currentScannedClass)) {
 				if (predicate.test(member)) {
 					collection.add(member);
 				}
 			}
-			for (Class<?> interf : currentScannedClass.getInterfaces()) {
+			for (final Class<?> interf : currentScannedClass.getInterfaces()) {
 				if (!visitedInterfaces.add(interf)) {
 					continue;
 				}
@@ -182,30 +179,30 @@ public class Members {
 				visitedInterfaces,
 				collection
 			);
-		} catch (Throwable exc) {
+		} catch (final Throwable exc) {
 			return Throwables.INSTANCE.throwException(exc);
 		}
 	}
 
 	private <M extends Member> M findFirst(
-		Class<?> initialClsFrom,
-		Class<?> currentScannedClass,
-		ThrowingBiPredicate<Class<?>, Class<?>, ? extends Throwable> clsPredicate,
-		ThrowingBiFunction<Class<?>, Class<?>, M[], ? extends Throwable>
-		memberSupplier, ThrowingPredicate<M, ? extends Throwable> predicate,
-		Set<Class<?>> visitedInterfaces
+		final Class<?> initialClsFrom,
+		final Class<?> currentScannedClass,
+		final ThrowingBiPredicate<Class<?>, Class<?>, ? extends Throwable> clsPredicate,
+		final ThrowingBiFunction<Class<?>, Class<?>, M[], ? extends Throwable>
+		memberSupplier, final ThrowingPredicate<M, ? extends Throwable> predicate,
+		final Set<Class<?>> visitedInterfaces
 	) {
 		try {
-			for (M member : memberSupplier.apply(initialClsFrom, currentScannedClass)) {
+			for (final M member : memberSupplier.apply(initialClsFrom, currentScannedClass)) {
 				if (predicate.test(member)) {
 					return member;
 				}
 			}
-			for (Class<?> interf : currentScannedClass.getInterfaces()) {
+			for (final Class<?> interf : currentScannedClass.getInterfaces()) {
 				if (!visitedInterfaces.add(interf)) {
 					continue;
 				}
-				M member = findFirst(initialClsFrom, interf, clsPredicate, memberSupplier, predicate, visitedInterfaces);
+				final M member = findFirst(initialClsFrom, interf, clsPredicate, memberSupplier, predicate, visitedInterfaces);
 				if ((member != null) || clsPredicate.test(initialClsFrom, currentScannedClass)) {
 					return member;
 				}
@@ -214,7 +211,7 @@ public class Members {
 				(clsPredicate.test(initialClsFrom, currentScannedClass) || (currentScannedClass.getSuperclass() == null)) ?
 					null :
 					findFirst(initialClsFrom, currentScannedClass.getSuperclass(), clsPredicate, memberSupplier, predicate, visitedInterfaces);
-		} catch (Throwable exc) {
+		} catch (final Throwable exc) {
 			return Throwables.INSTANCE.throwException(exc);
 		}
 	}
@@ -225,20 +222,20 @@ public class Members {
 
 			OfExecutable() {}
 
-			public Collection<MethodHandle> findAllDirectHandle(C criteria, Class<?> clsFrom) {
-				Collection<MethodHandle> methodHandles = new LinkedHashSet<>();
-				for (E member : findAll(criteria, clsFrom)) {
+			public Collection<MethodHandle> findAllDirectHandle(final C criteria, final Class<?> clsFrom) {
+				final Collection<MethodHandle> methodHandles = new LinkedHashSet<>();
+				for (final E member : findAll(criteria, clsFrom)) {
 					methodHandles.add(findDirectHandle(member));
 				}
 				return methodHandles;
 			}
 
-			public MethodHandle findDirectHandle(E executable) {
+			public MethodHandle findDirectHandle(final E executable) {
 				return findDirectHandleBox(executable).getHandler();
 			}
 
-			public MethodHandle findFirstDirectHandle(C criteria, Class<?> clsFrom) {
-				E found = findFirst(criteria, clsFrom);
+			public MethodHandle findFirstDirectHandle(final C criteria, final Class<?> clsFrom) {
+				final E found = findFirst(criteria, clsFrom);
 				if (found != null) {
 					return findDirectHandle(found);
 				}
@@ -246,31 +243,31 @@ public class Members {
 			}
 
 
-			public MethodHandle findOneDirectHandle(C criteria, Class<?> clsFrom) {
-				E found = findOne(criteria, clsFrom);
+			public MethodHandle findOneDirectHandle(final C criteria, final Class<?> clsFrom) {
+				final E found = findOne(criteria, clsFrom);
 				if (found != null) {
 					return findDirectHandle(found);
 				}
 				return null;
 			}
 
-			Members.Handler.OfExecutable.Box<E> findDirectHandleBox(E executable) {
-				Class<?> targetClass = executable.getDeclaringClass();
-				ClassLoader targetClassClassLoader = Classes.INSTANCE.getClassLoader(targetClass);
-				String cacheKey = getCacheKey(targetClass, "equals " + retrieveNameForCaching(executable), executable.getParameterTypes());
+			Members.Handler.OfExecutable.Box<E> findDirectHandleBox(final E executable) {
+				final Class<?> targetClass = executable.getDeclaringClass();
+				final ClassLoader targetClassClassLoader = Classes.INSTANCE.getClassLoader(targetClass);
+				final String cacheKey = getCacheKey(targetClass, "equals " + retrieveNameForCaching(executable), executable.getParameterTypes());
 				return findDirectHandleBox(executable, targetClassClassLoader, cacheKey);
 			}
 
-			Members.Handler.OfExecutable.Box<E> findDirectHandleBox(E executable, ClassLoader classLoader, String cacheKey) {
+			Members.Handler.OfExecutable.Box<E> findDirectHandleBox(final E executable, final ClassLoader classLoader, final String cacheKey) {
 				return (Box<E>)Cache.INSTANCE.uniqueKeyForExecutableAndMethodHandle.getOrUploadIfAbsent(classLoader, cacheKey, new Supplier<Box<?>>() {
 					@Override
 					public Box<?> get() {
-						Class<?> methodDeclaringClass = executable.getDeclaringClass();
+						final Class<?> methodDeclaringClass = executable.getDeclaringClass();
 						return (Members.Handler.OfExecutable.Box<E>)Facade.INSTANCE.executeWithConsulter(
 							methodDeclaringClass,
 							new ThrowingFunction<Lookup, Box<E>, Throwable>() {
 								@Override
-								public Box<E> apply(Lookup consulter) throws Throwable {
+								public Box<E> apply(final Lookup consulter) throws Throwable {
 									return new Members.Handler.OfExecutable.Box<>(consulter,
 										executable,
 										retrieveMethodHandle(consulter, executable)
@@ -283,42 +280,42 @@ public class Members {
 			}
 
 			Object[] getArgumentArray(
-				E member,
-				ThrowingTriFunction<E, Supplier<List<Object>>, Object[], List<Object>, ? extends Throwable> argumentListSupplier,
-				Supplier<List<Object>> listSupplier,
-				Object... arguments
+				final E member,
+				final ThrowingTriFunction<E, Supplier<List<Object>>, Object[], List<Object>, ? extends Throwable> argumentListSupplier,
+				final Supplier<List<Object>> listSupplier,
+				final Object... arguments
 			) {
 				List<Object> argumentList;
 				try {
 					argumentList = argumentListSupplier.apply(member, listSupplier, arguments);
 					return argumentList.toArray(new Object[argumentList.size()]);
-				} catch (Throwable exc) {
+				} catch (final Throwable exc) {
 					return Throwables.INSTANCE.throwException(exc);
 				}
 			}
 
-			List<Object> getArgumentListWithArrayForVarArgs(E member, Supplier<List<Object>> argumentListSupplier, Object... arguments) {
-				Parameter[] parameters = member.getParameters();
-				List<Object> argumentList = argumentListSupplier.get();
+			List<Object> getArgumentListWithArrayForVarArgs(final E member, final Supplier<List<Object>> argumentListSupplier, final Object... arguments) {
+				final Parameter[] parameters = member.getParameters();
+				final List<Object> argumentList = argumentListSupplier.get();
 				if (arguments != null) {
 					if ((parameters.length > 0) && parameters[parameters.length - 1].isVarArgs()) {
 						for (int i = 0; (i < arguments.length) && (i < (parameters.length - 1)); i++) {
 							argumentList.add(arguments[i]);
 						}
-						Parameter lastParameter = parameters[parameters.length -1];
+						final Parameter lastParameter = parameters[parameters.length -1];
 						if (arguments.length == parameters.length) {
-							Object lastArgument = arguments[arguments.length -1];
+							final Object lastArgument = arguments[arguments.length -1];
 							if ((lastArgument != null) &&
 								lastArgument.getClass().isArray() &&
 								lastArgument.getClass().equals(lastParameter.getType())) {
 								argumentList.add(lastArgument);
 							} else {
-								Object array = Array.newInstance(lastParameter.getType().getComponentType(), 1);
+								final Object array = Array.newInstance(lastParameter.getType().getComponentType(), 1);
 								Array.set(array, 0, lastArgument);
 								argumentList.add(array);
 							}
 						} else if (arguments.length > parameters.length) {
-							Object array = Array.newInstance(lastParameter.getType().getComponentType(), arguments.length - (parameters.length - 1));
+							final Object array = Array.newInstance(lastParameter.getType().getComponentType(), arguments.length - (parameters.length - 1));
 							for (int i = parameters.length - 1, j = 0; i < arguments.length; i++, j++) {
 								Array.set(array, j, arguments[i]);
 							}
@@ -327,7 +324,7 @@ public class Members {
 							argumentList.add(Array.newInstance(lastParameter.getType().getComponentType(),0));
 						}
 					} else if (arguments.length > 0) {
-						for (Object argument : arguments) {
+						for (final Object argument : arguments) {
 							argumentList.add(argument);
 						}
 					}
@@ -337,17 +334,17 @@ public class Members {
 				return argumentList;
 			}
 
-			List<Object> getFlatArgumentList(E member, Supplier<List<Object>> argumentListSupplier, Object... arguments) {
-				Parameter[] parameters = member.getParameters();
-				List<Object> argumentList = argumentListSupplier.get();
+			List<Object> getFlatArgumentList(final E member, final Supplier<List<Object>> argumentListSupplier, final Object... arguments) {
+				final Parameter[] parameters = member.getParameters();
+				final List<Object> argumentList = argumentListSupplier.get();
 				if (arguments != null) {
 					if ((parameters.length > 0) && parameters[parameters.length - 1].isVarArgs()) {
 						for (int i = 0; (i < arguments.length) && (i < (parameters.length - 1)); i++) {
 							argumentList.add(arguments[i]);
 						}
 						if (arguments.length == parameters.length) {
-							Parameter lastParameter = parameters[parameters.length -1];
-							Object lastArgument = arguments[arguments.length -1];
+							final Parameter lastParameter = parameters[parameters.length -1];
+							final Object lastArgument = arguments[arguments.length -1];
 							if ((lastArgument != null) &&
 								lastArgument.getClass().isArray() &&
 								lastArgument.getClass().equals(lastParameter.getType())) {
@@ -365,7 +362,7 @@ public class Members {
 							argumentList.add(null);
 						}
 					} else if (arguments.length > 0) {
-						for (Object argument : arguments) {
+						for (final Object argument : arguments) {
 							argumentList.add(argument);
 						}
 					}
@@ -379,11 +376,11 @@ public class Members {
 
 			abstract String retrieveNameForCaching(E executable);
 
-			Class<?>[] retrieveParameterTypes(Executable member, List<Class<?>> argumentsClassesAsList) {
-				Parameter[] memberParameter = member.getParameters();
+			Class<?>[] retrieveParameterTypes(final Executable member, final List<Class<?>> argumentsClassesAsList) {
+				final Parameter[] memberParameter = member.getParameters();
 				Class<?>[] memberParameterTypes = member.getParameterTypes();
 				if ((memberParameter.length > 0) && memberParameter[memberParameter.length - 1].isVarArgs()) {
-					Class<?> varArgsType =
+					final Class<?> varArgsType =
 						(argumentsClassesAsList.size() > 0) &&
 						(argumentsClassesAsList.get(argumentsClassesAsList.size()-1) != null) &&
 						argumentsClassesAsList.get(argumentsClassesAsList.size()-1).isArray()?
@@ -408,14 +405,14 @@ public class Members {
 				return memberParameterTypes;
 			}
 
-			Collection<E> searchForExactMatch(Collection<E> members, Class<?>... arguments) {
-				List<Class<?>> argumentsClassesAsList = Arrays.asList(arguments);
+			Collection<E> searchForExactMatch(final Collection<E> members, final Class<?>... arguments) {
+				final List<Class<?>> argumentsClassesAsList = Arrays.asList(arguments);
 				//Collection<E> membersThatMatch = new LinkedHashSet<>();
-				Collection<E> membersThatMatch = new TreeSet<>(new Comparator<E>() {
+				final Collection<E> membersThatMatch = new TreeSet<>(new Comparator<E>() {
 					@Override
-					public int compare(E executableOne, E executableTwo) {
-						Parameter[] executableOneParameters = executableOne.getParameters();
-						Parameter[] executableTwoParameters = executableTwo.getParameters();
+					public int compare(final E executableOne, final E executableTwo) {
+						final Parameter[] executableOneParameters = executableOne.getParameters();
+						final Parameter[] executableTwoParameters = executableTwo.getParameters();
 						if (executableOneParameters.length == argumentsClassesAsList.size()) {
 							if (executableTwoParameters.length == argumentsClassesAsList.size()) {
 								if ((executableOneParameters.length > 0) && executableOneParameters[executableOneParameters.length - 1].isVarArgs()) {
@@ -438,8 +435,8 @@ public class Members {
 
 				});
 
-				for (E executable : members) {
-					Class<?>[] parameterTypes = retrieveParameterTypes(executable, argumentsClassesAsList);
+				for (final E executable : members) {
+					final Class<?>[] parameterTypes = retrieveParameterTypes(executable, argumentsClassesAsList);
 					boolean exactMatch = true;
 					for (int i = 0; i < parameterTypes.length; i++) {
 						if ((argumentsClassesAsList.get(i) != null) &&
@@ -460,7 +457,7 @@ public class Members {
 				E executable;
 				MethodHandle handler;
 
-				Box(MethodHandles.Lookup consulter, E executable, MethodHandle handler) {
+				Box(final MethodHandles.Lookup consulter, final E executable, final MethodHandle handler) {
 					super();
 					this.consulter = consulter;
 					this.executable = executable;
@@ -483,45 +480,45 @@ public class Members {
 
 		}
 
-		public Collection<M> findAll(C criteria, Class<?> classFrom) {
+		public Collection<M> findAll(final C criteria, final Class<?> classFrom) {
 			return Members.INSTANCE.findAll(criteria, classFrom);
 		}
 
 		public Collection<M> findAllAndMakeThemAccessible(
-			C criteria,
-			Class<?> targetClass
+			final C criteria,
+			final Class<?> targetClass
 		) {
 			return findAllAndApply(
 				criteria, targetClass, new Consumer<M>() {
 					@Override
-					public void accept(M member) {
+					public void accept(final M member) {
 						setAccessible(member, true);
 					}
 				}
 			);
 		}
 
-		public M findFirst(C criteria, Class<?> classFrom) {
+		public M findFirst(final C criteria, final Class<?> classFrom) {
 			return Members.INSTANCE.findFirst(criteria, classFrom);
 		}
 
-		public M findOne(C criteria, Class<?> classFrom) {
+		public M findOne(final C criteria, final Class<?> classFrom) {
 			return Members.INSTANCE.findOne(criteria, classFrom);
 		}
 
-		public boolean match(C criteria, Class<?> classFrom) {
+		public boolean match(final C criteria, final Class<?> classFrom) {
 			return Members.INSTANCE.match(criteria, classFrom);
 		}
 
-		public void setAccessible(M member, boolean flag) {
+		public void setAccessible(final M member, final boolean flag) {
 			Facade.INSTANCE.setAccessible(((AccessibleObject)member), flag);
 		}
 
-		Collection<M> findAllAndApply(C criteria, Class<?> targetClass, Consumer<M>... consumers) {
-			Collection<M> members = findAll(criteria, targetClass);
+		Collection<M> findAllAndApply(final C criteria, final Class<?> targetClass, final Consumer<M>... consumers) {
+			final Collection<M> members = findAll(criteria, targetClass);
 			if (consumers != null) {
-				for (M member : members) {
-					for (Consumer<M> consumer : consumers) {
+				for (final M member : members) {
+					for (final Consumer<M> consumer : consumers) {
 						consumer.accept(member);
 					}
 				}
@@ -529,31 +526,31 @@ public class Members {
 			return members;
 		}
 
-		M findOneAndApply(C criteria, Class<?> targetClass, Consumer<M>... consumers) {
-			M member = findOne(criteria, targetClass);
+		M findOneAndApply(final C criteria, final Class<?> targetClass, final Consumer<M>... consumers) {
+			final M member = findOne(criteria, targetClass);
 			if (member != null) {
-				for (Consumer<M> consumer : consumers) {
+				for (final Consumer<M> consumer : consumers) {
 					consumer.accept(member);
 				}
 			}
 			return member;
 		}
 
-		String getCacheKey(Class<?> targetClass, String groupName, Class<?>... arguments) {
+		String getCacheKey(final Class<?> targetClass, final String groupName, Class<?>... arguments) {
 			if (arguments == null) {
 				arguments = new Class<?>[] {null};
 			}
 			String argumentsKey = "";
 			if ((arguments != null) && (arguments.length > 0)) {
-				StringBuffer argumentsKeyStringBuffer = new StringBuffer();
-				for (Class<?> clazz : arguments) {
+				final StringBuffer argumentsKeyStringBuffer = new StringBuffer();
+				for (final Class<?> clazz : arguments) {
 					argumentsKeyStringBuffer.append("/" +
 						(clazz != null ? clazz.getName() : "null")
 					);
 				}
 				argumentsKey = argumentsKeyStringBuffer.toString();
 			}
-			String cacheKey = "/" + targetClass.getName() + "@" + targetClass.hashCode() +
+			final String cacheKey = "/" + targetClass.getName() + "@" + targetClass.hashCode() +
 				"/" + groupName +
 				argumentsKey;
 			return cacheKey;

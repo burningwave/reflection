@@ -41,8 +41,8 @@ import java.util.List;
 import org.burningwave.Strings;
 import org.burningwave.Throwables;
 import org.burningwave.function.Consumer;
-import org.burningwave.function.Handler;
 import org.burningwave.function.Function;
+import org.burningwave.function.Handler;
 import org.burningwave.function.Supplier;
 import org.burningwave.function.ThrowingBiPredicate;
 import org.burningwave.function.ThrowingSupplier;
@@ -60,18 +60,18 @@ public class Constructors extends Members.Handler.OfExecutable<Constructor<?>, C
 	private Constructors() {}
 
 	public Collection<Constructor<?>> findAllAndMakeThemAccessible(
-		Class<?> targetClass
+		final Class<?> targetClass
 	) {
-		String cacheKey = getCacheKey(targetClass, "all constructors");
-		ClassLoader targetClassClassLoader = Classes.INSTANCE.getClassLoader(targetClass);
-		Collection<Constructor<?>> members = Cache.INSTANCE.uniqueKeyForConstructors.getOrUploadIfAbsent(
+		final String cacheKey = getCacheKey(targetClass, "all constructors");
+		final ClassLoader targetClassClassLoader = Classes.INSTANCE.getClassLoader(targetClass);
+		final Collection<Constructor<?>> members = Cache.INSTANCE.uniqueKeyForConstructors.getOrUploadIfAbsent(
 			targetClassClassLoader, cacheKey, new Supplier<Collection<Constructor<?>>>() {
 				@Override
 				public Collection<Constructor<?>> get() {
 					return findAllAndApply(
 						ConstructorCriteria.withoutConsideringParentClasses(), targetClass, new Consumer<Constructor<?>>() {
 							@Override
-							public void accept(Constructor<?> member) {
+							public void accept(final Constructor<?> member) {
 								setAccessible(member, true);
 							}
 						}
@@ -83,19 +83,19 @@ public class Constructors extends Members.Handler.OfExecutable<Constructor<?>, C
 	}
 
 	public Collection<Constructor<?>> findAllAndMakeThemAccessible(
-		Class<?> targetClass,
-		Class<?>... inputParameterTypesOrSubTypes
+		final Class<?> targetClass,
+		final Class<?>... inputParameterTypesOrSubTypes
 	) {
-		String cacheKey = getCacheKey(targetClass, "all constructors by input parameters assignable from", inputParameterTypesOrSubTypes);
-		ClassLoader targetClassClassLoader = Classes.INSTANCE.getClassLoader(targetClass);
+		final String cacheKey = getCacheKey(targetClass, "all constructors by input parameters assignable from", inputParameterTypesOrSubTypes);
+		final ClassLoader targetClassClassLoader = Classes.INSTANCE.getClassLoader(targetClass);
 		return Cache.INSTANCE.uniqueKeyForConstructors.getOrUploadIfAbsent(targetClassClassLoader, cacheKey, new Supplier<Collection<Constructor<?>>>() {
 			@Override
 			public Collection<Constructor<?>> get() {
-				ConstructorCriteria criteria = ConstructorCriteria.withoutConsideringParentClasses().parameterTypesAreAssignableFrom(inputParameterTypesOrSubTypes);
+				final ConstructorCriteria criteria = ConstructorCriteria.withoutConsideringParentClasses().parameterTypesAreAssignableFrom(inputParameterTypesOrSubTypes);
 				if ((inputParameterTypesOrSubTypes != null) && (inputParameterTypesOrSubTypes.length == 0)) {
 					criteria.or().parameter(new ThrowingBiPredicate<Parameter[], Integer, Throwable>() {
 						@Override
-						public boolean test(Parameter[] parameters, Integer idx) {
+						public boolean test(final Parameter[] parameters, final Integer idx) {
 							return (parameters.length == 1) && parameters[0].isVarArgs();
 						}
 					});
@@ -105,7 +105,7 @@ public class Constructors extends Members.Handler.OfExecutable<Constructor<?>, C
 					targetClass,
 					new Consumer<Constructor<?>>() {
 						@Override
-						public void accept(Constructor<?> member) {
+						public void accept(final Constructor<?> member) {
 							setAccessible(member, true);
 						}
 					}
@@ -114,16 +114,16 @@ public class Constructors extends Members.Handler.OfExecutable<Constructor<?>, C
 		});
 	}
 
-	public MethodHandle findDirectHandle(Class<?> targetClass, Class<?>... inputParameterTypesOrSubTypes) {
+	public MethodHandle findDirectHandle(final Class<?> targetClass, final Class<?>... inputParameterTypesOrSubTypes) {
 		return findDirectHandleBox(targetClass, inputParameterTypesOrSubTypes).getHandler();
 	}
 
-	public Constructor<?> findFirstAndMakeItAccessible(Class<?> targetClass, Class<?>... inputParameterTypesOrSubTypes) {
-		Collection<Constructor<?>> members = findAllAndMakeThemAccessible(targetClass, inputParameterTypesOrSubTypes);
+	public Constructor<?> findFirstAndMakeItAccessible(final Class<?> targetClass, final Class<?>... inputParameterTypesOrSubTypes) {
+		final Collection<Constructor<?>> members = findAllAndMakeThemAccessible(targetClass, inputParameterTypesOrSubTypes);
 		if (members.size() == 1) {
 			return members.iterator().next();
 		} else if (members.size() > 1) {
-			Collection<Constructor<?>> membersThatMatch = searchForExactMatch(members, inputParameterTypesOrSubTypes);
+			final Collection<Constructor<?>> membersThatMatch = searchForExactMatch(members, inputParameterTypesOrSubTypes);
 			if (!membersThatMatch.isEmpty()) {
 				return membersThatMatch.iterator().next();
 			}
@@ -132,12 +132,12 @@ public class Constructors extends Members.Handler.OfExecutable<Constructor<?>, C
 		return null;
 	}
 
-	public Constructor<?> findOneAndMakeItAccessible(Class<?> targetClass, Class<?>... argumentTypes) {
-		Collection<Constructor<?>> members = findAllAndMakeThemAccessible(targetClass, argumentTypes);
+	public Constructor<?> findOneAndMakeItAccessible(final Class<?> targetClass, final Class<?>... argumentTypes) {
+		final Collection<Constructor<?>> members = findAllAndMakeThemAccessible(targetClass, argumentTypes);
 		if (members.size() == 1) {
 			return members.iterator().next();
 		} else if (members.size() > 1) {
-			Collection<Constructor<?>> membersThatMatch = searchForExactMatch(members, argumentTypes);
+			final Collection<Constructor<?>> membersThatMatch = searchForExactMatch(members, argumentTypes);
 			if (membersThatMatch.size() == 1) {
 				return membersThatMatch.iterator().next();
 			}
@@ -145,7 +145,7 @@ public class Constructors extends Members.Handler.OfExecutable<Constructor<?>, C
 				"Found more than one of constructor with argument types {} in {} class",
 				Strings.INSTANCE.join(", ", argumentTypes, new Function<Class<?>, String>() {
 					@Override
-					public String apply(Class<?> cls) {
+					public String apply(final Class<?> cls) {
 						return cls.getName();
 					}
 				}),
@@ -156,19 +156,19 @@ public class Constructors extends Members.Handler.OfExecutable<Constructor<?>, C
 	}
 
 	public <T> T newInstanceOf(
-		Class<?> targetClass,
-		Object... arguments
+		final Class<?> targetClass,
+		final Object... arguments
 	) {
 		return Handler.getFirst(
 			new ThrowingSupplier<T, RuntimeException>() {
 				@Override
 				public T get() throws RuntimeException {
-					Class<?>[] argsType = Classes.INSTANCE.retrieveFrom(arguments);
-					Members.Handler.OfExecutable.Box<Constructor<?>> methodHandleBox = findDirectHandleBox(targetClass, argsType);
+					final Class<?>[] argsType = Classes.INSTANCE.retrieveFrom(arguments);
+					final Members.Handler.OfExecutable.Box<Constructor<?>> methodHandleBox = findDirectHandleBox(targetClass, argsType);
 					return Handler.get(new ThrowingSupplier<T, Throwable>() {
 						@Override
 						public T get() throws Throwable {
-								Constructor<?> ctor = methodHandleBox.getExecutable();
+								final Constructor<?> ctor = methodHandleBox.getExecutable();
 								return (T)methodHandleBox.getHandler().invokeWithArguments(
 									getFlatArgumentList(
 										ctor, new Supplier<List<Object>>() {
@@ -187,7 +187,7 @@ public class Constructors extends Members.Handler.OfExecutable<Constructor<?>, C
 			}, new ThrowingSupplier<T, RuntimeException>() {
 				@Override
 				public T get() throws RuntimeException {
-					Constructor<?> ctor = findFirstAndMakeItAccessible(targetClass, Classes.INSTANCE.retrieveFrom(arguments));
+					final Constructor<?> ctor = findFirstAndMakeItAccessible(targetClass, Classes.INSTANCE.retrieveFrom(arguments));
 					if (ctor == null) {
 						Throwables.INSTANCE.throwException("Constructor not found in {}", targetClass.getName());
 					}
@@ -197,7 +197,7 @@ public class Constructors extends Members.Handler.OfExecutable<Constructor<?>, C
 							ctor,
 							new ThrowingTriFunction<Constructor<?>, Supplier<List<Object>>, Object[], List<Object>, Throwable>() {
 								@Override
-								public List<Object> apply(Constructor<?> member, Supplier<List<Object>> collector, Object[] arguments) throws Throwable {
+								public List<Object> apply(final Constructor<?> member, final Supplier<List<Object>> collector, final Object[] arguments) throws Throwable {
 									return Constructors.this.getArgumentListWithArrayForVarArgs(
 										member,
 										collector,
@@ -221,30 +221,30 @@ public class Constructors extends Members.Handler.OfExecutable<Constructor<?>, C
 	}
 
 	@Override
-	MethodHandle retrieveMethodHandle(MethodHandles.Lookup consulter, Constructor<?> constructor) throws NoSuchMethodException, IllegalAccessException {
+	MethodHandle retrieveMethodHandle(final MethodHandles.Lookup consulter, final Constructor<?> constructor) throws NoSuchMethodException, IllegalAccessException {
 		return consulter.findConstructor(
 			constructor.getDeclaringClass(),
 			MethodType.methodType(void.class, constructor.getParameterTypes())
 		);
 	}
 
-	String retrieveNameForCaching(Class<?> cls) {
+	String retrieveNameForCaching(final Class<?> cls) {
 		return Classes.INSTANCE.retrieveSimpleName(cls.getName());
 	}
 
 	@Override
-	String retrieveNameForCaching(Constructor<?> constructor) {
+	String retrieveNameForCaching(final Constructor<?> constructor) {
 		return retrieveNameForCaching(constructor.getDeclaringClass());
 	}
 
-	private Members.Handler.OfExecutable.Box<Constructor<?>> findDirectHandleBox(Class<?> targetClass, Class<?>... inputParameterTypesOrSubTypes) {
-		String nameForCaching = retrieveNameForCaching(targetClass);
-		String cacheKey = getCacheKey(targetClass, "equals " + nameForCaching, inputParameterTypesOrSubTypes);
-		ClassLoader targetClassClassLoader = Classes.INSTANCE.getClassLoader(targetClass);
+	private Members.Handler.OfExecutable.Box<Constructor<?>> findDirectHandleBox(final Class<?> targetClass, final Class<?>... inputParameterTypesOrSubTypes) {
+		final String nameForCaching = retrieveNameForCaching(targetClass);
+		final String cacheKey = getCacheKey(targetClass, "equals " + nameForCaching, inputParameterTypesOrSubTypes);
+		final ClassLoader targetClassClassLoader = Classes.INSTANCE.getClassLoader(targetClass);
 		Members.Handler.OfExecutable.Box<Constructor<?>> entry =
 			(Box<Constructor<?>>)Cache.INSTANCE.uniqueKeyForExecutableAndMethodHandle.get(targetClassClassLoader, cacheKey);
 		if (entry == null) {
-			Constructor<?> ctor = findFirstAndMakeItAccessible(targetClass, inputParameterTypesOrSubTypes);
+			final Constructor<?> ctor = findFirstAndMakeItAccessible(targetClass, inputParameterTypesOrSubTypes);
 			entry = findDirectHandleBox(
 				ctor, targetClassClassLoader, cacheKey
 			);
