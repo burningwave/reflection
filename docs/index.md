@@ -38,7 +38,7 @@ To include Burningwave Reflection library in your projects simply use with **Apa
 <dependency>
     <groupId>org.burningwave</groupId>
     <artifactId>reflection</artifactId>
-    <version>3.1.0</version>
+    <version>3.1.2</version>
 </dependency>
 ```
 
