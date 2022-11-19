@@ -32,11 +32,13 @@ import java.lang.reflect.Executable;
 import java.lang.reflect.Parameter;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.BiPredicate;
-import java.util.function.Predicate;
 
 import org.burningwave.Criteria;
-import org.burningwave.function.TriPredicate;
+import org.burningwave.Throwables;
+import org.burningwave.function.ThrowingBiFunction;
+import org.burningwave.function.ThrowingBiPredicate;
+import org.burningwave.function.ThrowingPredicate;
+import org.burningwave.function.ThrowingTriPredicate;
 
 @SuppressWarnings("unchecked")
 public abstract class ExecutableMemberCriteria<
@@ -45,41 +47,70 @@ public abstract class ExecutableMemberCriteria<
 	T extends Criteria.TestContext<E, C>
 > extends MemberCriteria<E, C, T> {
 
-	public C parameter(final BiPredicate<Parameter[], Integer> predicate) {
+	public C parameter(final ThrowingBiPredicate<Parameter[], Integer, ? extends Throwable> predicate) {
 		this.predicate = concat(
 			this.predicate,
 			getPredicateWrapper(
-				(criteria, member) -> member.getParameters(),
-				(criteria, array, index) -> predicate.test(array, index)
+				new ThrowingBiFunction<T, E, Parameter[], Throwable>() {
+					@Override
+					public Parameter[] apply(T criteria, E member) {
+						return member.getParameters();
+					}
+				},
+				new ThrowingTriPredicate<T, Parameter[], Integer, Throwable>() {
+					@Override
+					public boolean test(T criteria, Parameter[] array, Integer index) throws Throwable {
+						return predicate.test(array, index);
+					}
+				}
 			)
 		);
 		return (C)this;
 	}
 
-	public C parameterType(final BiPredicate<Class<?>[], Integer> predicate) {
+	public C parameterType(final ThrowingBiPredicate<Class<?>[], Integer, ? extends Throwable> predicate) {
 		this.predicate = concat(
 			this.predicate,
 			getPredicateWrapper(
-				(criteria, member) -> member.getParameterTypes(),
-				(criteria, array, index) -> predicate.test(array, index)
+				new ThrowingBiFunction<T, E, Class<?>[], Throwable>() {
+					@Override
+					public Class<?>[] apply(T criteria, E member) {
+						return member.getParameterTypes();
+					}
+				},
+				new ThrowingTriPredicate<T, Class<?>[], Integer, Throwable>() {
+					@Override
+					public boolean test(T criteria, Class<?>[] array, Integer index) throws Throwable {
+						return predicate.test(array, index);
+					}
+				}
 			)
 		);
 		return (C)this;
 	}
 
 
-	public C parameterTypes(final Predicate<Class<?>[]> predicate) {
+	public C parameterTypes(final ThrowingPredicate<Class<?>[], ? extends Throwable> predicate) {
 		this.predicate = concat(
 			this.predicate,
-			(context, member) -> predicate.test(member.getParameterTypes())
+			new ThrowingBiPredicate<T, E, Throwable>() {
+				@Override
+				public boolean test(T context, E member) throws Throwable {
+					return predicate.test(member.getParameterTypes());
+				}
+			}
 		);
 		return (C)this;
 	}
 
 	public C parameterTypesAreAssignableFrom(Class<?>... argumentsClasses) {
 		return parameterTypesMatch(
-			(argClasses, paramTypes, innerIdx) ->
-				(argClasses.get(innerIdx) == null || Classes.INSTANCE.isAssignableFrom(paramTypes[innerIdx], argClasses.get(innerIdx))),
+			new ThrowingTriPredicate<List<Class<?>>, Class<?>[], Integer, Throwable>() {
+				@Override
+				public boolean test(List<Class<?>> argClasses, Class<?>[] paramTypes, Integer innerIdx) {
+					return ((argClasses.get(innerIdx) == null) || Classes.INSTANCE.isAssignableFrom(paramTypes[innerIdx], argClasses.get(innerIdx)));
+				}
+			},
 			argumentsClasses
 		);
 	}
@@ -91,8 +122,12 @@ public abstract class ExecutableMemberCriteria<
 
 	public C parameterTypesExactlyMatch(Class<?>... argumentsClasses) {
 		return parameterTypesMatch(
-			(argClasses, paramTypes, innerIdx) ->
-				(argClasses.get(innerIdx) == null || Classes.INSTANCE.getClassOrWrapper(paramTypes[innerIdx]).equals(Classes.INSTANCE.getClassOrWrapper(argClasses.get(innerIdx)))),
+			new ThrowingTriPredicate<List<Class<?>>, Class<?>[], Integer, Throwable>() {
+				@Override
+				public boolean test(List<Class<?>> argClasses, Class<?>[] paramTypes, Integer innerIdx) {
+					return ((argClasses.get(innerIdx) == null) || Classes.INSTANCE.getClassOrWrapper(paramTypes[innerIdx]).equals(Classes.INSTANCE.getClassOrWrapper(argClasses.get(innerIdx))));
+				}
+			},
 			argumentsClasses
 		);
 	}
@@ -102,41 +137,52 @@ public abstract class ExecutableMemberCriteria<
 		return parameterTypesAreAssignableFrom(Classes.INSTANCE.retrieveFrom(arguments));
 	}
 
-	private C parameterTypesMatch(TriPredicate<List<Class<?>>, Class<?>[], Integer> predicate, Class<?>... arguments) {
+	private C parameterTypesMatch(ThrowingTriPredicate<List<Class<?>>, Class<?>[], Integer, ? extends Throwable> predicate, Class<?>... arguments) {
 		if (arguments == null) {
 			arguments = new Class<?>[]{null};
 		}
 		Class<?>[] argumentsClasses = arguments;
-		if (argumentsClasses != null && argumentsClasses.length > 0) {
+		if ((argumentsClasses != null) && (argumentsClasses.length > 0)) {
 			List<Class<?>> argumentsClassesAsList = Arrays.asList(argumentsClasses);
 			for (int i = 0; i < argumentsClasses.length; i++) {
 				final int index = i;
 				this.predicate = concat(
 					this.predicate,
-					(context, member) -> {
-						Parameter[] memberParameter = member.getParameters();
-						if (memberParameter.length > 1 &&
-							memberParameter[memberParameter.length - 1].isVarArgs() &&
-							(memberParameter.length - 1) > argumentsClassesAsList.size()
-						) {
-							return false;
-						}
-						Class<?>[] memberParameterTypes = Methods.INSTANCE.retrieveParameterTypes(member, argumentsClassesAsList);
-						if (argumentsClassesAsList.size() == memberParameterTypes.length) {
-							return predicate.test(argumentsClassesAsList, memberParameterTypes, index);
-						} else {
-							return false;
+					new ThrowingBiPredicate<T, E, Throwable>() {
+						@Override
+						public boolean test(T context, E member) {
+							Parameter[] memberParameter = member.getParameters();
+							if ((memberParameter.length > 1) &&
+								memberParameter[memberParameter.length - 1].isVarArgs() &&
+								((memberParameter.length - 1) > argumentsClassesAsList.size())
+							) {
+								return false;
+							}
+							Class<?>[] memberParameterTypes = Methods.INSTANCE.retrieveParameterTypes(member, argumentsClassesAsList);
+							if (argumentsClassesAsList.size() == memberParameterTypes.length) {
+								try {
+									return predicate.test(argumentsClassesAsList, memberParameterTypes, index);
+								} catch (Throwable exc) {
+									return Throwables.INSTANCE.throwException(exc);
+								}
+							} else {
+								return false;
+							}
 						}
 					}
 				);
-				if (index < arguments.length - 1) {
+				if (index < (arguments.length - 1)) {
 					and();
 				}
 			}
 		} else {
 			parameterTypes(
-				parameters ->
-				parameters.length == 0
+				new ThrowingPredicate<Class<?>[], Throwable>() {
+					@Override
+					public boolean test(Class<?>[] parameters) {
+						return parameters.length == 0;
+					}
+				}
 			);
 		}
 		return (C)this;

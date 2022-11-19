@@ -30,13 +30,18 @@ package org.burningwave.function;
 
 import java.util.Objects;
 
-@FunctionalInterface
+
 public interface ThrowingTriFunction<P0, P1, P2, R, E extends Throwable> {
 
     R apply(P0 p0, P1 p1, P2 p2) throws E;
 
     default <V> ThrowingTriFunction<P0, P1, P2, V, E> andThen(ThrowingFunction<? super R, ? extends V,  ? extends E> after) {
     	Objects.requireNonNull(after);
-    	return (P0 p0, P1 p1, P2 p2) -> after.apply(apply(p0, p1, p2));
+    	return new ThrowingTriFunction<P0, P1, P2, V, E>() {
+			@Override
+			public V apply(P0 p0, P1 p1, P2 p2) throws E {
+				return after.apply((R) ThrowingTriFunction.this.apply(p0, p1, p2));
+			}
+		};
     }
 }

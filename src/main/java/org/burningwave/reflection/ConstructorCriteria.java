@@ -29,10 +29,10 @@
 package org.burningwave.reflection;
 
 import java.lang.reflect.Constructor;
-import java.util.function.BiPredicate;
-import java.util.function.Function;
 
 import org.burningwave.Criteria;
+import org.burningwave.function.ThrowingBiPredicate;
+import org.burningwave.function.ThrowingFunction;
 
 public class ConstructorCriteria extends ExecutableMemberCriteria<
 	Constructor<?>, ConstructorCriteria, Criteria.TestContext<Constructor<?>, ConstructorCriteria>
@@ -41,7 +41,7 @@ public class ConstructorCriteria extends ExecutableMemberCriteria<
 		super();
 	}
 
-	public static ConstructorCriteria byScanUpTo(BiPredicate<Class<?>, Class<?>> predicate) {
+	public static ConstructorCriteria byScanUpTo(ThrowingBiPredicate<Class<?>, Class<?>, ? extends Throwable> predicate) {
 		return new ConstructorCriteria().scanUpTo(predicate);
 	}
 
@@ -50,13 +50,16 @@ public class ConstructorCriteria extends ExecutableMemberCriteria<
 	}
 
 	public static ConstructorCriteria withoutConsideringParentClasses() {
-		return byScanUpTo((lastClassInHierarchy, currentScannedClass) -> {
-            return lastClassInHierarchy.equals(currentScannedClass);
-        });
+		return byScanUpTo(new ThrowingBiPredicate<Class<?>, Class<?>, Throwable>() {
+			@Override
+			public boolean test(Class<?> lastClassInHierarchy, Class<?> currentScannedClass) {
+			    return lastClassInHierarchy.equals(currentScannedClass);
+			}
+		});
 	}
 
 	@Override
-	Function<Class<?>, Constructor<?>[]> getMembersSupplierFunction() {
+	ThrowingFunction<Class<?>, Constructor<?>[], ? extends Throwable> getMembersSupplierFunction() {
 		return Facade.INSTANCE::getDeclaredConstructors;
 	}
 

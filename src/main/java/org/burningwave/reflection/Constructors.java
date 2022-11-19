@@ -33,13 +33,18 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Parameter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.stream.Collectors;
 
+import org.burningwave.Strings;
 import org.burningwave.Throwables;
+import org.burningwave.function.Consumer;
 import org.burningwave.function.Executor;
+import org.burningwave.function.Function;
+import org.burningwave.function.Supplier;
+import org.burningwave.function.ThrowingBiPredicate;
+import org.burningwave.function.ThrowingSupplier;
 
 
 @SuppressWarnings("unchecked")
@@ -58,11 +63,18 @@ public class Constructors extends Members.Handler.OfExecutable<Constructor<?>, C
 		String cacheKey = getCacheKey(targetClass, "all constructors");
 		ClassLoader targetClassClassLoader = Classes.INSTANCE.getClassLoader(targetClass);
 		Collection<Constructor<?>> members = Cache.INSTANCE.uniqueKeyForConstructors.getOrUploadIfAbsent(
-			targetClassClassLoader, cacheKey, () -> {
-				return findAllAndApply(
-					ConstructorCriteria.withoutConsideringParentClasses(), targetClass, (member) ->
-					setAccessible(member, true)
-				);
+			targetClassClassLoader, cacheKey, new Supplier<Collection<Constructor<?>>>() {
+				@Override
+				public Collection<Constructor<?>> get() {
+					return findAllAndApply(
+						ConstructorCriteria.withoutConsideringParentClasses(), targetClass, new Consumer<Constructor<?>>() {
+							@Override
+							public void accept(Constructor<?> member) {
+								setAccessible(member, true);
+							}
+						}
+					);
+				}
 			}
 		);
 		return members;
@@ -74,17 +86,29 @@ public class Constructors extends Members.Handler.OfExecutable<Constructor<?>, C
 	) {
 		String cacheKey = getCacheKey(targetClass, "all constructors by input parameters assignable from", inputParameterTypesOrSubTypes);
 		ClassLoader targetClassClassLoader = Classes.INSTANCE.getClassLoader(targetClass);
-		return Cache.INSTANCE.uniqueKeyForConstructors.getOrUploadIfAbsent(targetClassClassLoader, cacheKey, () -> {
-			ConstructorCriteria criteria = ConstructorCriteria.withoutConsideringParentClasses().parameterTypesAreAssignableFrom(inputParameterTypesOrSubTypes);
-			if (inputParameterTypesOrSubTypes != null && inputParameterTypesOrSubTypes.length == 0) {
-				criteria.or().parameter((parameters, idx) -> parameters.length == 1 && parameters[0].isVarArgs());
+		return Cache.INSTANCE.uniqueKeyForConstructors.getOrUploadIfAbsent(targetClassClassLoader, cacheKey, new Supplier<Collection<Constructor<?>>>() {
+			@Override
+			public Collection<Constructor<?>> get() {
+				ConstructorCriteria criteria = ConstructorCriteria.withoutConsideringParentClasses().parameterTypesAreAssignableFrom(inputParameterTypesOrSubTypes);
+				if ((inputParameterTypesOrSubTypes != null) && (inputParameterTypesOrSubTypes.length == 0)) {
+					criteria.or().parameter(new ThrowingBiPredicate<Parameter[], Integer, Throwable>() {
+						@Override
+						public boolean test(Parameter[] parameters, Integer idx) {
+							return (parameters.length == 1) && parameters[0].isVarArgs();
+						}
+					});
+				}
+				return findAllAndApply(
+					criteria,
+					targetClass,
+					new Consumer<Constructor<?>>() {
+						@Override
+						public void accept(Constructor<?> member) {
+							setAccessible(member, true);
+						}
+					}
+				);
 			}
-			return findAllAndApply(
-				criteria,
-				targetClass,
-				(member) ->
-					setAccessible(member, true)
-			);
 		});
 	}
 
@@ -117,7 +141,12 @@ public class Constructors extends Members.Handler.OfExecutable<Constructor<?>, C
 			}
 			Throwables.INSTANCE.throwException(
 				"Found more than one of constructor with argument types {} in {} class",
-				String.join(", ", Arrays.asList(argumentTypes).stream().map(cls -> cls.getName()).collect(Collectors.toList())),
+				Strings.INSTANCE.join(", ", argumentTypes, new Function<Class<?>, String>() {
+					@Override
+					public String apply(Class<?> cls) {
+						return cls.getName();
+					}
+				}),
 				targetClass.getName()
 			);
 		}
@@ -129,30 +158,39 @@ public class Constructors extends Members.Handler.OfExecutable<Constructor<?>, C
 		Object... arguments
 	) {
 		return Executor.getFirst(
-			() -> {
-				Class<?>[] argsType = Classes.INSTANCE.retrieveFrom(arguments);
-				Members.Handler.OfExecutable.Box<Constructor<?>> methodHandleBox = findDirectHandleBox(targetClass, argsType);
-				return Executor.get(() -> {
-						Constructor<?> ctor = methodHandleBox.getExecutable();
-						return (T)methodHandleBox.getHandler().invokeWithArguments(
-							getFlatArgumentList(ctor, ArrayList::new, arguments)
-						);
+			new ThrowingSupplier<T, RuntimeException>() {
+				@Override
+				public T get() throws RuntimeException {
+					Class<?>[] argsType = Classes.INSTANCE.retrieveFrom(arguments);
+					Members.Handler.OfExecutable.Box<Constructor<?>> methodHandleBox = findDirectHandleBox(targetClass, argsType);
+					return Executor.get(new ThrowingSupplier<T, Throwable>() {
+						@Override
+						public T get() throws Throwable {
+								Constructor<?> ctor = methodHandleBox.getExecutable();
+								return (T)methodHandleBox.getHandler().invokeWithArguments(
+									getFlatArgumentList(ctor, ArrayList::new, arguments)
+								);
+							}
 					}
-				);
-			}, () -> {
-				Constructor<?> ctor = findFirstAndMakeItAccessible(targetClass, Classes.INSTANCE.retrieveFrom(arguments));
-				if (ctor == null) {
-					Throwables.INSTANCE.throwException("Constructor not found in {}", targetClass.getName());
+					);
 				}
-				return (T)Facade.INSTANCE.newInstance(
-					ctor,
-					getArgumentArray(
+			}, new ThrowingSupplier<T, RuntimeException>() {
+				@Override
+				public T get() throws RuntimeException {
+					Constructor<?> ctor = findFirstAndMakeItAccessible(targetClass, Classes.INSTANCE.retrieveFrom(arguments));
+					if (ctor == null) {
+						Throwables.INSTANCE.throwException("Constructor not found in {}", targetClass.getName());
+					}
+					return (T)Facade.INSTANCE.newInstance(
 						ctor,
-						this::getArgumentListWithArrayForVarArgs,
-						ArrayList::new,
-						arguments
-					)
-				);
+						getArgumentArray(
+							ctor,
+							Constructors.this::getArgumentListWithArrayForVarArgs,
+							ArrayList::new,
+							arguments
+						)
+					);
+				}
 			}
 		);
 

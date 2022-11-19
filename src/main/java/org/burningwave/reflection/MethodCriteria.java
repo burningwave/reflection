@@ -29,11 +29,11 @@
 package org.burningwave.reflection;
 
 import java.lang.reflect.Method;
-import java.util.function.BiPredicate;
-import java.util.function.Function;
-import java.util.function.Predicate;
 
 import org.burningwave.Criteria;
+import org.burningwave.function.ThrowingBiPredicate;
+import org.burningwave.function.ThrowingFunction;
+import org.burningwave.function.ThrowingPredicate;
 
 public class MethodCriteria extends ExecutableMemberCriteria<
 	Method, MethodCriteria, Criteria.TestContext<Method, MethodCriteria>
@@ -43,11 +43,11 @@ public class MethodCriteria extends ExecutableMemberCriteria<
 		super();
 	}
 
-	public static MethodCriteria byScanUpTo(BiPredicate<Class<?>, Class<?>> predicate) {
+	public static MethodCriteria byScanUpTo(ThrowingBiPredicate<Class<?>, Class<?>, ? extends Throwable> predicate) {
 		return new MethodCriteria().scanUpTo(predicate);
 	}
 
-	public static MethodCriteria byScanUpTo(Predicate<Class<?>> predicate) {
+	public static MethodCriteria byScanUpTo(ThrowingPredicate<Class<?>, ? extends Throwable> predicate) {
 		return new MethodCriteria().scanUpTo(predicate);
 	}
 
@@ -56,21 +56,29 @@ public class MethodCriteria extends ExecutableMemberCriteria<
 	}
 
 	public static MethodCriteria withoutConsideringParentClasses() {
-		return byScanUpTo((lastClassInHierarchy, currentScannedClass) -> {
-            return lastClassInHierarchy.equals(currentScannedClass);
-        });
+		return byScanUpTo(new ThrowingBiPredicate<Class<?>, Class<?>, Throwable>() {
+			@Override
+			public boolean test(Class<?> lastClassInHierarchy, Class<?> currentScannedClass) {
+			    return lastClassInHierarchy.equals(currentScannedClass);
+			}
+		});
 	}
 
-	public MethodCriteria returnType(final Predicate<Class<?>> predicate) {
+	public MethodCriteria returnType(final ThrowingPredicate<Class<?>, ? extends Throwable> predicate) {
 		this.predicate = concat(
 			this.predicate,
-			(context, member) -> predicate.test(member.getReturnType())
+			new ThrowingBiPredicate<TestContext<Method, MethodCriteria>, Method, Throwable>() {
+				@Override
+				public boolean test(TestContext<Method, MethodCriteria> context, Method member) throws Throwable {
+					return predicate.test(member.getReturnType());
+				}
+			}
 		);
 		return this;
 	}
 
 	@Override
-	Function<Class<?>, Method[]> getMembersSupplierFunction() {
+	ThrowingFunction<Class<?>, Method[], ? extends Throwable> getMembersSupplierFunction() {
 		return  Facade.INSTANCE::getDeclaredMethods;
 	}
 }

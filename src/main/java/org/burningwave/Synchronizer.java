@@ -30,8 +30,8 @@ package org.burningwave;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Supplier;
 
+import org.burningwave.function.ThrowingSupplier;
 
 public class Synchronizer {
 
@@ -57,10 +57,14 @@ public class Synchronizer {
 		}
 	}
 
-	public <T> T execute(String id, Supplier<T> executable) {
+	public <T> T execute(String id, ThrowingSupplier<T, ? extends Throwable> executable) {
 		try (Mutex mutex = getMutex(id);) {
 			synchronized (mutex) {
-				return executable.get();
+				try {
+					return executable.get();
+				} catch (Throwable exc) {
+					return Throwables.INSTANCE.throwException(exc);
+				}
 			}
 		}
 	}
@@ -72,7 +76,7 @@ public class Synchronizer {
 	        if (oldMutex == null) {
 		        return newMutex;
 	        }
-	        if (++oldMutex.clientsCount > 1 && mutexes.get(id) == oldMutex) {
+	        if ((++oldMutex.clientsCount > 1) && (mutexes.get(id) == oldMutex)) {
 	        	return oldMutex;
         	}
         	continue;

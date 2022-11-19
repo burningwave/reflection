@@ -29,15 +29,39 @@
 package org.burningwave.function;
 
 import java.util.Objects;
-import java.util.function.Function;
 
-@FunctionalInterface
-public interface TriFunction<P0, P1, P2, R> {
 
-    R apply(P0 p0, P1 p1, P2 p2);
+public interface ThrowingBiPredicate<T, U, E extends Throwable> {
 
-    default <V> TriFunction<P0, P1, P2, V> andThen(Function<? super R, ? extends V> after) {
-    	Objects.requireNonNull(after);
-    	return (P0 p0, P1 p1, P2 p2) -> after.apply(apply(p0, p1, p2));
+
+    boolean test(T t, U u) throws E;
+
+    default ThrowingBiPredicate<T, U, E> and(ThrowingBiPredicate<? super T, ? super U, ? extends E> other) {
+        Objects.requireNonNull(other);
+        return new ThrowingBiPredicate<T, U, E>() {
+			@Override
+			public boolean test(T t, U u) throws E {
+				return ThrowingBiPredicate.this.test(t, u) && other.test(t, u);
+			}
+		};
+    }
+
+    default ThrowingBiPredicate<T, U, E> negate() {
+        return new ThrowingBiPredicate<T, U, E>() {
+			@Override
+			public boolean test(T t, U u) throws E {
+				return !ThrowingBiPredicate.this.test(t, u);
+			}
+		};
+    }
+
+    default ThrowingBiPredicate<T, U, E> or(ThrowingBiPredicate<? super T, ? super U, ? extends E> other) {
+        Objects.requireNonNull(other);
+        return new ThrowingBiPredicate<T, U, E>() {
+			@Override
+			public boolean test(T t, U u) throws E {
+				return ThrowingBiPredicate.this.test(t, u) || other.test(t, u);
+			}
+		};
     }
 }

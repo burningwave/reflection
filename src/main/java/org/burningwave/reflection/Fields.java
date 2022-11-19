@@ -34,9 +34,10 @@ import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Supplier;
 
 import org.burningwave.Throwables;
+import org.burningwave.function.Supplier;
+import org.burningwave.function.ThrowingPredicate;
 
 import io.github.toolfactory.jvm.util.Strings;
 
@@ -59,10 +60,14 @@ public class Fields extends Members.Handler<Field, FieldCriteria> {
 		return Cache.INSTANCE.uniqueKeyForFields.getOrUploadIfAbsent(
 			targetClassClassLoader,
 			cacheKey,
-			() ->
-				findAllAndMakeThemAccessible(
-					FieldCriteria.forEntireClassHierarchy(), targetClass
-				)
+			new Supplier<Collection<Field>>() {
+				@Override
+				public Collection<Field> get() {
+					return findAllAndMakeThemAccessible(
+						FieldCriteria.forEntireClassHierarchy(), targetClass
+					);
+				}
+			}
 		);
 	}
 
@@ -83,16 +88,23 @@ public class Fields extends Members.Handler<Field, FieldCriteria> {
 		return Cache.INSTANCE.uniqueKeyForFields.getOrUploadIfAbsent(
 			targetClassClassLoader,
 			cacheKey,
-			() ->
-				findAllAndMakeThemAccessible(
-					FieldCriteria.forEntireClassHierarchy().allThoseThatMatch(field -> {
-						if (valueType == null) {
-							return field.getName().equals(fieldName);
-						} else {
-							return field.getName().equals(fieldName) && Classes.INSTANCE.isAssignableFrom(field.getType(), valueType);
-						}
-					}), targetClass
-				)
+			new Supplier<Collection<Field>>() {
+				@Override
+				public Collection<Field> get() {
+					return findAllAndMakeThemAccessible(
+						FieldCriteria.forEntireClassHierarchy().allThoseThatMatch(new ThrowingPredicate<Field, Throwable>() {
+							@Override
+							public boolean test(Field field) {
+								if (valueType == null) {
+									return field.getName().equals(fieldName);
+								} else {
+									return field.getName().equals(fieldName) && Classes.INSTANCE.isAssignableFrom(field.getType(), valueType);
+								}
+							}
+						}), targetClass
+					);
+				}
+			}
 		);
 	}
 
@@ -133,28 +145,58 @@ public class Fields extends Members.Handler<Field, FieldCriteria> {
 	}
 
 	public Map<Field, ?> getAll(FieldCriteria criteria, Object target) {
-		return getAll(() -> findAllAndMakeThemAccessible(criteria, Classes.INSTANCE.retrieveFrom(target)), target);
+		return getAll(new Supplier<Collection<Field>>() {
+			@Override
+			public Collection<Field> get() {
+				return findAllAndMakeThemAccessible(criteria, Classes.INSTANCE.retrieveFrom(target));
+			}
+		}, target);
 	}
 
 	public Map<Field, ?> getAll(Object target) {
-		return getAll(() -> findAllAndMakeThemAccessible(Classes.INSTANCE.retrieveFrom(target)), target);
+		return getAll(new Supplier<Collection<Field>>() {
+			@Override
+			public Collection<Field> get() {
+				return findAllAndMakeThemAccessible(Classes.INSTANCE.retrieveFrom(target));
+			}
+		}, target);
 	}
 
 	public Map<Field, ?> getAllDirect(FieldCriteria criteria, Object target) {
-		return getAllDirect(() -> findAllAndMakeThemAccessible(criteria, Classes.INSTANCE.retrieveFrom(target)), target);
+		return getAllDirect(new Supplier<Collection<Field>>() {
+			@Override
+			public Collection<Field> get() {
+				return findAllAndMakeThemAccessible(criteria, Classes.INSTANCE.retrieveFrom(target));
+			}
+		}, target);
 	}
 
 
 	public Map<Field, ?> getAllDirect(Object target) {
-		return getAllDirect(() -> findAllAndMakeThemAccessible(Classes.INSTANCE.retrieveFrom(target)), target);
+		return getAllDirect(new Supplier<Collection<Field>>() {
+			@Override
+			public Collection<Field> get() {
+				return findAllAndMakeThemAccessible(Classes.INSTANCE.retrieveFrom(target));
+			}
+		}, target);
 	}
 
 	public Map<Field, ?> getAllStatic(Class<?> targetClass) {
-		return getAll(() -> findAllAndMakeThemAccessible(targetClass), null);
+		return getAll(new Supplier<Collection<Field>>() {
+			@Override
+			public Collection<Field> get() {
+				return findAllAndMakeThemAccessible(targetClass);
+			}
+		}, null);
 	}
 
 	public Map<Field, ?> getAllStaticDirect(Class<?> targetClass) {
-		return getAllDirect(() -> findAllAndMakeThemAccessible(targetClass), null);
+		return getAllDirect(new Supplier<Collection<Field>>() {
+			@Override
+			public Collection<Field> get() {
+				return findAllAndMakeThemAccessible(targetClass);
+			}
+		}, null);
 	}
 
 	public <T> T getStatic(Class<?> targetClass, String fieldName) {

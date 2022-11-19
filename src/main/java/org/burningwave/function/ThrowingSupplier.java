@@ -28,7 +28,7 @@
  */
 package org.burningwave.function;
 
-@FunctionalInterface
+
 public interface ThrowingSupplier<T, E extends Throwable> {
 
 	T get() throws E;

@@ -37,11 +37,11 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.burningwave.Throwables;
+import org.burningwave.function.Supplier;
 import org.burningwave.function.ThrowingFunction;
 
 import io.github.toolfactory.jvm.function.template.ThrowingBiFunction;
@@ -118,7 +118,7 @@ public abstract class FieldAccessor {
 			Field field = Fields.INSTANCE.findOneAndMakeItAccessible(target.getClass(), matcher.group(1));
 			Fields.INSTANCE.set(target, field, value);
 		} else {
-			if (target.getClass().isArray() || target instanceof Map || target instanceof Collection) {
+			if (target.getClass().isArray() || (target instanceof Map) || (target instanceof Collection)) {
 				setInIndexedField(target, matcher.group(2), value);
 			} else {
 				Field field = Fields.INSTANCE.findOneAndMakeItAccessible(target.getClass(), matcher.group(1));
@@ -174,24 +174,42 @@ public abstract class FieldAccessor {
 			String index = matcher.group(1);
 			Supplier<Object> propertyRetriever = null;
 			if (fieldValue.getClass().isArray()) {
-				propertyRetriever = () -> Array.get(fieldValue, Integer.valueOf(index));
-			} else if (fieldValue instanceof List) {
-				propertyRetriever = () -> ((List<?>)fieldValue).get(Integer.valueOf(index));
-			} else if (fieldValue instanceof Map) {
-				propertyRetriever = () -> ((Map<?, ?>)fieldValue).get(index);
-			} else if (fieldValue instanceof Collection) {
-				propertyRetriever = () -> {
-					Collection<T> collection = (Collection<T>)fieldValue;
-					int indexAsInt = convertAndCheckIndex(collection, index);
-					Iterator<T> itr = collection.iterator();
-					int currentIterationIndex = 0;
-					while (itr.hasNext()) {
-						Object currentIteartedObject = itr.next();
-						if (currentIterationIndex++ == indexAsInt) {
-							return currentIteartedObject;
-						}
+				propertyRetriever = new Supplier<Object>() {
+					@Override
+					public Object get() {
+						return Array.get(fieldValue, Integer.valueOf(index));
 					}
-					return null;
+				};
+			} else if (fieldValue instanceof List) {
+				propertyRetriever = new Supplier<Object>() {
+					@Override
+					public Object get() {
+						return ((List<?>)fieldValue).get(Integer.valueOf(index));
+					}
+				};
+			} else if (fieldValue instanceof Map) {
+				propertyRetriever = new Supplier<Object>() {
+					@Override
+					public Object get() {
+						return ((Map<?, ?>)fieldValue).get(index);
+					}
+				};
+			} else if (fieldValue instanceof Collection) {
+				propertyRetriever = new Supplier<Object>() {
+					@Override
+					public Object get() {
+						Collection<T> collection = (Collection<T>)fieldValue;
+						int indexAsInt = convertAndCheckIndex(collection, index);
+						Iterator<T> itr = collection.iterator();
+						int currentIterationIndex = 0;
+						while (itr.hasNext()) {
+							Object currentIteartedObject = itr.next();
+							if (currentIterationIndex++ == indexAsInt) {
+								return currentIteartedObject;
+							}
+						}
+						return null;
+					}
 				};
 			} else {
 				return Throwables.INSTANCE.throwException("indexed property {} of type {} is not supporterd", fieldValue, fieldValue.getClass());
@@ -268,14 +286,24 @@ public abstract class FieldAccessor {
 		@Override
 		List<ThrowingBiFunction<Object, String, Object, Throwable>> getFieldRetrievers() {
 			List<ThrowingBiFunction<Object, String, Object, Throwable>> retrievers = new ArrayList<>();
-			retrievers.add((object, pathSegment) -> retrieveFieldByDirectAccess(object, pathSegment));
+			retrievers.add(new ThrowingBiFunction<Object, String, Object, Throwable>() {
+				@Override
+				public Object apply(Object object, String pathSegment) throws Throwable {
+					return retrieveFieldByDirectAccess(object, pathSegment);
+				}
+			});
 			return retrievers;
 		}
 
 		@Override
 		List<ThrowingFunction<Object[], Boolean, Throwable>> getFieldSetters() {
 			List<ThrowingFunction<Object[], Boolean, Throwable>> setters  = new ArrayList<>();
-			setters.add(objects -> setFieldByDirectAccess(objects[0], (String)objects[1], objects[2]));
+			setters.add(new ThrowingFunction<Object[], Boolean, Throwable>() {
+				@Override
+				public Boolean apply(Object[] objects) throws Throwable {
+					return setFieldByDirectAccess(objects[0], (String)objects[1], objects[2]);
+				}
+			});
 			return setters;
 		}
 	}

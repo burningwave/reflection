@@ -37,10 +37,13 @@ public interface ThrowingTriConsumer<P0, P1, P2, E extends Throwable> {
 
     default ThrowingTriConsumer<P0, P1, P2, E> andThen(ThrowingTriConsumer<? super P0, ? super P1, ? super P2, ? extends E> after) {
         Objects.requireNonNull(after);
-        return (p0, p1, p2) -> {
-            accept(p0, p1, p2);
-            after.accept(p0, p1, p2);
-        };
+        return new ThrowingTriConsumer<P0, P1, P2, E>() {
+			@Override
+			public void accept(P0 p0, P1 p1, P2 p2) throws Throwable {
+				ThrowingTriConsumer.this.accept(p0, p1, p2);
+			    after.accept(p0, p1, p2);
+			}
+		};
     }
 
 }

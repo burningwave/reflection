@@ -39,12 +39,14 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.function.IntPredicate;
 
 import org.burningwave.Objects;
 import org.burningwave.Synchronizer;
 import org.burningwave.Throwables;
+import org.burningwave.function.Function;
+import org.burningwave.function.Supplier;
+import org.burningwave.function.ThrowingSupplier;
 
 import io.github.toolfactory.jvm.function.template.ThrowingBiConsumer;
 
@@ -111,11 +113,21 @@ class Cache {
 		Map<T, PathForResources<R>> resources;
 
 		public ObjectAndPathForResources() {
-			this(1L, item -> item, null );
+			this(1L, new Function<R, R>() {
+				@Override
+				public R apply(R item) {
+					return item;
+				}
+			}, null );
 		}
 
 		public ObjectAndPathForResources(Long partitionStartLevel) {
-			this(partitionStartLevel, item -> item, null);
+			this(partitionStartLevel, new Function<R, R>() {
+				@Override
+				public R apply(R item) {
+					return item;
+				}
+			}, null);
 		}
 
 		public ObjectAndPathForResources(Long partitionStartLevel, Function<R, R> sharer) {
@@ -124,20 +136,28 @@ class Cache {
 
 		public ObjectAndPathForResources(Long partitionStartLevel, Function<R, R> sharer, BiConsumer<String, R> itemDestroyer) {
 			this.resources = new ConcurrentHashMap<>();
-			this.pathForResourcesSupplier = () -> new PathForResources<>(partitionStartLevel, sharer, itemDestroyer);
+			this.pathForResourcesSupplier = new Supplier<PathForResources<R>>() {
+				@Override
+				public PathForResources<R> get() {
+					return new PathForResources<>(partitionStartLevel, sharer, itemDestroyer);
+				}
+			};
 			this.instanceId = Objects.INSTANCE.getId(this);
 		}
 
 		public R get(T object, String path) {
 			PathForResources<R> pathForResources = resources.get(object);
 			if (pathForResources == null) {
-				pathForResources = Synchronizer.INSTANCE.execute(instanceId + "_mutexManagerForResources_" + Objects.INSTANCE.getId(object), () -> {
-					PathForResources<R> pathForResourcesTemp = resources.get(object);
-					if (pathForResourcesTemp == null) {
-						pathForResourcesTemp = pathForResourcesSupplier.get();
-						resources.put(object, pathForResourcesTemp);
+				pathForResources = Synchronizer.INSTANCE.execute(instanceId + "_mutexManagerForResources_" + Objects.INSTANCE.getId(object), new ThrowingSupplier<PathForResources<R>, Throwable>() {
+					@Override
+					public PathForResources<R> get() throws Throwable {
+						PathForResources<R> pathForResourcesTemp = resources.get(object);
+						if (pathForResourcesTemp == null) {
+							pathForResourcesTemp = pathForResourcesSupplier.get();
+							resources.put(object, pathForResourcesTemp);
+						}
+						return pathForResourcesTemp;
 					}
-					return pathForResourcesTemp;
 				});
 			}
 			return pathForResources.get(path);
@@ -146,13 +166,16 @@ class Cache {
 		public R getOrUploadIfAbsent(T object, String path, Supplier<R> resourceSupplier) {
 			PathForResources<R> pathForResources = resources.get(object);
 			if (pathForResources == null) {
-				pathForResources = Synchronizer.INSTANCE.execute(instanceId + "_" + Objects.INSTANCE.getId(object), () -> {
-					PathForResources<R> pathForResourcesTemp = resources.get(object);
-					if (pathForResourcesTemp == null) {
-						pathForResourcesTemp = pathForResourcesSupplier.get();
-						resources.put(object, pathForResourcesTemp);
+				pathForResources = Synchronizer.INSTANCE.execute(instanceId + "_" + Objects.INSTANCE.getId(object), new ThrowingSupplier<PathForResources<R>, Throwable>() {
+					@Override
+					public PathForResources<R> get() throws Throwable {
+						PathForResources<R> pathForResourcesTemp = resources.get(object);
+						if (pathForResourcesTemp == null) {
+							pathForResourcesTemp = pathForResourcesSupplier.get();
+							resources.put(object, pathForResourcesTemp);
+						}
+						return pathForResourcesTemp;
 					}
-					return pathForResourcesTemp;
 				});
 			}
 			return pathForResources.getOrUploadIfAbsent(path, resourceSupplier);
@@ -184,15 +207,18 @@ class Cache {
 				resources = this.resources;
 				this.resources = new ConcurrentHashMap<>();
 			}
-			Thread thread = new Thread(() -> {
-				for (Entry<T, PathForResources<R>> item : resources.entrySet()) {
-					try {
-						item.getValue().clearInBackground(destroyItems).join();
-					} catch (InterruptedException exc) {
-						Throwables.INSTANCE.throwException(exc);
+			Thread thread = new Thread(new Runnable() {
+				@Override
+				public void run() {
+					for (Entry<T, PathForResources<R>> item : resources.entrySet()) {
+						try {
+							item.getValue().clearInBackground(destroyItems).join();
+						} catch (InterruptedException exc) {
+							Throwables.INSTANCE.throwException(exc);
+						}
 					}
+					resources.clear();
 				}
-				resources.clear();
 			});
 			thread.start();
 			return thread;
@@ -208,11 +234,21 @@ class Cache {
 		Function<R, R> sharer;
 
 		private PathForResources() {
-			this(1L, item -> item, null);
+			this(1L, new Function<R, R>() {
+				@Override
+				public R apply(R item) {
+					return item;
+				}
+			}, null);
 		}
 
 		private PathForResources(BiConsumer<String, R> itemDestroyer) {
-			this(1L, item -> item, itemDestroyer);
+			this(1L, new Function<R, R>() {
+				@Override
+				public R apply(R item) {
+					return item;
+				}
+			}, itemDestroyer);
 		}
 
 		private PathForResources(Function<R, R> sharer) {
@@ -220,15 +256,30 @@ class Cache {
 		}
 
 		private PathForResources(Function<R, R> sharer, BiConsumer<String, R> itemDestroyer) {
-			this(1L, item -> item, itemDestroyer);
+			this(1L, new Function<R, R>() {
+				@Override
+				public R apply(R item) {
+					return item;
+				}
+			}, itemDestroyer);
 		}
 
 		private PathForResources(Long partitionStartLevel) {
-			this(partitionStartLevel, item -> item, null);
+			this(partitionStartLevel, new Function<R, R>() {
+				@Override
+				public R apply(R item) {
+					return item;
+				}
+			}, null);
 		}
 
 		private PathForResources(Long partitionStartLevel, BiConsumer<String, R> itemDestroyer) {
-			this(partitionStartLevel, item -> item, itemDestroyer);
+			this(partitionStartLevel, new Function<R, R>() {
+				@Override
+				public R apply(R item) {
+					return item;
+				}
+			}, itemDestroyer);
 		}
 
 		private PathForResources(Long partitionStartLevel, Function<R, R> sharer) {
@@ -265,7 +316,12 @@ class Cache {
 		}
 
 		public R getOrUploadIfAbsent(String path, Supplier<R> resourceSupplier) {
-			Long occurences = path.chars().filter(ch -> ch == '/').count();
+			Long occurences = path.chars().filter(new IntPredicate() {
+				@Override
+				public boolean test(int ch) {
+					return ch == '/';
+				}
+			}).count();
 			Long partitionIndex = occurences > partitionStartLevel? occurences : partitionStartLevel;
 			Map<String, Map<String, R>> partion = retrievePartition(resources, partitionIndex);
 			Map<String, R> nestedPartition = retrievePartition(partion, partitionIndex, path);
@@ -273,12 +329,20 @@ class Cache {
 		}
 
 		public R remove(String path, boolean destroy) {
-			Long occurences = path.chars().filter(ch -> ch == '/').count();
+			Long occurences = path.chars().filter(new IntPredicate() {
+				@Override
+				public boolean test(int ch) {
+					return ch == '/';
+				}
+			}).count();
 			Long partitionIndex = occurences > partitionStartLevel? occurences : partitionStartLevel;
 			Map<String, Map<String, R>> partion = retrievePartition(resources, partitionIndex);
 			Map<String, R> nestedPartition = retrievePartition(partion, partitionIndex, path);
-			R item =  Synchronizer.INSTANCE.execute(instanceId + "_mutexManagerForLoadedResources_" + path, () -> {
-				return nestedPartition.remove(path);
+			R item =  Synchronizer.INSTANCE.execute(instanceId + "_mutexManagerForLoadedResources_" + path, new ThrowingSupplier<R, Throwable>() {
+				@Override
+				public R get() throws Throwable {
+					return nestedPartition.remove(path);
+				}
 			});
 			if ((itemDestroyer != null) && destroy && (item != null)) {
 				String finalPath = path;
@@ -289,17 +353,25 @@ class Cache {
 
 		public R upload(Map<String, R> loadedResources, String path, Supplier<R> resourceSupplier, boolean destroy) {
 			R oldResource = remove(path, destroy);
-			 Synchronizer.INSTANCE.execute(instanceId + "_mutexManagerForLoadedResources_" + path, () -> {
-				R resourceTemp = resourceSupplier.get();
-				if (resourceTemp != null) {
-					loadedResources.put(path, resourceTemp = sharer.apply(resourceTemp));
+			 Synchronizer.INSTANCE.execute(instanceId + "_mutexManagerForLoadedResources_" + path, new Runnable() {
+				@Override
+				public void run() {
+					R resourceTemp = resourceSupplier.get();
+					if (resourceTemp != null) {
+						loadedResources.put(path, resourceTemp = sharer.apply(resourceTemp));
+					}
 				}
 			});
 			return oldResource;
 		}
 
 		public R upload(String path, Supplier<R> resourceSupplier, boolean destroy) {
-			Long occurences = path.chars().filter(ch -> ch == '/').count();
+			Long occurences = path.chars().filter(new IntPredicate() {
+				@Override
+				public boolean test(int ch) {
+					return ch == '/';
+				}
+			}).count();
 			Long partitionIndex = occurences > partitionStartLevel? occurences : partitionStartLevel;
 			Map<String, Map<String, R>> partion = retrievePartition(resources, partitionIndex);
 			Map<String, R> nestedPartition = retrievePartition(partion, partitionIndex, path);
@@ -310,8 +382,11 @@ class Cache {
 			for (Entry<Long, Map<String, Map<String, R>>> partition : partitions.entrySet()) {
 				for (Entry<String, Map<String, R>> nestedPartition : partition.getValue().entrySet()) {
 					if ((itemDestroyer != null) && destroyItems) {
-						deepClear(nestedPartition.getValue(), (path, resource) -> {
-							this.itemDestroyer.accept(path, resource);
+						deepClear(nestedPartition.getValue(), new ThrowingBiConsumer<String, R, RuntimeException>() {
+							@Override
+							public void accept(String path, R resource) throws RuntimeException {
+								PathForResources.this.itemDestroyer.accept(path, resource);
+							}
 						});
 					} else {
 						nestedPartition.getValue().clear();
@@ -325,15 +400,18 @@ class Cache {
 		R getOrUploadIfAbsent(Map<String, R> loadedResources, String path, Supplier<R> resourceSupplier) {
 			R resource = loadedResources.get(path);
 			if (resource == null) {
-				resource =  Synchronizer.INSTANCE.execute(instanceId + "_mutexManagerForLoadedResources_" + path, () -> {
-					R resourceTemp = loadedResources.get(path);
-					if ((resourceTemp == null) && (resourceSupplier != null)) {
-						resourceTemp = resourceSupplier.get();
-						if (resourceTemp != null) {
-							loadedResources.put(path, resourceTemp = sharer.apply(resourceTemp));
+				resource =  Synchronizer.INSTANCE.execute(instanceId + "_mutexManagerForLoadedResources_" + path, new ThrowingSupplier<R, Throwable>() {
+					@Override
+					public R get() throws Throwable {
+						R resourceTemp = loadedResources.get(path);
+						if ((resourceTemp == null) && (resourceSupplier != null)) {
+							resourceTemp = resourceSupplier.get();
+							if (resourceTemp != null) {
+								loadedResources.put(path, resourceTemp = sharer.apply(resourceTemp));
+							}
 						}
+						return resourceTemp;
 					}
-					return resourceTemp;
 				});
 			}
 			return resource != null?
@@ -344,12 +422,15 @@ class Cache {
 		Map<String, Map<String, R>> retrievePartition(Map<Long, Map<String, Map<String, R>>> partitionedResources, Long partitionIndex) {
 			Map<String, Map<String, R>> resources = partitionedResources.get(partitionIndex);
 			if (resources == null) {
-				resources = Synchronizer.INSTANCE.execute(instanceId + "_mutexManagerForPartitionedResources_" + partitionIndex.toString(), () -> {
-					Map<String, Map<String, R>> resourcesTemp = partitionedResources.get(partitionIndex);
-					if (resourcesTemp == null) {
-						partitionedResources.put(partitionIndex, resourcesTemp = new ConcurrentHashMap<>());
+				resources = Synchronizer.INSTANCE.execute(instanceId + "_mutexManagerForPartitionedResources_" + partitionIndex.toString(), new ThrowingSupplier<Map<String, Map<String, R>>, Throwable>() {
+					@Override
+					public Map<String, Map<String, R>> get() throws Throwable {
+						Map<String, Map<String, R>> resourcesTemp = partitionedResources.get(partitionIndex);
+						if (resourcesTemp == null) {
+							partitionedResources.put(partitionIndex, resourcesTemp = new ConcurrentHashMap<>());
+						}
+						return resourcesTemp;
 					}
-					return resourcesTemp;
 				});
 			}
 			return resources;
@@ -364,12 +445,15 @@ class Cache {
 			Map<String, R> innerPartion = partion.get(partitionKey);
 			if (innerPartion == null) {
 				String finalPartitionKey = partitionKey;
-				innerPartion = Synchronizer.INSTANCE.execute(instanceId + "_mutexManagerForPartitions_" + finalPartitionKey, () -> {
-					Map<String, R> innerPartionTemp = partion.get(finalPartitionKey);
-					if (innerPartionTemp == null) {
-						partion.put(finalPartitionKey, innerPartionTemp = new ConcurrentHashMap<>());
+				innerPartion = Synchronizer.INSTANCE.execute(instanceId + "_mutexManagerForPartitions_" + finalPartitionKey, new ThrowingSupplier<Map<String, R>, Throwable>() {
+					@Override
+					public Map<String, R> get() throws Throwable {
+						Map<String, R> innerPartionTemp = partion.get(finalPartitionKey);
+						if (innerPartionTemp == null) {
+							partion.put(finalPartitionKey, innerPartionTemp = new ConcurrentHashMap<>());
+						}
+						return innerPartionTemp;
 					}
-					return innerPartionTemp;
 				});
 			}
 			return innerPartion;
@@ -381,8 +465,11 @@ class Cache {
 				partitions = this.resources;
 				this.resources = new ConcurrentHashMap<>();
 			}
-			Thread thread = new Thread(() -> {
-				clearResources(partitions, destroyItems);
+			Thread thread = new Thread(new Runnable() {
+				@Override
+				public void run() {
+					clearResources(partitions, destroyItems);
+				}
 			});
 			thread.start();
 			return thread;

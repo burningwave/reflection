@@ -28,50 +28,93 @@
  */
 package org.burningwave;
 
-
-import java.util.Optional;
-import java.util.function.BiFunction;
-import java.util.function.BiPredicate;
-import java.util.function.Function;
-import java.util.function.Predicate;
-
-import org.burningwave.function.TriPredicate;
+import org.burningwave.function.Function;
+import org.burningwave.function.ThrowingBiFunction;
+import org.burningwave.function.ThrowingBiPredicate;
+import org.burningwave.function.ThrowingPredicate;
+import org.burningwave.function.ThrowingTriPredicate;
 import org.burningwave.reflection.Constructors;
 
 @SuppressWarnings("unchecked")
 public class Criteria<E, C extends Criteria<E, C, T>, T extends Criteria.TestContext<E, C>> {
 
-	protected Function<BiPredicate<T, E>, BiPredicate<T, E>> logicalOperator;
+	protected Function<ThrowingBiPredicate<T, E, ? extends Throwable>, ThrowingBiPredicate<T, E, ? extends Throwable>> logicalOperator;
 
-	protected BiPredicate<T, E> predicate;
+	protected ThrowingBiPredicate<T, E, ? extends Throwable> predicate;
 
-	public final static <E, C extends Criteria<E, C, T>, T extends Criteria.TestContext<E, C>> Criteria<E, C, T> of(final BiPredicate<T, E> predicate) {
+	public final static <E, C extends Criteria<E, C, T>, T extends Criteria.TestContext<E, C>> Criteria<E, C, T> of(final ThrowingBiPredicate<T, E, ? extends Throwable> predicate) {
 		return new Criteria<E, C, T>().allThoseThatMatch(predicate);
 	}
 
-	public final static <E, C extends Criteria<E, C, T>, T extends Criteria.TestContext<E, C>> Criteria<E, C, T> of(final Predicate<E> predicate) {
+	public final static <E, C extends Criteria<E, C, T>, T extends Criteria.TestContext<E, C>> Criteria<E, C, T> of(final ThrowingPredicate<E, ? extends Throwable> predicate) {
 		return new Criteria<E, C, T>().allThoseThatMatch(predicate);
 	}
 
-	public C allThoseThatMatch(final BiPredicate<T, E> predicate) {
+	public C allThoseThatMatch(final ThrowingBiPredicate<T, E, ? extends Throwable> predicate) {
 		this.predicate = concat(
 			this.predicate,
-			(context, entity) -> predicate.test(context, entity)
+			new ThrowingBiPredicate<T, E, Throwable>() {
+				@Override
+				public boolean test(T context, E entity) throws Throwable {
+					return predicate.test(context, entity);
+				}
+			}
 		);
 		return (C)this;
 	}
 
-	public C allThoseThatMatch(final Predicate<E> predicate) {
-		return allThoseThatMatch((context, entity) -> predicate.test(entity)) ;
+	public C allThoseThatMatch(final ThrowingPredicate<E, ? extends Throwable> predicate) {
+		return allThoseThatMatch(
+			new ThrowingBiPredicate<T, E, Throwable>() {
+				@Override
+				public boolean test(T context, E entity) throws Throwable {
+					return predicate.test(entity);
+				}
+			}
+		) ;
 	}
 
 	public C and(){
-		logicalOperator = (predicate) -> this.predicate.and(predicate);
+		logicalOperator = new Function<ThrowingBiPredicate<T, E, ? extends Throwable>, ThrowingBiPredicate<T, E, ? extends Throwable>>() {
+			@Override
+			public ThrowingBiPredicate<T, E, ? extends Throwable> apply(ThrowingBiPredicate<T, E, ? extends Throwable> predicate) {
+				return Criteria.this.predicate.and((ThrowingBiPredicate)predicate);
+			}
+		};
 		return (C)this;
 	}
 
 	public C and(C criteria) {
-		return logicOperation(this.createCopy(), criteria.createCopy(), (predicate) -> predicate::and, newInstance());
+		return logicOperation(
+			this.createCopy(),
+			criteria.createCopy(),
+			new Function<
+				ThrowingBiPredicate<T, E, ? extends Throwable>,
+				Function<
+					ThrowingBiPredicate<? super T, ? super E, ? extends Throwable>,
+					ThrowingBiPredicate<T, E, ? extends Throwable>
+				>
+			>() {
+				@Override
+				public Function<
+					ThrowingBiPredicate<? super T, ? super E, ? extends Throwable>,
+					ThrowingBiPredicate<T, E, ? extends Throwable>
+				> apply(ThrowingBiPredicate<T, E, ? extends Throwable> predicate) {
+					return new Function<
+						ThrowingBiPredicate<? super T, ? super E, ? extends Throwable>,
+						ThrowingBiPredicate<T, E, ? extends Throwable>
+					>() {
+						@Override
+						public ThrowingBiPredicate<T, E, ? extends Throwable> apply (
+							ThrowingBiPredicate<? super T, ? super E, ? extends Throwable> otherPredicate
+						) {
+							return predicate.and((ThrowingBiPredicate)otherPredicate);
+						}
+					};
+				}
+			},
+			newInstance()
+		);
 	}
 
 
@@ -83,11 +126,11 @@ public class Criteria<E, C extends Criteria<E, C, T>, T extends Criteria.TestCon
 	}
 
 
-	public Predicate<E> getPredicateOrFalsePredicateIfPredicateIsNull() {
+	public ThrowingPredicate<E, ? extends Throwable> getPredicateOrFalsePredicateIfPredicateIsNull() {
 		return getPredicate(createTestContext(), false);
 	}
 
-	public Predicate<E> getPredicateOrTruePredicateIfPredicateIsNull() {
+	public ThrowingPredicate<E, ? extends Throwable> getPredicateOrTruePredicateIfPredicateIsNull() {
 		return getPredicate(createTestContext(), true);
 	}
 
@@ -96,12 +139,46 @@ public class Criteria<E, C extends Criteria<E, C, T>, T extends Criteria.TestCon
 	}
 
 	public C or(){
-		logicalOperator = (predicate) -> this.predicate.or(predicate);
+		logicalOperator = new Function<ThrowingBiPredicate<T, E, ? extends Throwable>, ThrowingBiPredicate<T, E, ? extends Throwable>>() {
+			@Override
+			public ThrowingBiPredicate<T, E, ? extends Throwable> apply(ThrowingBiPredicate<T, E, ? extends Throwable> predicate) {
+				return Criteria.this.predicate.or((ThrowingBiPredicate) predicate);
+			}
+		};
 		return (C)this;
 	}
 
 	public C or(C criteria) {
-		return logicOperation(this.createCopy(), criteria.createCopy(), (predicate) -> predicate::or, newInstance());
+		return logicOperation(
+			this.createCopy(),
+			criteria.createCopy(),
+			new Function<
+				ThrowingBiPredicate<T, E, ? extends Throwable>,
+				Function<
+					ThrowingBiPredicate<? super T, ? super E, ? extends Throwable>,
+					ThrowingBiPredicate<T, E, ? extends Throwable>
+				>
+			>() {
+				@Override
+				public Function<
+					ThrowingBiPredicate<? super T, ? super E, ? extends Throwable>,
+					ThrowingBiPredicate<T, E, ? extends Throwable>
+				> apply(ThrowingBiPredicate<T, E, ? extends Throwable> predicate) {
+					return new Function<
+						ThrowingBiPredicate<? super T, ? super E, ? extends Throwable>,
+						ThrowingBiPredicate<T, E, ? extends Throwable>
+					>() {
+						@Override
+						public ThrowingBiPredicate<T, E, ? extends Throwable> apply (
+							ThrowingBiPredicate<? super T, ? super E, ? extends Throwable> otherPredicate
+						) {
+							return predicate.or((ThrowingBiPredicate)otherPredicate);
+						}
+					};
+				}
+			},
+			newInstance()
+		);
 	}
 
 
@@ -129,27 +206,29 @@ public class Criteria<E, C extends Criteria<E, C, T>, T extends Criteria.TestCon
 		return context;
 	}
 
-	protected BiPredicate<T, E> concat(
-		BiPredicate<T, E> mainPredicate,
-		BiPredicate<T, E> otherPredicate
+	protected ThrowingBiPredicate<T, E, ? extends Throwable> concat(
+		ThrowingBiPredicate<T, E, ? extends Throwable> mainPredicate,
+		ThrowingBiPredicate<T, E, ? extends Throwable> otherPredicate
 	) {
-		BiPredicate<T, E> predicate = concat(mainPredicate, this.logicalOperator, otherPredicate);
+		ThrowingBiPredicate<T, E, ? extends Throwable> predicate = concat(mainPredicate, this.logicalOperator, otherPredicate);
 		this.logicalOperator = null;
 		return predicate;
 	}
 
-	@SuppressWarnings("hiding")
-	protected <E, C extends Criteria<E, C, T>, T extends Criteria.TestContext<E, C>> BiPredicate<T, E> concat(
-		BiPredicate<T, E> mainPredicate,
-		Function<BiPredicate<T, E>, BiPredicate<T, E>> logicalOperator,
-		BiPredicate<T, E> otherPredicate
+	protected <E, C extends Criteria<E, C, T>, T extends Criteria.TestContext<E, C>> ThrowingBiPredicate<T, E, ? extends Throwable> concat(
+		ThrowingBiPredicate<T, E, ? extends Throwable> mainPredicate,
+		Function<ThrowingBiPredicate<T, E, ? extends Throwable>, ThrowingBiPredicate<T, E, ? extends Throwable>> logicalOperator,
+		ThrowingBiPredicate<T, E, ? extends Throwable> otherPredicate
 	) {
-		return Optional.ofNullable(otherPredicate).map(othPred ->
-			Optional.ofNullable(mainPredicate).map(mainPred ->
-				consumeLogicalOperator(othPred, logicalOperator)
-			).orElse(othPred)
-		).orElse(mainPredicate);
+		if (otherPredicate != null) {
+			if (mainPredicate != null) {
+				return consumeLogicalOperator(otherPredicate, logicalOperator);
+			}
+			return otherPredicate;
+		}
+		return mainPredicate;
 	}
+
 
 	protected T createTestContext() {
 		return (T)TestContext.<E, C, T>create((C)this);
@@ -167,25 +246,36 @@ public class Criteria<E, C extends Criteria<E, C, T>, T extends Criteria.TestCon
 		return context;
 	}
 
-	protected <V> BiPredicate<T, E> getPredicateWrapper(
-		final BiFunction<T, E, V[]> valueSupplier,
-		final TriPredicate<T, V[], Integer> predicate
+	protected <V> ThrowingBiPredicate<T, E, ? extends Throwable> getPredicateWrapper(
+		final ThrowingBiFunction<T, E, V[], ? extends Throwable> valueSupplier,
+		final ThrowingTriPredicate<T, V[], Integer, ? extends Throwable> predicate
 	) {
-		return getPredicateWrapper((criteria, entity) -> {
-			V[] array = valueSupplier.apply(criteria, entity);
-			boolean result = false;
-			for (int i = 0; i < array.length; i++) {
-				if (result = predicate.test(criteria, array, i)) {
-					break;
+		return getPredicateWrapper(
+			new ThrowingBiPredicate<T, E, Throwable>() {
+				@Override
+				public boolean test(T criteria, E entity) throws Throwable {
+					V[] array = valueSupplier.apply(criteria, entity);
+					boolean result = false;
+					for (int i = 0; i < array.length; i++) {
+						if (result = predicate.test(criteria, array, i)) {
+							break;
+						}
+					}
+					//logDebug("test for {} return {}", entity, result);
+					return result;
 				}
 			}
-			//logDebug("test for {} return {}", entity, result);
-			return result;
-		});
+		);
 	}
 
 	protected C logicOperation(C leftCriteria, C rightCriteria,
-		Function<BiPredicate<T, E>, Function<BiPredicate<? super T, ? super E>, BiPredicate<T, E>>> binaryOperator,
+		Function<
+			ThrowingBiPredicate<T, E, ? extends Throwable>,
+			Function<
+				ThrowingBiPredicate<? super T, ? super E, ? extends Throwable>,
+				ThrowingBiPredicate<T, E, ? extends Throwable>
+			>
+		> binaryOperator,
 		C targetCriteria
 	) {
 		targetCriteria.predicate =
@@ -202,92 +292,153 @@ public class Criteria<E, C extends Criteria<E, C, T>, T extends Criteria.TestCon
 	}
 
 	@SuppressWarnings("hiding")
-	<E, C extends Criteria<E, C, T>, T extends Criteria.TestContext<E, C>> BiPredicate<T,E> consumeLogicalOperator(
-		BiPredicate<T, E> input,
-		Function<BiPredicate<T, E>,
-		BiPredicate<T, E>> logicalOperator
+	<E, C extends Criteria<E, C, T>, T extends Criteria.TestContext<E, C>> ThrowingBiPredicate<T,E, ? extends Throwable> consumeLogicalOperator(
+		ThrowingBiPredicate<T, E, ? extends Throwable> input,
+		Function<
+			ThrowingBiPredicate<T, E, ? extends Throwable>,
+			ThrowingBiPredicate<T, E, ? extends Throwable>
+		> logicalOperator
 	) {
-		return Optional.ofNullable(logicalOperator).map(logOp -> {
+		if (logicalOperator != null) {
 			return logicalOperator.apply(input);
-		}).orElseGet(() ->
-			Throwables.INSTANCE.throwException(
-				"A call to and/or method is necessary before calling {} at {}",
-				Thread.currentThread().getStackTrace()[10].getMethodName(),
-				Thread.currentThread().getStackTrace()[11]
-			)
+		}
+		return Throwables.INSTANCE.throwException(
+			"A call to and/or method is necessary before calling {} at {}",
+			Thread.currentThread().getStackTrace()[10].getMethodName(),
+			Thread.currentThread().getStackTrace()[11]
 		);
 	}
 
-	BiPredicate<T, E> getPredicateWrapper(
-		BiPredicate<T, E> function
+	ThrowingBiPredicate<T, E, ? extends Throwable> getPredicateWrapper(
+		ThrowingBiPredicate<T, E, ? extends Throwable> function
 	) {
-		return Optional.ofNullable(function).map(innPredWrap ->
-			(BiPredicate<T, E>) (criteria, entity) -> innPredWrap.test(criteria, entity)
-		).orElse(null);
+		if (function != null) {
+			return new ThrowingBiPredicate<T, E, Throwable>() {
+				@Override
+				public boolean test(T criteria, E entity) throws Throwable {
+					return function.test(criteria, entity);
+				}
+			};
+		}
+		return null;
 	}
 
-	private Predicate<E> getPredicate(T context, boolean defaultResult) {
+	private ThrowingPredicate<E, ? extends Throwable> getPredicate(T context, boolean defaultResult) {
 		return context.setPredicate(
 			this.predicate != null?
-				(entity) -> {
-				return context.setEntity(entity).setResult(this.predicate.test(
-					context,
-					entity
-				)).getResult();
-			} :
-			(entity) -> {
-				return context.setEntity(entity).setResult(defaultResult).getResult();
+				new ThrowingPredicate<E, Throwable>() {
+					@Override
+					public boolean test(E entity) throws Throwable {
+						return context.setEntity(entity).setResult(Criteria.this.predicate.test(
+							context,
+							entity
+						)).getResult();
+					}
+				} :
+			new ThrowingPredicate<E, Throwable>() {
+				@Override
+				public boolean test(E entity) {
+					return context.setEntity(entity).setResult(defaultResult).getResult();
+				}
 			}
 		).getPredicate();
 	}
 
 
 	private boolean testWithFalseResultForNullEntityOrFalseResultForNullPredicate(T context, E entity) {
-		return Optional.ofNullable(entity).map(ent -> getPredicate(context, false).test(ent)).orElseGet(() ->
-			context.setEntity(entity).setResult(false).getResult()
-		);
+		if (entity != null) {
+			try {
+				return getPredicate(context, false).test(entity);
+			} catch (Throwable exc) {
+				Throwables.INSTANCE.throwException(exc);
+			}
+		}
+		return context.setEntity(entity).setResult(false).getResult();
 	}
 
 
 	private boolean testWithFalseResultForNullEntityOrTrueResultForNullPredicate(T context, E entity) {
-		return Optional.ofNullable(entity).map(ent -> getPredicate(context, true).test(ent)).orElseGet(() ->
-			context.setEntity(entity).setResult(false).getResult()
-		);
+		if (entity != null) {
+			try {
+				return getPredicate(context, true).test(entity);
+			} catch (Throwable exc) {
+				Throwables.INSTANCE.throwException(exc);
+			}
+		}
+		return context.setEntity(entity).setResult(false).getResult();
 	}
 
 
 	private boolean testWithTrueResultForNullEntityOrFalseResultForNullPredicate(T context, E entity) {
-		return Optional.ofNullable(entity).map(ent -> getPredicate(context, false).test(ent)).orElseGet(() ->
-			context.setEntity(entity).setResult(true).getResult()
-		);
+		if (entity != null) {
+			try {
+				return getPredicate(context, false).test(entity);
+			} catch (Throwable exc) {
+				Throwables.INSTANCE.throwException(exc);
+			}
+		}
+		return context.setEntity(entity).setResult(true).getResult();
 	}
 
 	private boolean testWithTrueResultForNullEntityOrTrueResultForNullPredicate(T context, E entity) {
-		return Optional.ofNullable(entity).map(ent -> getPredicate(context, true).test(ent)).orElseGet(() ->
-			context.setEntity(entity).setResult(true).getResult()
-		);
+		if (entity != null) {
+			try {
+				return getPredicate(context, true).test(entity);
+			} catch (Throwable exc) {
+				Throwables.INSTANCE.throwException(exc);
+			}
+		}
+		return context.setEntity(entity).setResult(true).getResult();
 	}
 
 	public static class Simple<E, C extends Simple<E, C>> {
 
-		protected Function<Predicate<E>, Predicate<E>> logicalOperator;
-		protected Predicate<E> predicate;
+		protected Function<ThrowingPredicate<E, ? extends Throwable>, ThrowingPredicate<E, ? extends Throwable>> logicalOperator;
+		protected ThrowingPredicate<E, ? extends Throwable> predicate;
 
-		public C allThoseThatMatch(final Predicate<E> predicate) {
+		public C allThoseThatMatch(final ThrowingPredicate<E, ? extends Throwable> predicate) {
 			this.predicate = concat(
 				this.predicate,
-				(entity) -> predicate.test(entity)
+				new ThrowingPredicate<E,Throwable>() {
+					@Override
+					public boolean test(E entity) throws Throwable {
+						return predicate.test(entity);
+					}
+				}
 			);
 			return (C)this;
 		}
 
 		public C and(){
-			logicalOperator = (predicate) -> this.predicate.and(predicate);
+			logicalOperator = new Function<ThrowingPredicate<E, ? extends Throwable>, ThrowingPredicate<E, ? extends Throwable>>() {
+				@Override
+				public ThrowingPredicate<E, ? extends Throwable> apply(ThrowingPredicate<E, ? extends Throwable> predicate) {
+					return Simple.this.predicate.and((ThrowingPredicate)predicate);
+				}
+			};
 			return (C)this;
 		}
 
 		public C and(C criteria) {
-			return logicOperation(this.createCopy(), criteria.createCopy(), (predicate) -> predicate::and, newInstance());
+			return logicOperation(this.createCopy(), criteria.createCopy(),
+					new Function<ThrowingPredicate<E, ? extends Throwable>,
+					Function<ThrowingPredicate<? super E, ? extends Throwable>, ThrowingPredicate<E, ? extends Throwable>>>() {
+				@Override
+				public Function<ThrowingPredicate<? super E, ? extends Throwable>, ThrowingPredicate<E, ? extends Throwable>> apply(ThrowingPredicate<E, ? extends Throwable> predicate) {
+					return new Function<
+						ThrowingPredicate<? super E, ? extends Throwable>,
+						ThrowingPredicate<E, ? extends Throwable>
+					>() {
+						@Override
+						public ThrowingPredicate<E, ? extends Throwable> apply(
+							ThrowingPredicate<? super E, ? extends Throwable> otherPredicate
+						) {
+							return predicate.and((ThrowingPredicate) otherPredicate);
+						}
+
+					};
+				}
+			}, newInstance());
 		}
 
 		public C createCopy() {
@@ -297,12 +448,12 @@ public class Criteria<E, C extends Criteria<E, C, T>, T extends Criteria.TestCon
 			return copy;
 		}
 
-		public Predicate<E> getPredicateOrFalsePredicateIfPredicateIsNull() {
+		public ThrowingPredicate<E, ? extends Throwable> getPredicateOrFalsePredicateIfPredicateIsNull() {
 			return getPredicate(false);
 		}
 
 
-		public Predicate<E> getPredicateOrTruePredicateIfPredicateIsNull() {
+		public ThrowingPredicate<E, ? extends Throwable> getPredicateOrTruePredicateIfPredicateIsNull() {
 			return getPredicate(true);
 		}
 
@@ -311,88 +462,145 @@ public class Criteria<E, C extends Criteria<E, C, T>, T extends Criteria.TestCon
 		}
 
 		public C or(){
-			logicalOperator = (predicate) -> this.predicate.or(predicate);
+			logicalOperator = new Function<ThrowingPredicate<E, ? extends Throwable>, ThrowingPredicate<E, ? extends Throwable>>() {
+				@Override
+				public ThrowingPredicate<E, ? extends Throwable> apply(ThrowingPredicate<E, ? extends Throwable> predicate) {
+					return Simple.this.predicate.or((ThrowingPredicate)predicate);
+				}
+			};
 			return (C)this;
 		}
 
 		public C or(C criteria) {
-			return logicOperation(this.createCopy(), criteria.createCopy(), (predicate) -> predicate::or, newInstance());
+			return logicOperation(
+				this.createCopy(), criteria.createCopy(),
+				new Function<ThrowingPredicate<E, ? extends Throwable>, Function<ThrowingPredicate<? super E, ? extends Throwable>, ThrowingPredicate<E, ? extends Throwable>>>() {
+					@Override
+					public Function<ThrowingPredicate<? super E, ? extends Throwable>, ThrowingPredicate<E, ? extends Throwable>> apply(ThrowingPredicate<E, ? extends Throwable> predicate) {
+						return new Function<
+							ThrowingPredicate<? super E, ? extends Throwable>,
+							ThrowingPredicate<E, ? extends Throwable>
+						>() {
+							@Override
+							public ThrowingPredicate<E, ? extends Throwable> apply(
+								ThrowingPredicate<? super E, ? extends Throwable> otherPredicate
+							) {
+								return predicate.or((ThrowingPredicate)otherPredicate);
+							}
+						};
+					}
+				},
+				newInstance()
+			);
 		}
 
 		public boolean testWithFalseResultForNullEntityOrFalseResultForNullPredicate(E entity) {
-			return Optional.ofNullable(entity).map(ent -> getPredicateOrFalsePredicateIfPredicateIsNull().test(ent)).orElseGet(() ->
-				false
-			);
+			if (entity != null) {
+				try {
+					return getPredicateOrFalsePredicateIfPredicateIsNull().test(entity);
+				} catch (Throwable exc) {
+					return Throwables.INSTANCE.throwException(exc);
+				}
+			}
+			return false;
 		}
 
 
 		public boolean testWithFalseResultForNullEntityOrTrueResultForNullPredicate(E entity) {
-			return Optional.ofNullable(entity).map(ent -> getPredicateOrTruePredicateIfPredicateIsNull().test(ent)).orElseGet(() ->
-				false
-			);
+			if (entity != null) {
+				try {
+					return getPredicateOrTruePredicateIfPredicateIsNull().test(entity);
+				} catch (Throwable exc) {
+					return Throwables.INSTANCE.throwException(exc);
+				}
+			}
+			return false;
 		}
 
 		public boolean testWithFalseResultForNullPredicate(E entity) {
-			return getPredicateOrFalsePredicateIfPredicateIsNull().test(entity);
+			try {
+				return getPredicateOrFalsePredicateIfPredicateIsNull().test(entity);
+			} catch (Throwable exc) {
+				return Throwables.INSTANCE.throwException(exc);
+			}
 		}
 
 		public boolean testWithTrueResultForNullEntityOrFalseResultForNullPredicate(E entity) {
-			return Optional.ofNullable(entity).map(ent -> getPredicateOrFalsePredicateIfPredicateIsNull().test(ent)).orElseGet(() ->
-				true
-			);
+			if (entity != null) {
+				try {
+					return getPredicateOrFalsePredicateIfPredicateIsNull().test(entity);
+				} catch (Throwable exc) {
+					return Throwables.INSTANCE.throwException(exc);
+				}
+			}
+			return true;
 		}
 
 		public boolean testWithTrueResultForNullEntityOrTrueResultForNullPredicate(E entity) {
-			return Optional.ofNullable(entity).map(ent -> getPredicateOrTruePredicateIfPredicateIsNull().test(ent)).orElseGet(() ->
-				true
-			);
+			if (entity != null) {
+				try {
+					return getPredicateOrTruePredicateIfPredicateIsNull().test(entity);
+				} catch (Throwable exc) {
+					return Throwables.INSTANCE.throwException(exc);
+				}
+			}
+			return true;
 		}
 
 		public boolean testWithTrueResultForNullPredicate(E entity) {
-			return getPredicateOrTruePredicateIfPredicateIsNull().test(entity);
+			try {
+				return getPredicateOrTruePredicateIfPredicateIsNull().test(entity);
+			} catch (Throwable exc) {
+				return Throwables.INSTANCE.throwException(exc);
+			}
 		}
 
-		@SuppressWarnings("hiding")
-		protected <E, C extends Simple<E, C>> Predicate<E> concat(
-			Predicate<E> mainPredicate,
-			Function<Predicate<E>, Predicate<E>> logicalOperator,
-			Predicate<E> otherPredicate
+
+		protected <E, C extends Simple<E, C>> ThrowingPredicate<E, ? extends Throwable> concat(
+			ThrowingPredicate<E, ? extends Throwable> mainPredicate,
+			Function<ThrowingPredicate<E, ? extends Throwable>, ThrowingPredicate<E, ? extends Throwable>> logicalOperator,
+			ThrowingPredicate<E, ? extends Throwable> otherPredicate
 		) {
-			return Optional.ofNullable(otherPredicate).map(othPred ->
-				Optional.ofNullable(mainPredicate).map(mainPred ->
-					consumeLogicalOperator(othPred, logicalOperator)
-				).orElse(othPred)
-			).orElse(mainPredicate);
+			if (otherPredicate != null) {
+				if (mainPredicate != null) {
+					return consumeLogicalOperator(otherPredicate, logicalOperator);
+				}
+				return otherPredicate;
+			}
+			return mainPredicate;
 		}
 
-		protected Predicate<E> concat(
-			Predicate<E> mainPredicate,
-			Predicate<E> otherPredicate
+		protected ThrowingPredicate<E, ? extends Throwable> concat(
+			ThrowingPredicate<E, ? extends Throwable> mainPredicate,
+			ThrowingPredicate<E, ? extends Throwable> otherPredicate
 		) {
-			Predicate<E> predicate = concat(mainPredicate, this.logicalOperator, otherPredicate);
+			ThrowingPredicate<E, ? extends Throwable> predicate = concat(mainPredicate, this.logicalOperator, otherPredicate);
 			this.logicalOperator = null;
 			return predicate;
 		}
 
-		protected <V> Predicate<E> getPredicateWrapper(
+		protected <V> ThrowingPredicate<E, ? extends Throwable> getPredicateWrapper(
 			final Function<E, V[]> valueSupplier,
-			final BiPredicate<V[], Integer> predicate
+			final ThrowingBiPredicate<V[], Integer, ? extends Throwable> predicate
 		) {
-			return getPredicateWrapper((entity) -> {
-				V[] array = valueSupplier.apply(entity);
-				boolean result = false;
-				for (int i = 0; i < array.length; i++) {
-					if (result = predicate.test(array, i)) {
-						break;
+			return getPredicateWrapper(new ThrowingPredicate<E, Throwable>() {
+				@Override
+				public boolean test(E entity) throws Throwable {
+					V[] array = valueSupplier.apply(entity);
+					boolean result = false;
+					for (int i = 0; i < array.length; i++) {
+						if (result = predicate.test(array, i)) {
+							break;
+						}
 					}
+					//logDebug("test for {} return {}", entity, result);
+					return result;
 				}
-				//logDebug("test for {} return {}", entity, result);
-				return result;
 			});
 		}
 
 		protected C logicOperation(C leftCriteria, C rightCriteria,
-			Function<Predicate<E>, Function<Predicate< ? super E>, Predicate<E>>> binaryOperator,
+			Function<ThrowingPredicate<E, ? extends Throwable>, Function<ThrowingPredicate< ? super E, ? extends Throwable>, ThrowingPredicate<E, ? extends Throwable>>> binaryOperator,
 			C targetCriteria
 		) {
 			targetCriteria.predicate =
@@ -409,37 +617,47 @@ public class Criteria<E, C extends Criteria<E, C, T>, T extends Criteria.TestCon
 		}
 
 		@SuppressWarnings("hiding")
-		<E, C extends Simple<E, C>> Predicate<E> consumeLogicalOperator (
-			Predicate<E> input,
-			Function<Predicate<E>,
-			Predicate<E>> logicalOperator
+		<E, C extends Simple<E, C>> ThrowingPredicate<E, ? extends Throwable> consumeLogicalOperator (
+			ThrowingPredicate<E, ? extends Throwable> input,
+			Function<ThrowingPredicate<E, ? extends Throwable>, ThrowingPredicate<E, ? extends Throwable>> logicalOperator
 		) {
-			return Optional.ofNullable(logicalOperator).map(logOp -> {
+			if (logicalOperator != null) {
 				return logicalOperator.apply(input);
-			}).orElseGet(() ->
-				Throwables.INSTANCE.throwException(
-					"A call to and/or method is necessary before calling {} at {}",
-					Thread.currentThread().getStackTrace()[10].getMethodName(),
-					Thread.currentThread().getStackTrace()[11]
-				)
+			}
+			return Throwables.INSTANCE.throwException(
+				"A call to and/or method is necessary before calling {} at {}",
+				Thread.currentThread().getStackTrace()[10].getMethodName(),
+				Thread.currentThread().getStackTrace()[11]
 			);
 		}
 
-		Predicate<E> getPredicateWrapper(
-			Predicate<E> function
+		ThrowingPredicate<E, ? extends Throwable> getPredicateWrapper(
+			ThrowingPredicate<E, ? extends Throwable> function
 		) {
-			return Optional.ofNullable(function).map(innPredWrap ->
-				(Predicate<E>) (entity) -> innPredWrap.test(entity)
-			).orElse(null);
+			if (function != null) {
+				return new ThrowingPredicate<E, Throwable>() {
+					@Override
+					public boolean test(E entity) throws Throwable {
+						return function.test(entity);
+					}
+				};
+			}
+			return null;
 		}
 
-		private Predicate<E> getPredicate(boolean defaultResult) {
+		private ThrowingPredicate<E, ? extends Throwable> getPredicate(boolean defaultResult) {
 			return this.predicate != null?
-					(entity) -> {
-						return this.predicate.test(entity);
+				new ThrowingPredicate<E, Throwable>() {
+					@Override
+					public boolean test(E entity) throws Throwable {
+						return Simple.this.predicate.test(entity);
+					}
 				} :
-				(entity) -> {
-					return defaultResult;
+				new ThrowingPredicate<E, Throwable>() {
+					@Override
+					public boolean test(E entity) {
+						return defaultResult;
+					}
 				};
 		}
 	}
@@ -469,7 +687,7 @@ public class Criteria<E, C extends Criteria<E, C, T>, T extends Criteria.TestCon
 			return get(Elements.ENTITY);
 		}
 
-		public Predicate<E> getPredicate() {
+		public ThrowingPredicate<E, ? extends Throwable> getPredicate() {
 			return get(Elements.PREDICATE);
 		}
 
@@ -482,7 +700,7 @@ public class Criteria<E, C extends Criteria<E, C, T>, T extends Criteria.TestCon
 			return (T) this;
 		}
 
-		<T extends Criteria.TestContext<E, C>> T setPredicate(Predicate<E> predicate) {
+		<T extends Criteria.TestContext<E, C>> T setPredicate(ThrowingPredicate<E, ? extends Throwable> predicate) {
 			put(Elements.PREDICATE, predicate);
 			return (T)this;
 		}

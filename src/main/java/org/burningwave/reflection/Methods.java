@@ -34,18 +34,21 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Parameter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 import org.burningwave.Strings;
 import org.burningwave.Throwables;
+import org.burningwave.function.Consumer;
 import org.burningwave.function.Executor;
+import org.burningwave.function.Function;
+import org.burningwave.function.Supplier;
+import org.burningwave.function.ThrowingBiPredicate;
 import org.burningwave.function.ThrowingFunction;
+import org.burningwave.function.ThrowingPredicate;
+import org.burningwave.function.ThrowingSupplier;
 
 @SuppressWarnings("unchecked")
 public class Methods extends Members.Handler.OfExecutable<Method, MethodCriteria> {
@@ -64,10 +67,13 @@ public class Methods extends Members.Handler.OfExecutable<Method, MethodCriteria
 		String cacheKey = getCacheKey(targetClass, "all methods");
 		ClassLoader targetClassClassLoader = Classes.INSTANCE.getClassLoader(targetClass);
 		Collection<Method> members = Cache.INSTANCE.uniqueKeyForMethods.getOrUploadIfAbsent(
-			targetClassClassLoader, cacheKey, () -> {
-				return findAllAndMakeThemAccessible(
-					MethodCriteria.forEntireClassHierarchy(), targetClass
-				);
+			targetClassClassLoader, cacheKey, new Supplier<Collection<Method>>() {
+				@Override
+				public Collection<Method> get() {
+					return findAllAndMakeThemAccessible(
+						MethodCriteria.forEntireClassHierarchy(), targetClass
+					);
+				}
 			}
 		);
 		return members;
@@ -122,7 +128,12 @@ public class Methods extends Members.Handler.OfExecutable<Method, MethodCriteria
 					Strings.INSTANCE.compile(
 						"Found more than one of method named {} with argument types {} in {} hierarchy",
 						memberName,
-						String.join(", ", Arrays.asList(inputParameterTypesOrSubTypes).stream().map(cls -> cls.getName()).collect(Collectors.toList())),
+						Strings.INSTANCE.join(", ", inputParameterTypesOrSubTypes, new Function<Class<?>, String>() {
+							@Override
+							public String apply(Class<?> cls) {
+								return cls.getName();
+							}
+						}),
 						targetClass.getName()
 					)
 				)
@@ -136,50 +147,77 @@ public class Methods extends Members.Handler.OfExecutable<Method, MethodCriteria
 	}
 
 	public <T> T invoke(Object target, String methodName, Object... arguments) {
-		return Executor.getFirst(() ->
-			(T)invokeDirect(
-				Classes.INSTANCE.retrieveFrom(target),
-				target, methodName, () -> {
-					List<Object> argumentList = new ArrayList<>();
-					argumentList.add(target);
-					return argumentList;
-				},
-				arguments
-			), () ->
-				invoke(
+		return Executor.getFirst(new ThrowingSupplier<T, RuntimeException>() {
+			@Override
+			public T get() throws RuntimeException {
+				return (T)invokeDirect(
 					Classes.INSTANCE.retrieveFrom(target),
-					null, methodName, method ->
-						invoke(
-							target, method, getArgumentArray(
-							method,
-							this::getArgumentListWithArrayForVarArgs,
-							ArrayList::new,
-							arguments
-						)
-					),
+					target, methodName, new Supplier<List<Object>>() {
+						@Override
+						public List<Object> get() {
+							List<Object> argumentList = new ArrayList<>();
+							argumentList.add(target);
+							return argumentList;
+						}
+					},
 					arguments
-				)
+				);
+			}
+		}, new ThrowingSupplier<T, RuntimeException>() {
+				@Override
+				public T get() throws RuntimeException {
+					return invoke(
+						Classes.INSTANCE.retrieveFrom(target),
+						null, methodName, new ThrowingFunction<Method, T, Throwable>() {
+							@Override
+							public T apply(Method method) throws Throwable {
+								return invoke(
+									target, method, getArgumentArray(
+									method,
+									Methods.this::getArgumentListWithArrayForVarArgs,
+									ArrayList::new,
+									arguments
+								)
+);
+							}
+						},
+						arguments
+					);
+				}
+			}
 		);
 	}
 
 	public 	<T> T invokeStatic(Class<?> targetClass, String methodName, Object... arguments) {
 		return Executor.getFirst(
-			() ->
-				(T)invokeDirect(targetClass, null, methodName, ArrayList::new, arguments),
-			() ->
-				invoke(
-					targetClass, null, methodName, method ->
-						(T)invoke(null,
-							method,
-							getArgumentArray(
-								method,
-								this::getArgumentListWithArrayForVarArgs,
-								ArrayList::new,
-								arguments
-							)
-						),
-					arguments
-				)
+			new ThrowingSupplier<T, RuntimeException>() {
+				@Override
+				public T get() throws RuntimeException {
+					return (T)invokeDirect(targetClass, null, methodName, ArrayList::new, arguments);
+				}
+			},
+			new ThrowingSupplier<T, RuntimeException>() {
+				@Override
+				public T get() throws RuntimeException {
+					return invoke(
+						targetClass, null, methodName, new ThrowingFunction<Method, T, Throwable>() {
+							@Override
+							public T apply(Method method) throws Throwable {
+								return (T)invoke(null,
+									method,
+									getArgumentArray(
+										method,
+										Methods.this::getArgumentListWithArrayForVarArgs,
+										ArrayList::new,
+										arguments
+									)
+								);
+							}
+						},
+						arguments
+					);
+				}
+			}
 		);
 	}
 
@@ -219,26 +257,41 @@ public class Methods extends Members.Handler.OfExecutable<Method, MethodCriteria
 	private Collection<Method> findAllByNamePredicateAndMakeThemAccessible(
 		Class<?> targetClass,
 		String cacheKeyPrefix,
-		Predicate<String> namePredicate,
+		ThrowingPredicate<String, ? extends Throwable> namePredicate,
 		Class<?>... inputParameterTypesOrSubTypes
 	) {
 		String cacheKey = getCacheKey(targetClass, cacheKeyPrefix, inputParameterTypesOrSubTypes);
 		ClassLoader targetClassClassLoader = Classes.INSTANCE.getClassLoader(targetClass);
-		return Cache.INSTANCE.uniqueKeyForMethods.getOrUploadIfAbsent(targetClassClassLoader, cacheKey, () -> {
-			MethodCriteria criteria = MethodCriteria.forEntireClassHierarchy()
-				.name(namePredicate)
-				.and().parameterTypesAreAssignableFrom(inputParameterTypesOrSubTypes);
-			if (inputParameterTypesOrSubTypes != null && inputParameterTypesOrSubTypes.length == 0) {
-				criteria = criteria.or(MethodCriteria.forEntireClassHierarchy().name(namePredicate).and().parameter((parameters, idx) -> parameters.length == 1 && parameters[0].isVarArgs()));
-			}
-			MethodCriteria finalCriteria = criteria;
-			return Cache.INSTANCE.uniqueKeyForMethods.getOrUploadIfAbsent(targetClassClassLoader, cacheKey, () ->
-				findAllAndApply(
-						finalCriteria, targetClass, (member) -> {
-						setAccessible(member, true);
+		return Cache.INSTANCE.uniqueKeyForMethods.getOrUploadIfAbsent(targetClassClassLoader, cacheKey, new Supplier<Collection<Method>>() {
+			@Override
+			public Collection<Method> get() {
+				MethodCriteria criteria = MethodCriteria.forEntireClassHierarchy()
+					.name(namePredicate)
+					.and().parameterTypesAreAssignableFrom(inputParameterTypesOrSubTypes);
+				if ((inputParameterTypesOrSubTypes != null) && (inputParameterTypesOrSubTypes.length == 0)) {
+					criteria = criteria.or(MethodCriteria.forEntireClassHierarchy().name(namePredicate).and().parameter(new ThrowingBiPredicate<Parameter[], Integer, Throwable>() {
+						@Override
+						public boolean test(Parameter[] parameters, Integer idx) {
+							return (parameters.length == 1) && parameters[0].isVarArgs();
+						}
+					}));
+				}
+				MethodCriteria finalCriteria = criteria;
+				return Cache.INSTANCE.uniqueKeyForMethods.getOrUploadIfAbsent(targetClassClassLoader, cacheKey, new Supplier<Collection<Method>>() {
+					@Override
+					public Collection<Method> get() {
+						return findAllAndApply(
+								finalCriteria, targetClass, new Consumer<Method>() {
+									@Override
+									public void accept(Method member) {
+									setAccessible(member, true);
+}
+								}
+						);
 					}
-				)
-			);
+				}
+				);
+			}
 		});
 	}
 
@@ -266,29 +319,35 @@ public class Methods extends Members.Handler.OfExecutable<Method, MethodCriteria
 	}
 
 	private <T> T invoke(Class<?> targetClass, Object target, String methodName, ThrowingFunction<Method, T, Throwable> methodInvoker, Object... arguments) {
-		return Executor.get(() -> {
-			Method method = findFirstAndMakeItAccessible(targetClass, methodName, Classes.INSTANCE.retrieveFrom(arguments));
-			if (method == null) {
-				Throwables.INSTANCE.throwException(
-					new NoSuchMethodException(
-						Strings.INSTANCE.compile(
-							"Method {} not found in {} hierarchy", methodName, targetClass.getName()
+		return Executor.get(new ThrowingSupplier<T, Throwable>() {
+			@Override
+			public T get() throws Throwable {
+				Method method = findFirstAndMakeItAccessible(targetClass, methodName, Classes.INSTANCE.retrieveFrom(arguments));
+				if (method == null) {
+					Throwables.INSTANCE.throwException(
+						new NoSuchMethodException(
+							Strings.INSTANCE.compile(
+								"Method {} not found in {} hierarchy", methodName, targetClass.getName()
+							)
 						)
-					)
-				);
+					);
+				}
+				return methodInvoker.apply(method);
 			}
-			return methodInvoker.apply(method);
 		});
 	}
 
 	private <T> T invokeDirect(Class<?> targetClass, Object target, String methodName, Supplier<List<Object>> listSupplier,  Object... arguments) {
 		Class<?>[] argsType = Classes.INSTANCE.retrieveFrom(arguments);
 		Members.Handler.OfExecutable.Box<Method> methodHandleBox = findDirectHandleBox(targetClass, methodName, argsType);
-		return Executor.get(() -> {
-				Method method = methodHandleBox.getExecutable();
-				List<Object> argumentList = getFlatArgumentList(method, listSupplier, arguments);
-				return (T)methodHandleBox.getHandler().invokeWithArguments(argumentList);
-			}
+		return Executor.get(new ThrowingSupplier<T, Throwable>() {
+			@Override
+			public T get() throws Throwable {
+					Method method = methodHandleBox.getExecutable();
+					List<Object> argumentList = getFlatArgumentList(method, listSupplier, arguments);
+					return (T)methodHandleBox.getHandler().invokeWithArguments(argumentList);
+				}
+		}
 		);
 	}
 

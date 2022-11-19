@@ -28,24 +28,25 @@
  */
 package org.burningwave.reflection;
 
-
 import java.lang.reflect.Member;
 import java.util.Collection;
-import java.util.function.BiFunction;
-import java.util.function.BiPredicate;
-import java.util.function.Function;
-import java.util.function.Predicate;
 
 import org.burningwave.Criteria;
-import org.burningwave.function.TriPredicate;
+import org.burningwave.function.Function;
+import org.burningwave.function.ThrowingBiPredicate;
+import org.burningwave.function.ThrowingFunction;
+import org.burningwave.function.ThrowingPredicate;
+import org.burningwave.function.ThrowingTriPredicate;
+
+import io.github.toolfactory.jvm.function.template.ThrowingBiFunction;
 
 
 @SuppressWarnings("unchecked")
 public abstract class MemberCriteria<M extends Member, C extends MemberCriteria<M, C, T>, T extends Criteria.TestContext<M, C>> extends Criteria<M, C, T> {
 	private static Member[] EMPTY_MEMBERS_ARRAY = {};
-	Predicate<Collection<M>> resultPredicate;
-	TriPredicate<C, Class<?>, Class<?>> scanUpToPredicate;
-	TriPredicate<C, Class<?>, Class<?>> skipClassPredicate;
+	ThrowingPredicate<Collection<M>, ? extends Throwable> resultPredicate;
+	ThrowingTriPredicate<C, Class<?>, Class<?>, ? extends Throwable> scanUpToPredicate;
+	ThrowingTriPredicate<C, Class<?>, Class<?>, ? extends Throwable> skipClassPredicate;
 
 
 	@Override
@@ -57,48 +58,61 @@ public abstract class MemberCriteria<M extends Member, C extends MemberCriteria<
 		return copy;
 	}
 
-	public C name(final Predicate<String> predicate) {
+	public C name(final ThrowingPredicate<String, ? extends Throwable> predicate) {
 		this.predicate = concat(
 			this.predicate,
-			(context, member) ->
-				predicate.test(member.getName())
+			new ThrowingBiPredicate<T, M, Throwable>() {
+				@Override
+				public boolean test(T context, M member) throws Throwable {
+					return predicate.test(member.getName());
+				}
+			}
 		);
 		return (C)this;
 	}
 
-	public C result(Predicate<Collection<M>> resultPredicate) {
+	public C result(ThrowingPredicate<Collection<M>, ? extends Throwable> resultPredicate) {
 		this.resultPredicate = resultPredicate;
 		return (C)this;
 	}
 
 
-	public C skip(BiPredicate<Class<?>, Class<?>> predicate) {
+	public C skip(ThrowingBiPredicate<Class<?>, Class<?>, ? extends Throwable> predicate) {
 		if (skipClassPredicate != null) {
-			skipClassPredicate = skipClassPredicate.or((criteria, initialClassFrom, currentClass) ->
-				predicate.test(initialClassFrom, currentClass)
+			skipClassPredicate = skipClassPredicate.or((ThrowingTriPredicate)new ThrowingTriPredicate<C, Class<?>, Class<?>, Throwable>() {
+				@Override
+				public boolean test(C criteria, Class<?> initialClassFrom, Class<?> currentClass) throws Throwable {
+					return predicate.test(initialClassFrom, currentClass);
+				}
+			}
 			);
 		} else {
-			skipClassPredicate = (criteria, initialClassFrom, currentClass) ->
-				predicate.test(initialClassFrom, currentClass);
+			skipClassPredicate = new ThrowingTriPredicate<C, Class<?>, Class<?>, Throwable>() {
+				@Override
+				public boolean test(C criteria, Class<?> initialClassFrom, Class<?> currentClass) throws Throwable {
+					return predicate.test(initialClassFrom, currentClass);
+				}
+			};
 		}
 		return (C)this;
 	}
 
 	@Override
 	protected C logicOperation(C leftCriteria, C rightCriteria,
-			Function<BiPredicate<T, M>, Function<BiPredicate<? super T, ? super M>, BiPredicate<T, M>>> binaryOperator,
-			C targetCriteria) {
+		Function<ThrowingBiPredicate<T, M, ? extends Throwable>, Function<ThrowingBiPredicate<? super T, ? super M, ? extends Throwable>, ThrowingBiPredicate<T, M, ? extends Throwable>>> binaryOperator,
+		C targetCriteria
+	) {
 		C newCriteria = super.logicOperation(leftCriteria, rightCriteria, binaryOperator, targetCriteria);
 		newCriteria.scanUpToPredicate =
 			leftCriteria.scanUpToPredicate != null?
 				rightCriteria.scanUpToPredicate != null?
-					leftCriteria.scanUpToPredicate.or(rightCriteria.scanUpToPredicate) :
+					leftCriteria.scanUpToPredicate.or((ThrowingTriPredicate)rightCriteria.scanUpToPredicate) :
 					null :
 				null;
 		newCriteria.skipClassPredicate =
 			leftCriteria.skipClassPredicate != null?
 				rightCriteria.skipClassPredicate != null?
-					leftCriteria.skipClassPredicate.or(rightCriteria.skipClassPredicate) :
+					leftCriteria.skipClassPredicate.or((ThrowingTriPredicate)rightCriteria.skipClassPredicate) :
 					leftCriteria.skipClassPredicate :
 				rightCriteria.skipClassPredicate;
 //		newCriteria.resultPredicate =
@@ -110,33 +124,56 @@ public abstract class MemberCriteria<M extends Member, C extends MemberCriteria<
 		return newCriteria;
 	}
 
-	BiFunction<Class<?>, Class<?>, M[]> getMembersSupplier() {
-		return (initialClassFrom, currentClass) ->
-			!(skipClassPredicate != null && skipClassPredicate.test((C)this, initialClassFrom, currentClass)) ?
-				getMembersSupplierFunction().apply(currentClass) :
-				(M[]) EMPTY_MEMBERS_ARRAY;
+	ThrowingBiFunction<Class<?>, Class<?>, M[], ? extends Throwable> getMembersSupplier() {
+		return new ThrowingBiFunction<Class<?>, Class<?>, M[], Throwable>() {
+			@Override
+			public M[] apply(Class<?> initialClassFrom, Class<?> currentClass) throws Throwable {
+				return !((skipClassPredicate != null) && skipClassPredicate.test((C)MemberCriteria.this, initialClassFrom, currentClass)) ?
+					getMembersSupplierFunction().apply(currentClass) :
+					(M[])EMPTY_MEMBERS_ARRAY;
+			}
+		};
 	}
 
-	abstract Function<Class<?>, M[]> getMembersSupplierFunction();
+	abstract ThrowingFunction<Class<?>, M[], ? extends Throwable> getMembersSupplierFunction();
 
-	Predicate<Collection<M>> getResultPredicate() {
+	ThrowingPredicate<Collection<M>, ? extends Throwable> getResultPredicate() {
 		return this.resultPredicate;
 	}
 
-	BiPredicate<Class<?>, Class<?>> getScanUpToPredicate() {
+	ThrowingBiPredicate<Class<?>, Class<?>, ? extends Throwable> getScanUpToPredicate() {
 		return scanUpToPredicate != null?
-			(initialClassFrom, currentClass) -> this.scanUpToPredicate.test((C)this, initialClassFrom, currentClass):
-			(initialClassFrom, currentClass) -> currentClass.getName().equals(Object.class.getName()
-		);
+			new ThrowingBiPredicate<Class<?>, Class<?>, Throwable>() {
+				@Override
+				public boolean test(Class<?> initialClassFrom, Class<?> currentClass) throws Throwable {
+					return MemberCriteria.this.scanUpToPredicate.test((C)MemberCriteria.this, initialClassFrom, currentClass);
+				}
+			}:
+			new ThrowingBiPredicate<Class<?>, Class<?>, Throwable>() {
+				@Override
+				public boolean test(Class<?> initialClassFrom, Class<?> currentClass) {
+					return currentClass.getName().equals(Object.class.getName());
+				}
+			};
 	}
 
-	C scanUpTo(BiPredicate<Class<?>, Class<?>> predicate) {
-		this.scanUpToPredicate = (criteria, initialClassFrom, currentClass) -> predicate.test(initialClassFrom, currentClass);
+	C scanUpTo(ThrowingBiPredicate<Class<?>, Class<?>, ? extends Throwable> predicate) {
+		this.scanUpToPredicate = new ThrowingTriPredicate<C, Class<?>, Class<?>, Throwable>() {
+			@Override
+			public boolean test(C criteria, Class<?> initialClassFrom, Class<?> currentClass) throws Throwable {
+				return predicate.test(initialClassFrom, currentClass);
+			}
+		};
 		return (C)this;
 	}
 
-	C scanUpTo(Predicate<Class<?>> predicate) {
-		this.scanUpToPredicate = (criteria, initialClassFrom, currentClass) -> predicate.test(currentClass);
+	C scanUpTo(ThrowingPredicate<Class<?>, ? extends Throwable> predicate) {
+		this.scanUpToPredicate = new ThrowingTriPredicate<C, Class<?>, Class<?>, Throwable>() {
+			@Override
+			public boolean test(C criteria, Class<?> initialClassFrom, Class<?> currentClass) throws Throwable {
+				return predicate.test(currentClass);
+			}
+		};
 		return (C)this;
 	}
 

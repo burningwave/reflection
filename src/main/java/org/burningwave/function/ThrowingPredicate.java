@@ -28,27 +28,50 @@
  */
 package org.burningwave.function;
 
-
 import java.util.Objects;
 
+public interface ThrowingPredicate<T, E extends Throwable> {
 
-@FunctionalInterface
-public interface TriPredicate<P0, P1, P2> {
+    boolean test(T t) throws E;
 
-    boolean test(P0 p0, P1 p1, P2 p2);
-
-    default TriPredicate<P0, P1, P2> and(TriPredicate<? super P0, ? super P1, ? super P2> other) {
+    default ThrowingPredicate<T, E> and(ThrowingPredicate<? super T, ? extends E> other) {
         Objects.requireNonNull(other);
-        return (P0 p0, P1 p1, P2 p2) -> test(p0, p1, p2) && other.test(p0, p1, p2);
+        return new ThrowingPredicate<T, E>() {
+			@Override
+			public boolean test(T t) throws E {
+				return ThrowingPredicate.this.test(t) && other.test(t);
+			}
+		};
     }
 
-    default TriPredicate<P0, P1, P2> negate() {
-        return (P0 p0, P1 p1, P2 p2) -> !test(p0, p1, p2);
+    default ThrowingPredicate<T, E> negate() {
+        return new ThrowingPredicate<T, E>() {
+			@Override
+			public boolean test(T t) throws E {
+				return !ThrowingPredicate.this.test(t);
+			}
+		};
     }
 
-    default TriPredicate<P0, P1, P2> or(TriPredicate<? super P0, ? super P1, ? super P2> other) {
+    default ThrowingPredicate<T, E> or(ThrowingPredicate<? super T, ? extends E> other) {
         Objects.requireNonNull(other);
-        return (P0 p0, P1 p1, P2 p2) -> test(p0, p1, p2) || other.test(p0, p1, p2);
+        return new ThrowingPredicate<T, E>() {
+			@Override
+			public boolean test(T t) throws E {
+				return ThrowingPredicate.this.test(t) || other.test(t);
+			}
+		};
     }
 
+    static <T, E extends Throwable> ThrowingPredicate<T, E> isEqual(Object targetRef) {
+        return (null == targetRef)
+                ? Objects::isNull
+                : new ThrowingPredicate<T, E>() {
+					@Override
+					public boolean test(T object) throws E {
+						return targetRef.equals(object);
+					}
+				};
+    }
 }
+

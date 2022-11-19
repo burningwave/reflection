@@ -29,7 +29,11 @@
 package org.burningwave;
 
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Objects;
+
+import org.burningwave.function.Function;
 
 public class Strings {
 	public final static Strings INSTANCE;
@@ -51,6 +55,34 @@ public class Strings {
 			message = message.replaceFirst("\\{\\}", Objects.isNull(obj) ? "null" : clear(obj.toString()));
 		}
 		return message;
+	}
+
+	public <T> String join(String separator, Collection<T> objects) {
+		return join(separator, objects, null);
+	}
+
+	public <T> String join(String separator, Collection<T> objects, Function<T, String> objectProcessor) {
+		StringBuffer joiner = new StringBuffer();
+		for (T object : objects) {
+			if (object != null) {
+				if (objectProcessor != null) {
+					joiner.append(objectProcessor.apply(object));
+				} else {
+					joiner.append(object);
+				}
+			} else {
+				joiner.append("null");
+			}
+		}
+		String joined = joiner.toString();
+		return separator.length() > 0 && joined.length() > 0 ?
+			joined.substring(0, joined.length() - separator.length()):
+			joined;
+	}
+
+
+	public <T> String join(String separator, T[] argumentTypes, Function<Class<?>, String> function) {
+		return join(separator, Arrays.asList(argumentTypes));
 	}
 
 	private String clear(String text) {
