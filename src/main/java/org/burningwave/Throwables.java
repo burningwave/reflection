@@ -28,27 +28,57 @@
  */
 package org.burningwave;
 
-@SuppressWarnings("unchecked")
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+
+
 public class Throwables {
 	public static final Throwables INSTANCE;
-
+	private final Thrower thrower;
 	static {
-		INSTANCE  = new Throwables();
+		try {
+			INSTANCE  = new Throwables();
+		} catch (Throwable exc) {
+			exc.printStackTrace();
+			throw new RuntimeException(exc);
+		}
 	}
 
-	private Throwables() {}
+	private Throwables() throws ClassNotFoundException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
+		Constructor<?> constructor =
+			Class.forName(Thrower.class.getName() + "Impl").getDeclaredConstructor();
+		this.thrower = (Thrower)constructor.newInstance();
+	}
 
 	public <T> T throwException(final String exc, final Object... placeHolderReplacements) {
-        return throwException(Strings.INSTANCE.compile(exc, placeHolderReplacements));
+        return throwException(
+    		new Exception(Strings.INSTANCE.compile(exc, placeHolderReplacements))
+		);
     }
 
 	public <T> T throwException(final Throwable exc) {
-		//sneakyThrow(exc);
-        return null;
+        return thrower.throwException(exc);
     }
 
-    private <E extends Throwable> void sneakyThrow(final Throwable exc) throws E {
-        throw (E)exc;
+    static abstract class Thrower {
+
+    	Thrower(){}
+
+    	abstract <T> T throwException(final Throwable exc);
+
     }
 
+    /*static class ThrowerImpl extends Thrower {
+    	ThrowerImpl(){}
+
+    	@Override
+		<T> T throwException(final Throwable exc) {
+    		sneakyThrow(exc);
+            return null;
+        }
+
+        private <E extends Throwable> void sneakyThrow(final Throwable exc) throws E {
+            throw (E)exc;
+        }
+    }*/
 }

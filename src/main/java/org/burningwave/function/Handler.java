@@ -28,8 +28,6 @@
  */
 package org.burningwave.function;
 
-import java.util.Objects;
-
 import org.burningwave.Throwables;
 
 @SuppressWarnings("unchecked")
@@ -123,7 +121,6 @@ public abstract class Handler {
 		final ThrowingBiPredicate<T, U, E> left,
 		final ThrowingBiPredicate<? super T, ? super U, ? extends E> right
 	) {
-        Objects.requireNonNull(right);
         return new ThrowingBiPredicate<T, U, E>() {
 			@Override
 			public boolean test(final T t, final U u) throws E {

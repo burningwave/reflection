@@ -140,6 +140,7 @@ public class Facade {
 		};
 		INSTANCE = new Facade();
 	}
+
 	private Collection<ThrowingBiConsumer<AccessibleObject, Boolean, Throwable>> accessibleSetters;
 	private Collection<ThrowingBiFunction<Constructor<?>, Object[], Object, Throwable>> constructorInvokers;
 	private Collection<ThrowingFunction<Class<?>, Constructor<?>[], Throwable>> constructorRetrievers;
@@ -161,7 +162,6 @@ public class Facade {
 		methodInvokers = new ArrayList<>();
 		constructorInvokers = new ArrayList<>();
 		consulterRetrievers = new ArrayList<>();
-
 		if (driver != null) {
 			fieldRetrievers.add(new ThrowingFunction<Class<?>, Field[], Throwable>() {
 				@Override
