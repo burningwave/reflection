@@ -50,7 +50,7 @@ To use Burningwave Reflection as a Java module you need to add the following to 
 requires org.burningwave.reflection;
 ```
 ### Enabling the JVM driver
-By default the JVM Driver is disabled and to enable it you need to add the following to your pom:
+By default the JVM Driver is not imported by the Reflection library, so if you want to use it you just need to add the following to your pom:
 ```xml
 <dependency>
     <groupId>org.burningwave</groupId>
@@ -65,7 +65,7 @@ requires jdk.unsupported;
 requires io.github.toolfactory.jvm;
 requires org.burningwave.jvm;
 ```
-If you want to add the JVM Driver module it is also possible to [disable it programmatically](#Configuration).
+If you want to add the JVM Driver to your project it is also possible to [disable it programmatically](#Configuration).
 
 <br/>
 
