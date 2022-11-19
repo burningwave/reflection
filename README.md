@@ -159,7 +159,7 @@ public class MethodsHandler {
         
         //Filtering and obtaining all methods of ClassLoader class that have at least
         //one input parameter of Class type
-        Collection<Method> methods = Methods.findAll(
+        Collection<Method> methods = Methods.INSTANCE.findAll(
             MethodCriteria.byScanUpTo((cls) ->
             	//We only analyze the ClassLoader class and not all of its hierarchy (default behavior)
                 cls.getName().equals(ClassLoader.class.getName())
