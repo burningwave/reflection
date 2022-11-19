@@ -103,7 +103,7 @@ public class FieldsHandler {
             volatile char charValue = 'c';
         };
         
-        //Get all filtered field values of an object through memory address access
+        //Get all filtered field values of an object
         Fields.INSTANCE.getAll(
             FieldCriteria.forEntireClassHierarchy().allThoseThatMatch(field -> {
                 return field.getType().isPrimitive();
@@ -139,6 +139,7 @@ public class MethodsHandler {
         Methods.invoke(System.out, "println", "Hello World");
         Integer number = Methods.INSTANCE.invokeStatic(Integer.class, "valueOf", 1);
         
+        //Invoking a method
         Methods.INSTANCE.invoke(System.out, "println", number);
         
         //Filtering and obtaining a MethodHandle reference
