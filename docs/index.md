@@ -290,7 +290,7 @@ public class Complex {
 ```
 ... And now we are going to get and set some fields:
 ```java
-import static org.burningwave.reflection.FieldAccessor;
+import org.burningwave.reflection.FieldAccessor;
 
 import org.burningwave.core.bean.Complex;
 
