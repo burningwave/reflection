@@ -76,6 +76,12 @@ public class FieldCriteria extends MemberCriteria<
 
 	@Override
 	ThrowingFunction<Class<?>, Field[], ? extends Throwable> getMembersSupplierFunction() {
-		return Facade.INSTANCE::getDeclaredFields;
+		return new ThrowingFunction<>() {
+			@Override
+			public Field[] apply(Class<?> clazz) throws Throwable {
+				return Facade.INSTANCE.getDeclaredFields(clazz);
+			}
+		};
+
 	}
 }

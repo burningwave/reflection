@@ -49,7 +49,6 @@ public class Strings {
 		+ value.substring(1, value.length());
 	}
 
-
 	public String compile(String message, Object... arguments) {
 		for (Object obj : arguments) {
 			message = message.replaceFirst("\\{\\}", Objects.isNull(obj) ? "null" : clear(obj.toString()));
@@ -73,13 +72,13 @@ public class Strings {
 			} else {
 				joiner.append("null");
 			}
+			joiner.append(separator);
 		}
 		String joined = joiner.toString();
 		return separator.length() > 0 && joined.length() > 0 ?
 			joined.substring(0, joined.length() - separator.length()):
 			joined;
 	}
-
 
 	public <T> String join(String separator, T[] argumentTypes, Function<Class<?>, String> function) {
 		return join(separator, Arrays.asList(argumentTypes));

@@ -59,13 +59,4 @@ public interface ThrowingFunction<T, R, E extends Throwable> {
 		};
     }
 
-
-    static <T, E extends Throwable> ThrowingFunction<T, T, E> identity() {
-        return new ThrowingFunction<T, T, E>() {
-			@Override
-			public T apply(T t) throws E {
-				return t;
-			}
-		};
-    }
 }

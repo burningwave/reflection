@@ -49,6 +49,7 @@ import org.burningwave.function.ThrowingBiPredicate;
 import org.burningwave.function.ThrowingFunction;
 import org.burningwave.function.ThrowingPredicate;
 import org.burningwave.function.ThrowingSupplier;
+import org.burningwave.function.ThrowingTriFunction;
 
 @SuppressWarnings("unchecked")
 public class Methods extends Members.Handler.OfExecutable<Method, MethodCriteria> {
@@ -84,15 +85,34 @@ public class Methods extends Members.Handler.OfExecutable<Method, MethodCriteria
 		String methodName,
 		Class<?>... inputParameterTypesOrSubTypes
 	) {
-		return findAllByNamePredicateAndMakeThemAccessible(targetClass, "equals " + methodName, methodName::equals, inputParameterTypesOrSubTypes);
+		return findAllByNamePredicateAndMakeThemAccessible(
+			targetClass,
+			"equals " + methodName,
+			new ThrowingPredicate<String, Throwable>() {
+				@Override
+				public boolean test(String name) throws Throwable {
+					return methodName.equals(name);
+				}
+			},
+			inputParameterTypesOrSubTypes
+		);
 	}
 
 	public Collection<Method> findAllByMatchedNameAndMakeThemAccessible(
 		Class<?> targetClass,
-		String methodName,
+		String regEx,
 		Class<?>... inputParameterTypesOrSubTypes
 	) {
-		return findAllByNamePredicateAndMakeThemAccessible(targetClass, "match " + methodName, methodName::matches, inputParameterTypesOrSubTypes);
+		return findAllByNamePredicateAndMakeThemAccessible(
+			targetClass, "match " + regEx,
+			new ThrowingPredicate<String, Throwable>() {
+				@Override
+				public boolean test(String name) throws Throwable {
+					return name.matches(regEx);
+				}
+			},
+			inputParameterTypesOrSubTypes
+		);
 	}
 
 	public MethodHandle findDirectHandle(Class<?> targetClass, String methodName, Class<?>... inputParameterTypesOrSubTypes) {
@@ -102,13 +122,12 @@ public class Methods extends Members.Handler.OfExecutable<Method, MethodCriteria
 	public Method findFirstAndMakeItAccessible(Class<?> targetClass, String memberName, Class<?>... inputParameterTypesOrSubTypes) {
 		Collection<Method> members = findAllByExactNameAndMakeThemAccessible(targetClass, memberName, inputParameterTypesOrSubTypes);
 		if (members.size() == 1) {
-			return members.stream().findFirst().get();
+			return members.iterator().next();
 		} else if (members.size() > 1) {
 			Collection<Method> membersThatMatch = searchForExactMatch(members, inputParameterTypesOrSubTypes);
 			if (!membersThatMatch.isEmpty()) {
-				return membersThatMatch.stream().findFirst().get();
+				return members.iterator().next();
 			}
-			return members.stream().findFirst().get();
 		}
 		return null;
 	}
@@ -172,13 +191,15 @@ public class Methods extends Members.Handler.OfExecutable<Method, MethodCriteria
 							@Override
 							public T apply(Method method) throws Throwable {
 								return invoke(
-									target, method, getArgumentArray(
+									target,
 									method,
-									Methods.this::getArgumentListWithArrayForVarArgs,
-									ArrayList::new,
+									getArgumentArray(
+										method,
+										buildArgumentListSupplier(),
+										buildNewListSupplier()
+									),
 									arguments
-								)
-);
+								);
 							}
 						},
 						arguments
@@ -193,7 +214,13 @@ public class Methods extends Members.Handler.OfExecutable<Method, MethodCriteria
 			new ThrowingSupplier<T, RuntimeException>() {
 				@Override
 				public T get() throws RuntimeException {
-					return (T)invokeDirect(targetClass, null, methodName, ArrayList::new, arguments);
+					return (T)invokeDirect(
+						targetClass,
+						null,
+						methodName,
+						buildNewListSupplier(),
+						arguments
+					);
 				}
 			},
 			new ThrowingSupplier<T, RuntimeException>() {
@@ -207,8 +234,8 @@ public class Methods extends Members.Handler.OfExecutable<Method, MethodCriteria
 									method,
 									getArgumentArray(
 										method,
-										Methods.this::getArgumentListWithArrayForVarArgs,
-										ArrayList::new,
+										buildArgumentListSupplier(),
+										buildNewListSupplier(),
 										arguments
 									)
 								);
@@ -221,6 +248,23 @@ public class Methods extends Members.Handler.OfExecutable<Method, MethodCriteria
 		);
 	}
 
+	private ThrowingTriFunction<Method, Supplier<List<Object>>, Object[], List<Object>, Throwable> buildArgumentListSupplier() {
+		return new ThrowingTriFunction<Method, Supplier<List<Object>>, Object[], List<Object>, Throwable>() {
+			@Override
+			public List<Object> apply(Method member, Supplier<List<Object>> collector, Object[] arguments) throws Throwable {
+				return getArgumentListWithArrayForVarArgs(member, collector, arguments);
+			}
+		};
+	}
+
+	private Supplier<List<Object>> buildNewListSupplier() {
+		return new Supplier<List<Object>>() {
+			@Override
+			public List<Object> get() {
+				return new ArrayList<>();
+			}
+		};
+	}
 
 	String createGetterMethodNameByFieldPath(String fieldPath) {
 		String methodName =

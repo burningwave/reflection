@@ -46,7 +46,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.stream.Collectors;
 
 import org.burningwave.Throwables;
 import org.burningwave.function.Consumer;
@@ -221,9 +220,11 @@ public class Members {
 			OfExecutable() {}
 
 			public Collection<MethodHandle> findAllDirectHandle(C criteria, Class<?> clsFrom) {
-				return findAll(
-					criteria, clsFrom
-				).stream().map(this::findDirectHandle).collect(Collectors.toSet());
+				Collection<MethodHandle> methodHandles = new LinkedHashSet<>();
+				for (E member : findAll(criteria, clsFrom)) {
+					methodHandles.add(findDirectHandle(member));
+				}
+				return methodHandles;
 			}
 
 			public MethodHandle findDirectHandle(E executable) {

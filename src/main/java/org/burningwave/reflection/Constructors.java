@@ -36,6 +36,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import org.burningwave.Strings;
 import org.burningwave.Throwables;
@@ -45,6 +46,7 @@ import org.burningwave.function.Function;
 import org.burningwave.function.Supplier;
 import org.burningwave.function.ThrowingBiPredicate;
 import org.burningwave.function.ThrowingSupplier;
+import org.burningwave.function.ThrowingTriFunction;
 
 
 @SuppressWarnings("unchecked")
@@ -119,13 +121,12 @@ public class Constructors extends Members.Handler.OfExecutable<Constructor<?>, C
 	public Constructor<?> findFirstAndMakeItAccessible(Class<?> targetClass, Class<?>... inputParameterTypesOrSubTypes) {
 		Collection<Constructor<?>> members = findAllAndMakeThemAccessible(targetClass, inputParameterTypesOrSubTypes);
 		if (members.size() == 1) {
-			return members.stream().findFirst().get();
+			return members.iterator().next();
 		} else if (members.size() > 1) {
 			Collection<Constructor<?>> membersThatMatch = searchForExactMatch(members, inputParameterTypesOrSubTypes);
 			if (!membersThatMatch.isEmpty()) {
-				return membersThatMatch.stream().findFirst().get();
+				return members.iterator().next();
 			}
-			return members.stream().findFirst().get();
 		}
 		return null;
 	}
@@ -168,10 +169,18 @@ public class Constructors extends Members.Handler.OfExecutable<Constructor<?>, C
 						public T get() throws Throwable {
 								Constructor<?> ctor = methodHandleBox.getExecutable();
 								return (T)methodHandleBox.getHandler().invokeWithArguments(
-									getFlatArgumentList(ctor, ArrayList::new, arguments)
+									getFlatArgumentList(
+										ctor, new Supplier<List<Object>>() {
+											@Override
+											public List<Object> get() {
+												return new ArrayList<>();
+											}
+										},
+										arguments
+									)
 								);
 							}
-					}
+						}
 					);
 				}
 			}, new ThrowingSupplier<T, RuntimeException>() {
@@ -185,8 +194,22 @@ public class Constructors extends Members.Handler.OfExecutable<Constructor<?>, C
 						ctor,
 						getArgumentArray(
 							ctor,
-							Constructors.this::getArgumentListWithArrayForVarArgs,
-							ArrayList::new,
+							new ThrowingTriFunction<Constructor<?>, Supplier<List<Object>>, Object[], List<Object>, Throwable>() {
+								@Override
+								public List<Object> apply(Constructor<?> member, Supplier<List<Object>> collector, Object[] arguments) throws Throwable {
+									return Constructors.this.getArgumentListWithArrayForVarArgs(
+										member,
+										collector,
+										arguments
+									);
+								}
+							},
+							new Supplier<List<Object>>() {
+								@Override
+								public List<Object> get() {
+									return new ArrayList<>();
+								}
+							},
 							arguments
 						)
 					);

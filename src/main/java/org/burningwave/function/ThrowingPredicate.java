@@ -63,15 +63,5 @@ public interface ThrowingPredicate<T, E extends Throwable> {
 		};
     }
 
-    static <T, E extends Throwable> ThrowingPredicate<T, E> isEqual(Object targetRef) {
-        return (null == targetRef)
-                ? Objects::isNull
-                : new ThrowingPredicate<T, E>() {
-					@Override
-					public boolean test(T object) throws E {
-						return targetRef.equals(object);
-					}
-				};
-    }
 }
 

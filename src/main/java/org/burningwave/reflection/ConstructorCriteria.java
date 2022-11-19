@@ -60,7 +60,12 @@ public class ConstructorCriteria extends ExecutableMemberCriteria<
 
 	@Override
 	ThrowingFunction<Class<?>, Constructor<?>[], ? extends Throwable> getMembersSupplierFunction() {
-		return Facade.INSTANCE::getDeclaredConstructors;
+		return new ThrowingFunction<>() {
+			@Override
+			public Constructor<?>[] apply(Class<?> clazz) throws Throwable {
+				return Facade.INSTANCE.getDeclaredConstructors(clazz);
+			}
+		};
 	}
 
 }

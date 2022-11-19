@@ -31,9 +31,9 @@ package org.burningwave.function;
 import org.burningwave.Throwables;
 
 @SuppressWarnings("unchecked")
-public interface Executor {
+public abstract class Executor {
 
-	static <T, E extends Throwable> T get(ThrowingSupplier<T, ? extends E> supplier) {
+	public static <T, E extends Throwable> T get(ThrowingSupplier<T, ? extends E> supplier) {
 		try {
 			return supplier.get();
 		} catch (Throwable exc) {
@@ -41,7 +41,7 @@ public interface Executor {
 		}
 	}
 
-	static <T, E extends Throwable> T getFirst(ThrowingSupplier<T, ? extends E>... suppliers) {
+	public static <T, E extends Throwable> T getFirst(ThrowingSupplier<T, ? extends E>... suppliers) {
 		Throwable exception = null;
 		for (ThrowingSupplier<T, ? extends E> supplier : suppliers) {
 			try {

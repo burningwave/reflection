@@ -79,6 +79,13 @@ public class MethodCriteria extends ExecutableMemberCriteria<
 
 	@Override
 	ThrowingFunction<Class<?>, Method[], ? extends Throwable> getMembersSupplierFunction() {
-		return  Facade.INSTANCE::getDeclaredMethods;
+		return new ThrowingFunction<>() {
+
+			@Override
+			public Method[] apply(Class<?> clazz) throws Throwable {
+				return Facade.INSTANCE.getDeclaredMethods(clazz);
+			}
+
+		};
 	}
 }
