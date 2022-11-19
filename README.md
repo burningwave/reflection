@@ -55,7 +55,7 @@ By default the JVM Driver is not imported by the Reflection library, so if you w
 <dependency>
     <groupId>org.burningwave</groupId>
     <artifactId>jvm-driver</artifactId>
-    <version>8.10.1</version>
+    <version>8.11.0</version>
 </dependency>	
 ```
 ... And the following to your `module-info.java`: 
