@@ -137,13 +137,16 @@ public abstract class ExecutableMemberCriteria<
 		return parameterTypesAreAssignableFrom(Classes.INSTANCE.retrieveFrom(arguments));
 	}
 
-	private C parameterTypesMatch(ThrowingTriPredicate<List<Class<?>>, Class<?>[], Integer, ? extends Throwable> predicate, Class<?>... arguments) {
+	private C parameterTypesMatch(
+		final ThrowingTriPredicate<List<Class<?>>, Class<?>[], Integer, ? extends Throwable> predicate,
+		Class<?>... arguments
+	) {
 		if (arguments == null) {
 			arguments = new Class<?>[]{null};
 		}
 		Class<?>[] argumentsClasses = arguments;
 		if ((argumentsClasses != null) && (argumentsClasses.length > 0)) {
-			List<Class<?>> argumentsClassesAsList = Arrays.asList(argumentsClasses);
+			final List<Class<?>> argumentsClassesAsList = Arrays.asList(argumentsClasses);
 			for (int i = 0; i < argumentsClasses.length; i++) {
 				final int index = i;
 				this.predicate = concat(

@@ -68,12 +68,15 @@ public class Members {
 	private Members() {}
 
 	public <M extends Member> Collection<M> findAll(MemberCriteria<M, ?, ?> criteria, Class<?> classFrom) {
+		ThrowingBiPredicate<Class<?>, Class<?>, ? extends Throwable> clsPredicate = criteria.getScanUpToPredicate();
+		ThrowingBiFunction<Class<?>, Class<?>, M[], ? extends Throwable> memberSupplier = criteria.getMembersSupplier();
+		ThrowingPredicate<M, ? extends Throwable> predicate = criteria.getPredicateOrTruePredicateIfPredicateIsNull();
 		Collection<M> result = findAll(
 			classFrom,
 			classFrom,
-			criteria.getScanUpToPredicate(),
-			criteria.getMembersSupplier(),
-			criteria.getPredicateOrTruePredicateIfPredicateIsNull(),
+			clsPredicate,
+			memberSupplier,
+			predicate,
 			new HashSet<>(),
 			new LinkedHashSet<>()
 		);

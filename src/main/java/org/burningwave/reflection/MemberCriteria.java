@@ -78,7 +78,7 @@ public abstract class MemberCriteria<M extends Member, C extends MemberCriteria<
 	}
 
 
-	public C skip(ThrowingBiPredicate<Class<?>, Class<?>, ? extends Throwable> predicate) {
+	public C skip(final ThrowingBiPredicate<Class<?>, Class<?>, ? extends Throwable> predicate) {
 		if (skipClassPredicate != null) {
 			skipClassPredicate = Handler.or(
 				skipClassPredicate,
@@ -160,7 +160,7 @@ public abstract class MemberCriteria<M extends Member, C extends MemberCriteria<
 			};
 	}
 
-	C scanUpTo(ThrowingBiPredicate<Class<?>, Class<?>, ? extends Throwable> predicate) {
+	C scanUpTo(final ThrowingBiPredicate<Class<?>, Class<?>, ? extends Throwable> predicate) {
 		this.scanUpToPredicate = new ThrowingTriPredicate<C, Class<?>, Class<?>, Throwable>() {
 			@Override
 			public boolean test(C criteria, Class<?> initialClassFrom, Class<?> currentClass) throws Throwable {
@@ -170,7 +170,7 @@ public abstract class MemberCriteria<M extends Member, C extends MemberCriteria<
 		return (C)this;
 	}
 
-	C scanUpTo(ThrowingPredicate<Class<?>, ? extends Throwable> predicate) {
+	C scanUpTo(final ThrowingPredicate<Class<?>, ? extends Throwable> predicate) {
 		this.scanUpToPredicate = new ThrowingTriPredicate<C, Class<?>, Class<?>, Throwable>() {
 			@Override
 			public boolean test(C criteria, Class<?> initialClassFrom, Class<?> currentClass) throws Throwable {

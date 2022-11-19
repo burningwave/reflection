@@ -56,7 +56,7 @@ public class Criteria<E, C extends Criteria<E, C, T>, T extends Criteria.TestCon
 			this.predicate,
 			new ThrowingBiPredicate<T, E, Throwable>() {
 				@Override
-				public boolean test(T context, E entity) throws Throwable {
+				public boolean test(final T context, final E entity) throws Throwable {
 					return predicate.test(context, entity);
 				}
 			}
@@ -68,7 +68,7 @@ public class Criteria<E, C extends Criteria<E, C, T>, T extends Criteria.TestCon
 		return allThoseThatMatch(
 			new ThrowingBiPredicate<T, E, Throwable>() {
 				@Override
-				public boolean test(T context, E entity) throws Throwable {
+				public boolean test(final T context, final E entity) throws Throwable {
 					return predicate.test(entity);
 				}
 			}
@@ -78,14 +78,14 @@ public class Criteria<E, C extends Criteria<E, C, T>, T extends Criteria.TestCon
 	public C and(){
 		logicalOperator = new Function<ThrowingBiPredicate<T, E, ? extends Throwable>, ThrowingBiPredicate<T, E, ? extends Throwable>>() {
 			@Override
-			public ThrowingBiPredicate<T, E, ? extends Throwable> apply(ThrowingBiPredicate<T, E, ? extends Throwable> predicate) {
+			public ThrowingBiPredicate<T, E, ? extends Throwable> apply(final ThrowingBiPredicate<T, E, ? extends Throwable> predicate) {
 				return Handler.and(Criteria.this.predicate, (ThrowingBiPredicate)predicate);
 			}
 		};
 		return (C)this;
 	}
 
-	public C and(C criteria) {
+	public C and(final C criteria) {
 		return logicOperation(
 			this.createCopy(),
 			criteria.createCopy(),
@@ -100,14 +100,14 @@ public class Criteria<E, C extends Criteria<E, C, T>, T extends Criteria.TestCon
 				public Function<
 					ThrowingBiPredicate<? super T, ? super E, ? extends Throwable>,
 					ThrowingBiPredicate<T, E, ? extends Throwable>
-				> apply(ThrowingBiPredicate<T, E, ? extends Throwable> predicate) {
+				> apply(final ThrowingBiPredicate<T, E, ? extends Throwable> predicate) {
 					return new Function<
 						ThrowingBiPredicate<? super T, ? super E, ? extends Throwable>,
 						ThrowingBiPredicate<T, E, ? extends Throwable>
 					>() {
 						@Override
 						public ThrowingBiPredicate<T, E, ? extends Throwable> apply (
-							ThrowingBiPredicate<? super T, ? super E, ? extends Throwable> otherPredicate
+							final ThrowingBiPredicate<? super T, ? super E, ? extends Throwable> otherPredicate
 						) {
 							return Handler.and(predicate, (ThrowingBiPredicate)otherPredicate);
 						}
@@ -120,7 +120,7 @@ public class Criteria<E, C extends Criteria<E, C, T>, T extends Criteria.TestCon
 
 
 	public C createCopy() {
-		C copy = newInstance();
+		final C copy = newInstance();
 		copy.predicate = this.predicate;
 		copy.logicalOperator = this.logicalOperator;
 		return copy;
@@ -142,14 +142,14 @@ public class Criteria<E, C extends Criteria<E, C, T>, T extends Criteria.TestCon
 	public C or(){
 		logicalOperator = new Function<ThrowingBiPredicate<T, E, ? extends Throwable>, ThrowingBiPredicate<T, E, ? extends Throwable>>() {
 			@Override
-			public ThrowingBiPredicate<T, E, ? extends Throwable> apply(ThrowingBiPredicate<T, E, ? extends Throwable> predicate) {
+			public ThrowingBiPredicate<T, E, ? extends Throwable> apply(final ThrowingBiPredicate<T, E, ? extends Throwable> predicate) {
 				return Handler.or(Criteria.this.predicate, (ThrowingBiPredicate) predicate);
 			}
 		};
 		return (C)this;
 	}
 
-	public C or(C criteria) {
+	public C or(final C criteria) {
 		return logicOperation(
 			this.createCopy(),
 			criteria.createCopy(),
@@ -164,14 +164,14 @@ public class Criteria<E, C extends Criteria<E, C, T>, T extends Criteria.TestCon
 				public Function<
 					ThrowingBiPredicate<? super T, ? super E, ? extends Throwable>,
 					ThrowingBiPredicate<T, E, ? extends Throwable>
-				> apply(ThrowingBiPredicate<T, E, ? extends Throwable> predicate) {
+				> apply(final ThrowingBiPredicate<T, E, ? extends Throwable> predicate) {
 					return new Function<
 						ThrowingBiPredicate<? super T, ? super E, ? extends Throwable>,
 						ThrowingBiPredicate<T, E, ? extends Throwable>
 					>() {
 						@Override
 						public ThrowingBiPredicate<T, E, ? extends Throwable> apply (
-							ThrowingBiPredicate<? super T, ? super E, ? extends Throwable> otherPredicate
+							final ThrowingBiPredicate<? super T, ? super E, ? extends Throwable> otherPredicate
 						) {
 							return Handler.or(predicate, (ThrowingBiPredicate)otherPredicate);
 						}
@@ -183,43 +183,43 @@ public class Criteria<E, C extends Criteria<E, C, T>, T extends Criteria.TestCon
 	}
 
 
-	public T testWithFalseResultForNullEntityOrFalseResultForNullPredicate(E entity) {
-		T context = createTestContext();
+	public T testWithFalseResultForNullEntityOrFalseResultForNullPredicate(final E entity) {
+		final T context = createTestContext();
 		testWithFalseResultForNullEntityOrFalseResultForNullPredicate(context, entity);
 		return context;
 	}
 
-	public T testWithFalseResultForNullEntityOrTrueResultForNullPredicate(E entity) {
-		T context = createTestContext();
+	public T testWithFalseResultForNullEntityOrTrueResultForNullPredicate(final E entity) {
+		final T context = createTestContext();
 		testWithFalseResultForNullEntityOrTrueResultForNullPredicate(context, entity);
 		return context;
 	}
 
-	public T testWithTrueResultForNullEntityOrFalseResultForNullPredicate(E entity) {
-		T context = createTestContext();
+	public T testWithTrueResultForNullEntityOrFalseResultForNullPredicate(final E entity) {
+		final T context = createTestContext();
 		testWithTrueResultForNullEntityOrFalseResultForNullPredicate(context, entity);
 		return context;
 	}
 
-	public T testWithTrueResultForNullEntityOrTrueResultForNullPredicate(E entity) {
-		T context = createTestContext();
+	public T testWithTrueResultForNullEntityOrTrueResultForNullPredicate(final E entity) {
+		final T context = createTestContext();
 		testWithTrueResultForNullEntityOrTrueResultForNullPredicate(context, entity);
 		return context;
 	}
 
 	protected ThrowingBiPredicate<T, E, ? extends Throwable> concat(
-		ThrowingBiPredicate<T, E, ? extends Throwable> mainPredicate,
-		ThrowingBiPredicate<T, E, ? extends Throwable> otherPredicate
+		final ThrowingBiPredicate<T, E, ? extends Throwable> mainPredicate,
+		final ThrowingBiPredicate<T, E, ? extends Throwable> otherPredicate
 	) {
-		ThrowingBiPredicate<T, E, ? extends Throwable> predicate = concat(mainPredicate, this.logicalOperator, otherPredicate);
+		final ThrowingBiPredicate<T, E, ? extends Throwable> predicate = concat(mainPredicate, this.logicalOperator, otherPredicate);
 		this.logicalOperator = null;
 		return predicate;
 	}
 
 	protected <E, C extends Criteria<E, C, T>, T extends Criteria.TestContext<E, C>> ThrowingBiPredicate<T, E, ? extends Throwable> concat(
-		ThrowingBiPredicate<T, E, ? extends Throwable> mainPredicate,
-		Function<ThrowingBiPredicate<T, E, ? extends Throwable>, ThrowingBiPredicate<T, E, ? extends Throwable>> logicalOperator,
-		ThrowingBiPredicate<T, E, ? extends Throwable> otherPredicate
+		final ThrowingBiPredicate<T, E, ? extends Throwable> mainPredicate,
+		final Function<ThrowingBiPredicate<T, E, ? extends Throwable>, ThrowingBiPredicate<T, E, ? extends Throwable>> logicalOperator,
+		final ThrowingBiPredicate<T, E, ? extends Throwable> otherPredicate
 	) {
 		if (otherPredicate != null) {
 			if (mainPredicate != null) {
@@ -236,13 +236,13 @@ public class Criteria<E, C extends Criteria<E, C, T>, T extends Criteria.TestCon
 	}
 
 	protected T getContextWithFalsePredicateForNullPredicate() {
-		T context = createTestContext();
+		final T context = createTestContext();
 		getPredicate(context, false);
 		return context;
 	}
 
 	protected T getContextWithTruePredicateForNullPredicate() {
-		T context = createTestContext();
+		final T context = createTestContext();
 		getPredicate(context, true);
 		return context;
 	}
@@ -254,8 +254,8 @@ public class Criteria<E, C extends Criteria<E, C, T>, T extends Criteria.TestCon
 		return getPredicateWrapper(
 			new ThrowingBiPredicate<T, E, Throwable>() {
 				@Override
-				public boolean test(T criteria, E entity) throws Throwable {
-					V[] array = valueSupplier.apply(criteria, entity);
+				public boolean test(final T criteria, final E entity) throws Throwable {
+					final V[] array = valueSupplier.apply(criteria, entity);
 					boolean result = false;
 					for (int i = 0; i < array.length; i++) {
 						if (result = predicate.test(criteria, array, i)) {
@@ -269,15 +269,15 @@ public class Criteria<E, C extends Criteria<E, C, T>, T extends Criteria.TestCon
 		);
 	}
 
-	protected C logicOperation(C leftCriteria, C rightCriteria,
-		Function<
+	protected C logicOperation(final C leftCriteria, final C rightCriteria,
+		final Function<
 			ThrowingBiPredicate<T, E, ? extends Throwable>,
 			Function<
 				ThrowingBiPredicate<? super T, ? super E, ? extends Throwable>,
 				ThrowingBiPredicate<T, E, ? extends Throwable>
 			>
 		> binaryOperator,
-		C targetCriteria
+		final C targetCriteria
 	) {
 		targetCriteria.predicate =
 			leftCriteria.predicate != null?
@@ -294,8 +294,8 @@ public class Criteria<E, C extends Criteria<E, C, T>, T extends Criteria.TestCon
 
 	@SuppressWarnings("hiding")
 	<E, C extends Criteria<E, C, T>, T extends Criteria.TestContext<E, C>> ThrowingBiPredicate<T,E, ? extends Throwable> consumeLogicalOperator(
-		ThrowingBiPredicate<T, E, ? extends Throwable> input,
-		Function<
+		final ThrowingBiPredicate<T, E, ? extends Throwable> input,
+		final Function<
 			ThrowingBiPredicate<T, E, ? extends Throwable>,
 			ThrowingBiPredicate<T, E, ? extends Throwable>
 		> logicalOperator
@@ -311,12 +311,12 @@ public class Criteria<E, C extends Criteria<E, C, T>, T extends Criteria.TestCon
 	}
 
 	ThrowingBiPredicate<T, E, ? extends Throwable> getPredicateWrapper(
-		ThrowingBiPredicate<T, E, ? extends Throwable> function
+		final ThrowingBiPredicate<T, E, ? extends Throwable> function
 	) {
 		if (function != null) {
 			return new ThrowingBiPredicate<T, E, Throwable>() {
 				@Override
-				public boolean test(T criteria, E entity) throws Throwable {
+				public boolean test(final T criteria, final E entity) throws Throwable {
 					return function.test(criteria, entity);
 				}
 			};
@@ -324,12 +324,12 @@ public class Criteria<E, C extends Criteria<E, C, T>, T extends Criteria.TestCon
 		return null;
 	}
 
-	private ThrowingPredicate<E, ? extends Throwable> getPredicate(T context, boolean defaultResult) {
+	private ThrowingPredicate<E, ? extends Throwable> getPredicate(final T context, final boolean defaultResult) {
 		return context.setPredicate(
 			this.predicate != null?
 				new ThrowingPredicate<E, Throwable>() {
 					@Override
-					public boolean test(E entity) throws Throwable {
+					public boolean test(final E entity) throws Throwable {
 						return context.setEntity(entity).setResult(Criteria.this.predicate.test(
 							context,
 							entity
@@ -338,7 +338,7 @@ public class Criteria<E, C extends Criteria<E, C, T>, T extends Criteria.TestCon
 				} :
 			new ThrowingPredicate<E, Throwable>() {
 				@Override
-				public boolean test(E entity) {
+				public boolean test(final E entity) {
 					return context.setEntity(entity).setResult(defaultResult).getResult();
 				}
 			}
@@ -346,11 +346,11 @@ public class Criteria<E, C extends Criteria<E, C, T>, T extends Criteria.TestCon
 	}
 
 
-	private boolean testWithFalseResultForNullEntityOrFalseResultForNullPredicate(T context, E entity) {
+	private boolean testWithFalseResultForNullEntityOrFalseResultForNullPredicate(final T context, final E entity) {
 		if (entity != null) {
 			try {
 				return getPredicate(context, false).test(entity);
-			} catch (Throwable exc) {
+			} catch (final Throwable exc) {
 				Throwables.INSTANCE.throwException(exc);
 			}
 		}
@@ -358,11 +358,11 @@ public class Criteria<E, C extends Criteria<E, C, T>, T extends Criteria.TestCon
 	}
 
 
-	private boolean testWithFalseResultForNullEntityOrTrueResultForNullPredicate(T context, E entity) {
+	private boolean testWithFalseResultForNullEntityOrTrueResultForNullPredicate(final T context, final E entity) {
 		if (entity != null) {
 			try {
 				return getPredicate(context, true).test(entity);
-			} catch (Throwable exc) {
+			} catch (final Throwable exc) {
 				Throwables.INSTANCE.throwException(exc);
 			}
 		}
@@ -370,22 +370,22 @@ public class Criteria<E, C extends Criteria<E, C, T>, T extends Criteria.TestCon
 	}
 
 
-	private boolean testWithTrueResultForNullEntityOrFalseResultForNullPredicate(T context, E entity) {
+	private boolean testWithTrueResultForNullEntityOrFalseResultForNullPredicate(final T context, final E entity) {
 		if (entity != null) {
 			try {
 				return getPredicate(context, false).test(entity);
-			} catch (Throwable exc) {
+			} catch (final Throwable exc) {
 				Throwables.INSTANCE.throwException(exc);
 			}
 		}
 		return context.setEntity(entity).setResult(true).getResult();
 	}
 
-	private boolean testWithTrueResultForNullEntityOrTrueResultForNullPredicate(T context, E entity) {
+	private boolean testWithTrueResultForNullEntityOrTrueResultForNullPredicate(final T context, final E entity) {
 		if (entity != null) {
 			try {
 				return getPredicate(context, true).test(entity);
-			} catch (Throwable exc) {
+			} catch (final Throwable exc) {
 				Throwables.INSTANCE.throwException(exc);
 			}
 		}
@@ -402,7 +402,7 @@ public class Criteria<E, C extends Criteria<E, C, T>, T extends Criteria.TestCon
 				this.predicate,
 				new ThrowingPredicate<E,Throwable>() {
 					@Override
-					public boolean test(E entity) throws Throwable {
+					public boolean test(final E entity) throws Throwable {
 						return predicate.test(entity);
 					}
 				}
@@ -413,26 +413,26 @@ public class Criteria<E, C extends Criteria<E, C, T>, T extends Criteria.TestCon
 		public C and(){
 			logicalOperator = new Function<ThrowingPredicate<E, ? extends Throwable>, ThrowingPredicate<E, ? extends Throwable>>() {
 				@Override
-				public ThrowingPredicate<E, ? extends Throwable> apply(ThrowingPredicate<E, ? extends Throwable> predicate) {
+				public ThrowingPredicate<E, ? extends Throwable> apply(final ThrowingPredicate<E, ? extends Throwable> predicate) {
 					return Handler.and(Simple.this.predicate, (ThrowingPredicate)predicate);
 				}
 			};
 			return (C)this;
 		}
 
-		public C and(C criteria) {
+		public C and(final C criteria) {
 			return logicOperation(this.createCopy(), criteria.createCopy(),
 					new Function<ThrowingPredicate<E, ? extends Throwable>,
 					Function<ThrowingPredicate<? super E, ? extends Throwable>, ThrowingPredicate<E, ? extends Throwable>>>() {
 				@Override
-				public Function<ThrowingPredicate<? super E, ? extends Throwable>, ThrowingPredicate<E, ? extends Throwable>> apply(ThrowingPredicate<E, ? extends Throwable> predicate) {
+				public Function<ThrowingPredicate<? super E, ? extends Throwable>, ThrowingPredicate<E, ? extends Throwable>> apply(final ThrowingPredicate<E, ? extends Throwable> predicate) {
 					return new Function<
 						ThrowingPredicate<? super E, ? extends Throwable>,
 						ThrowingPredicate<E, ? extends Throwable>
 					>() {
 						@Override
 						public ThrowingPredicate<E, ? extends Throwable> apply(
-							ThrowingPredicate<? super E, ? extends Throwable> otherPredicate
+							final ThrowingPredicate<? super E, ? extends Throwable> otherPredicate
 						) {
 							return Handler.and(predicate, (ThrowingPredicate) otherPredicate);
 						}
@@ -443,7 +443,7 @@ public class Criteria<E, C extends Criteria<E, C, T>, T extends Criteria.TestCon
 		}
 
 		public C createCopy() {
-			C copy = newInstance();
+			final C copy = newInstance();
 			copy.predicate = this.predicate;
 			copy.logicalOperator = this.logicalOperator;
 			return copy;
@@ -465,26 +465,26 @@ public class Criteria<E, C extends Criteria<E, C, T>, T extends Criteria.TestCon
 		public C or(){
 			logicalOperator = new Function<ThrowingPredicate<E, ? extends Throwable>, ThrowingPredicate<E, ? extends Throwable>>() {
 				@Override
-				public ThrowingPredicate<E, ? extends Throwable> apply(ThrowingPredicate<E, ? extends Throwable> predicate) {
+				public ThrowingPredicate<E, ? extends Throwable> apply(final ThrowingPredicate<E, ? extends Throwable> predicate) {
 					return Handler.or(Simple.this.predicate, (ThrowingPredicate)predicate);
 				}
 			};
 			return (C)this;
 		}
 
-		public C or(C criteria) {
+		public C or(final C criteria) {
 			return logicOperation(
 				this.createCopy(), criteria.createCopy(),
 				new Function<ThrowingPredicate<E, ? extends Throwable>, Function<ThrowingPredicate<? super E, ? extends Throwable>, ThrowingPredicate<E, ? extends Throwable>>>() {
 					@Override
-					public Function<ThrowingPredicate<? super E, ? extends Throwable>, ThrowingPredicate<E, ? extends Throwable>> apply(ThrowingPredicate<E, ? extends Throwable> predicate) {
+					public Function<ThrowingPredicate<? super E, ? extends Throwable>, ThrowingPredicate<E, ? extends Throwable>> apply(final ThrowingPredicate<E, ? extends Throwable> predicate) {
 						return new Function<
 							ThrowingPredicate<? super E, ? extends Throwable>,
 							ThrowingPredicate<E, ? extends Throwable>
 						>() {
 							@Override
 							public ThrowingPredicate<E, ? extends Throwable> apply(
-								ThrowingPredicate<? super E, ? extends Throwable> otherPredicate
+								final ThrowingPredicate<? super E, ? extends Throwable> otherPredicate
 							) {
 								return Handler.or(predicate, (ThrowingPredicate)otherPredicate);
 							}
@@ -495,11 +495,11 @@ public class Criteria<E, C extends Criteria<E, C, T>, T extends Criteria.TestCon
 			);
 		}
 
-		public boolean testWithFalseResultForNullEntityOrFalseResultForNullPredicate(E entity) {
+		public boolean testWithFalseResultForNullEntityOrFalseResultForNullPredicate(final E entity) {
 			if (entity != null) {
 				try {
 					return getPredicateOrFalsePredicateIfPredicateIsNull().test(entity);
-				} catch (Throwable exc) {
+				} catch (final Throwable exc) {
 					return Throwables.INSTANCE.throwException(exc);
 				}
 			}
@@ -507,60 +507,60 @@ public class Criteria<E, C extends Criteria<E, C, T>, T extends Criteria.TestCon
 		}
 
 
-		public boolean testWithFalseResultForNullEntityOrTrueResultForNullPredicate(E entity) {
+		public boolean testWithFalseResultForNullEntityOrTrueResultForNullPredicate(final E entity) {
 			if (entity != null) {
 				try {
 					return getPredicateOrTruePredicateIfPredicateIsNull().test(entity);
-				} catch (Throwable exc) {
+				} catch (final Throwable exc) {
 					return Throwables.INSTANCE.throwException(exc);
 				}
 			}
 			return false;
 		}
 
-		public boolean testWithFalseResultForNullPredicate(E entity) {
+		public boolean testWithFalseResultForNullPredicate(final E entity) {
 			try {
 				return getPredicateOrFalsePredicateIfPredicateIsNull().test(entity);
-			} catch (Throwable exc) {
+			} catch (final Throwable exc) {
 				return Throwables.INSTANCE.throwException(exc);
 			}
 		}
 
-		public boolean testWithTrueResultForNullEntityOrFalseResultForNullPredicate(E entity) {
+		public boolean testWithTrueResultForNullEntityOrFalseResultForNullPredicate(final E entity) {
 			if (entity != null) {
 				try {
 					return getPredicateOrFalsePredicateIfPredicateIsNull().test(entity);
-				} catch (Throwable exc) {
+				} catch (final Throwable exc) {
 					return Throwables.INSTANCE.throwException(exc);
 				}
 			}
 			return true;
 		}
 
-		public boolean testWithTrueResultForNullEntityOrTrueResultForNullPredicate(E entity) {
+		public boolean testWithTrueResultForNullEntityOrTrueResultForNullPredicate(final E entity) {
 			if (entity != null) {
 				try {
 					return getPredicateOrTruePredicateIfPredicateIsNull().test(entity);
-				} catch (Throwable exc) {
+				} catch (final Throwable exc) {
 					return Throwables.INSTANCE.throwException(exc);
 				}
 			}
 			return true;
 		}
 
-		public boolean testWithTrueResultForNullPredicate(E entity) {
+		public boolean testWithTrueResultForNullPredicate(final E entity) {
 			try {
 				return getPredicateOrTruePredicateIfPredicateIsNull().test(entity);
-			} catch (Throwable exc) {
+			} catch (final Throwable exc) {
 				return Throwables.INSTANCE.throwException(exc);
 			}
 		}
 
 
 		protected <E, C extends Simple<E, C>> ThrowingPredicate<E, ? extends Throwable> concat(
-			ThrowingPredicate<E, ? extends Throwable> mainPredicate,
-			Function<ThrowingPredicate<E, ? extends Throwable>, ThrowingPredicate<E, ? extends Throwable>> logicalOperator,
-			ThrowingPredicate<E, ? extends Throwable> otherPredicate
+			final ThrowingPredicate<E, ? extends Throwable> mainPredicate,
+			final Function<ThrowingPredicate<E, ? extends Throwable>, ThrowingPredicate<E, ? extends Throwable>> logicalOperator,
+			final ThrowingPredicate<E, ? extends Throwable> otherPredicate
 		) {
 			if (otherPredicate != null) {
 				if (mainPredicate != null) {
@@ -572,10 +572,10 @@ public class Criteria<E, C extends Criteria<E, C, T>, T extends Criteria.TestCon
 		}
 
 		protected ThrowingPredicate<E, ? extends Throwable> concat(
-			ThrowingPredicate<E, ? extends Throwable> mainPredicate,
-			ThrowingPredicate<E, ? extends Throwable> otherPredicate
+			final ThrowingPredicate<E, ? extends Throwable> mainPredicate,
+			final ThrowingPredicate<E, ? extends Throwable> otherPredicate
 		) {
-			ThrowingPredicate<E, ? extends Throwable> predicate = concat(mainPredicate, this.logicalOperator, otherPredicate);
+			final ThrowingPredicate<E, ? extends Throwable> predicate = concat(mainPredicate, this.logicalOperator, otherPredicate);
 			this.logicalOperator = null;
 			return predicate;
 		}
@@ -586,8 +586,8 @@ public class Criteria<E, C extends Criteria<E, C, T>, T extends Criteria.TestCon
 		) {
 			return getPredicateWrapper(new ThrowingPredicate<E, Throwable>() {
 				@Override
-				public boolean test(E entity) throws Throwable {
-					V[] array = valueSupplier.apply(entity);
+				public boolean test(final E entity) throws Throwable {
+					final V[] array = valueSupplier.apply(entity);
 					boolean result = false;
 					for (int i = 0; i < array.length; i++) {
 						if (result = predicate.test(array, i)) {
@@ -600,9 +600,9 @@ public class Criteria<E, C extends Criteria<E, C, T>, T extends Criteria.TestCon
 			});
 		}
 
-		protected C logicOperation(C leftCriteria, C rightCriteria,
-			Function<ThrowingPredicate<E, ? extends Throwable>, Function<ThrowingPredicate< ? super E, ? extends Throwable>, ThrowingPredicate<E, ? extends Throwable>>> binaryOperator,
-			C targetCriteria
+		protected C logicOperation(final C leftCriteria, final C rightCriteria,
+			final Function<ThrowingPredicate<E, ? extends Throwable>, Function<ThrowingPredicate< ? super E, ? extends Throwable>, ThrowingPredicate<E, ? extends Throwable>>> binaryOperator,
+			final C targetCriteria
 		) {
 			targetCriteria.predicate =
 				leftCriteria.predicate != null?
@@ -619,8 +619,8 @@ public class Criteria<E, C extends Criteria<E, C, T>, T extends Criteria.TestCon
 
 		@SuppressWarnings("hiding")
 		<E, C extends Simple<E, C>> ThrowingPredicate<E, ? extends Throwable> consumeLogicalOperator (
-			ThrowingPredicate<E, ? extends Throwable> input,
-			Function<ThrowingPredicate<E, ? extends Throwable>, ThrowingPredicate<E, ? extends Throwable>> logicalOperator
+			final ThrowingPredicate<E, ? extends Throwable> input,
+			final Function<ThrowingPredicate<E, ? extends Throwable>, ThrowingPredicate<E, ? extends Throwable>> logicalOperator
 		) {
 			if (logicalOperator != null) {
 				return logicalOperator.apply(input);
@@ -633,12 +633,12 @@ public class Criteria<E, C extends Criteria<E, C, T>, T extends Criteria.TestCon
 		}
 
 		ThrowingPredicate<E, ? extends Throwable> getPredicateWrapper(
-			ThrowingPredicate<E, ? extends Throwable> function
+			final ThrowingPredicate<E, ? extends Throwable> function
 		) {
 			if (function != null) {
 				return new ThrowingPredicate<E, Throwable>() {
 					@Override
-					public boolean test(E entity) throws Throwable {
+					public boolean test(final E entity) throws Throwable {
 						return function.test(entity);
 					}
 				};
@@ -646,17 +646,17 @@ public class Criteria<E, C extends Criteria<E, C, T>, T extends Criteria.TestCon
 			return null;
 		}
 
-		private ThrowingPredicate<E, ? extends Throwable> getPredicate(boolean defaultResult) {
+		private ThrowingPredicate<E, ? extends Throwable> getPredicate(final boolean defaultResult) {
 			return this.predicate != null?
 				new ThrowingPredicate<E, Throwable>() {
 					@Override
-					public boolean test(E entity) throws Throwable {
+					public boolean test(final E entity) throws Throwable {
 						return Simple.this.predicate.test(entity);
 					}
 				} :
 				new ThrowingPredicate<E, Throwable>() {
 					@Override
-					public boolean test(E entity) {
+					public boolean test(final E entity) {
 						return defaultResult;
 					}
 				};
@@ -671,12 +671,12 @@ public class Criteria<E, C extends Criteria<E, C, T>, T extends Criteria.TestCon
 			THIS_CRITERIA
 		}
 
-		protected TestContext(C criteria) {
+		protected TestContext(final C criteria) {
 			super();
 			put(Elements.THIS_CRITERIA, criteria);
 		}
 
-		public static <E, C extends Criteria<E, C, T>, T extends Criteria.TestContext<E, C>> TestContext<E, C> create(C criteria) {
+		public static <E, C extends Criteria<E, C, T>, T extends Criteria.TestContext<E, C>> TestContext<E, C> create(final C criteria) {
 			return new TestContext<>(criteria);
 		}
 
@@ -696,17 +696,17 @@ public class Criteria<E, C extends Criteria<E, C, T>, T extends Criteria.TestCon
 			return super.get(Elements.TEST_RESULT);
 		}
 
-		<T extends Criteria.TestContext<E, C>> T setEntity(E entity) {
+		<T extends Criteria.TestContext<E, C>> T setEntity(final E entity) {
 			put(Elements.ENTITY, entity);
 			return (T) this;
 		}
 
-		<T extends Criteria.TestContext<E, C>> T setPredicate(ThrowingPredicate<E, ? extends Throwable> predicate) {
+		<T extends Criteria.TestContext<E, C>> T setPredicate(final ThrowingPredicate<E, ? extends Throwable> predicate) {
 			put(Elements.PREDICATE, predicate);
 			return (T)this;
 		}
 
-		<T extends Criteria.TestContext<E, C>> T setResult(Boolean result) {
+		<T extends Criteria.TestContext<E, C>> T setResult(final Boolean result) {
 			put(Elements.TEST_RESULT, result);
 			return (T) this;
 		}

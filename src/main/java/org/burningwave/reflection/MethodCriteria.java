@@ -79,7 +79,7 @@ public class MethodCriteria extends ExecutableMemberCriteria<
 
 	@Override
 	ThrowingFunction<Class<?>, Method[], ? extends Throwable> getMembersSupplierFunction() {
-		return new ThrowingFunction<>() {
+		return new ThrowingFunction<Class<?>, Method[], Throwable>() {
 
 			@Override
 			public Method[] apply(Class<?> clazz) throws Throwable {
