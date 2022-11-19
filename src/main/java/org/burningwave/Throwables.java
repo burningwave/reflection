@@ -39,7 +39,9 @@ public class Throwables {
 	private Throwables() {}
 
 	public <T> T throwException(String exc, Object... placeHolderReplacements) {
-        return throwException(Strings.INSTANCE.compile(exc, placeHolderReplacements));
+        return throwException(
+    		new Exception(Strings.INSTANCE.compile(exc, placeHolderReplacements))
+		);
     }
 
 	public <T> T throwException(Throwable exc) {

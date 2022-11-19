@@ -127,6 +127,7 @@ public class Facade {
 			(MethodHandles.Lookup)privateLookupIn.invokeWithArguments(cons, clazz);
 		INSTANCE = new Facade();
 	}
+
 	private Collection<ThrowingBiConsumer<AccessibleObject, Boolean, Throwable>> accessibleSetters;
 	private Collection<ThrowingBiFunction<Constructor<?>, Object[], Object, Throwable>> constructorInvokers;
 	private Collection<ThrowingFunction<Class<?>, Constructor<?>[], Throwable>> constructorRetrievers;
