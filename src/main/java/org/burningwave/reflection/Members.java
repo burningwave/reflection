@@ -126,7 +126,10 @@ public class Members {
 		if (members.size() > 1) {
 			Throwables.INSTANCE.throwException("More than one member found for class {}", classFrom.getName());
 		}
-		return members.stream().findFirst().orElse(null);
+		if (!members.isEmpty()) {
+			return members.iterator().next();
+		}
+		return null;
 	}
 
 	public <M extends Member> boolean match(MemberCriteria<M, ?, ?> criteria, Class<?> classFrom) {

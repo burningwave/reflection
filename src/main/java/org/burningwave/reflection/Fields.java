@@ -121,7 +121,7 @@ public class Fields extends Members.Handler<Field, FieldCriteria> {
 				)
 			);
 		}
-		return members.stream().findFirst().get();
+		return members.iterator().next();
 	}
 
 	public Field findOneAndMakeItAccessible(Class<?> targetClass, String memberName) {
@@ -133,7 +133,7 @@ public class Fields extends Members.Handler<Field, FieldCriteria> {
 				)
 			);
 		}
-		return members.stream().findFirst().get();
+		return members.iterator().next();
 	}
 
 	public <T> T get(Object target, Field field) {

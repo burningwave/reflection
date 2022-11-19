@@ -125,8 +125,9 @@ public class Constructors extends Members.Handler.OfExecutable<Constructor<?>, C
 		} else if (members.size() > 1) {
 			Collection<Constructor<?>> membersThatMatch = searchForExactMatch(members, inputParameterTypesOrSubTypes);
 			if (!membersThatMatch.isEmpty()) {
-				return members.iterator().next();
+				return membersThatMatch.iterator().next();
 			}
+			return members.iterator().next();
 		}
 		return null;
 	}
@@ -134,11 +135,11 @@ public class Constructors extends Members.Handler.OfExecutable<Constructor<?>, C
 	public Constructor<?> findOneAndMakeItAccessible(Class<?> targetClass, Class<?>... argumentTypes) {
 		Collection<Constructor<?>> members = findAllAndMakeThemAccessible(targetClass, argumentTypes);
 		if (members.size() == 1) {
-			return members.stream().findFirst().get();
+			return members.iterator().next();
 		} else if (members.size() > 1) {
 			Collection<Constructor<?>> membersThatMatch = searchForExactMatch(members, argumentTypes);
 			if (membersThatMatch.size() == 1) {
-				return membersThatMatch.stream().findFirst().get();
+				return membersThatMatch.iterator().next();
 			}
 			Throwables.INSTANCE.throwException(
 				"Found more than one of constructor with argument types {} in {} class",

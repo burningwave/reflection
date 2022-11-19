@@ -126,8 +126,9 @@ public class Methods extends Members.Handler.OfExecutable<Method, MethodCriteria
 		} else if (members.size() > 1) {
 			Collection<Method> membersThatMatch = searchForExactMatch(members, inputParameterTypesOrSubTypes);
 			if (!membersThatMatch.isEmpty()) {
-				return members.iterator().next();
+				return membersThatMatch.iterator().next();
 			}
+			return members.iterator().next();
 		}
 		return null;
 	}
@@ -136,11 +137,11 @@ public class Methods extends Members.Handler.OfExecutable<Method, MethodCriteria
 	public Method findOneAndMakeItAccessible(Class<?> targetClass, String memberName, Class<?>... inputParameterTypesOrSubTypes) {
 		Collection<Method> members = findAllByExactNameAndMakeThemAccessible(targetClass, memberName, inputParameterTypesOrSubTypes);
 		if (members.size() == 1) {
-			return members.stream().findFirst().get();
+			return members.iterator().next();
 		} else if (members.size() > 1) {
 			Collection<Method> membersThatMatch = searchForExactMatch(members, inputParameterTypesOrSubTypes);
 			if (membersThatMatch.size() == 1) {
-				return membersThatMatch.stream().findFirst().get();
+				return membersThatMatch.iterator().next();
 			}
 			Throwables.INSTANCE.throwException(
 				new IllegalArgumentException(
