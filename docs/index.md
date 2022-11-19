@@ -20,7 +20,7 @@
 
 Extracted from [**Burningwave Core**](https://burningwave.github.io/core/), Burningwave Reflection is an advanced, free and open source reflection engine.
 
-The main difference with Burningwave Core's reflection engine is that **the use of the [JVM driver](https://burningwave.github.io/jvm-driver/) is optional and disabled by default**. 
+The main difference with Burningwave Core's reflection engine is that **the use of the [JVM driver](https://burningwave.github.io/jvm-driver/) is optional and if the library that contain it is not present in the class path it is not used by default**. 
 
 And now we will see:
 * [including Burningwave Reflection in your project](#Including-Burningwave-Reflection-in-your-project)
