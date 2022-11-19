@@ -18,7 +18,7 @@
 [![Repository dependents](https://badgen.net/github/dependents-repo/burningwave/reflection)](https://github.com/burningwave/reflection/network/dependents)
 [![HitCount](https://www.burningwave.org/generators/generate-visited-pages-badge.php)](https://www.burningwave.org#bw-counters)
 
-Extracted from [**Burningwave Core**](https://burningwave.github.io/core/) is an advanced, free and open source reflection engine.
+Extracted from [**Burningwave Core**](https://burningwave.github.io/core/), Burningwave Reflection is an advanced, free and open source reflection engine.
 
 The main difference with Burningwave Core's reflection engine is that **the use of the [JVM driver](https://burningwave.github.io/jvm-driver/) is optional and disabled by default**. 
 
