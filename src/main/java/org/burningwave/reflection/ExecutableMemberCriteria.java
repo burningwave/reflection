@@ -28,8 +28,7 @@
  */
 package org.burningwave.reflection;
 
-import java.lang.reflect.Executable;
-import java.lang.reflect.Parameter;
+import java.lang.reflect.Member;
 import java.util.Arrays;
 import java.util.List;
 
@@ -42,25 +41,29 @@ import org.burningwave.function.ThrowingTriPredicate;
 
 @SuppressWarnings("unchecked")
 public abstract class ExecutableMemberCriteria<
-	E extends Executable,
+	E extends Member,
 	C extends ExecutableMemberCriteria<E, C, T>,
 	T extends Criteria.TestContext<E, C>
 > extends MemberCriteria<E, C, T> {
 
-	public C parameter(final ThrowingBiPredicate<Parameter[], Integer, ? extends Throwable> predicate) {
+	public C parameter(final ThrowingTriPredicate<Class<?>[], Boolean, Integer, ? extends Throwable> predicate) {
 		this.predicate = concat(
 			this.predicate,
 			getPredicateWrapper(
-				new ThrowingBiFunction<T, E, Parameter[], Throwable>() {
+				new ThrowingBiFunction<T, E, Class<?>[], Throwable>() {
 					@Override
-					public Parameter[] apply(T criteria, E member) {
-						return member.getParameters();
+					public Class<?>[] apply(T testContext, E member) {
+						return Members.Handler.OfExecutable.INSTANCE.getParameterTypes(member);
 					}
 				},
-				new ThrowingTriPredicate<T, Parameter[], Integer, Throwable>() {
+				new ThrowingTriPredicate<T, Class<?>[], Integer, Throwable>() {
 					@Override
-					public boolean test(T criteria, Parameter[] array, Integer index) throws Throwable {
-						return predicate.test(array, index);
+					public boolean test(T testContext, Class<?>[] array, Integer index) throws Throwable {
+						return predicate.test(
+							array,
+							Members.Handler.OfExecutable.INSTANCE.isVarArgs(testContext.getEntity()),
+							index
+						);
 					}
 				}
 			)
@@ -74,13 +77,13 @@ public abstract class ExecutableMemberCriteria<
 			getPredicateWrapper(
 				new ThrowingBiFunction<T, E, Class<?>[], Throwable>() {
 					@Override
-					public Class<?>[] apply(T criteria, E member) {
-						return member.getParameterTypes();
+					public Class<?>[] apply(T testContext, E member) {
+						return Members.Handler.OfExecutable.INSTANCE.getParameterTypes(member);
 					}
 				},
 				new ThrowingTriPredicate<T, Class<?>[], Integer, Throwable>() {
 					@Override
-					public boolean test(T criteria, Class<?>[] array, Integer index) throws Throwable {
+					public boolean test(T testContext, Class<?>[] array, Integer index) throws Throwable {
 						return predicate.test(array, index);
 					}
 				}
@@ -95,8 +98,8 @@ public abstract class ExecutableMemberCriteria<
 			this.predicate,
 			new ThrowingBiPredicate<T, E, Throwable>() {
 				@Override
-				public boolean test(T context, E member) throws Throwable {
-					return predicate.test(member.getParameterTypes());
+				public boolean test(T testContext, E member) throws Throwable {
+					return predicate.test(Members.Handler.OfExecutable.INSTANCE.getParameterTypes(member));
 				}
 			}
 		);
@@ -154,14 +157,14 @@ public abstract class ExecutableMemberCriteria<
 					new ThrowingBiPredicate<T, E, Throwable>() {
 						@Override
 						public boolean test(T context, E member) {
-							Parameter[] memberParameter = member.getParameters();
+							Class<?>[] memberParameter = Members.Handler.OfExecutable.INSTANCE.getParameterTypes(member);
 							if ((memberParameter.length > 1) &&
-								memberParameter[memberParameter.length - 1].isVarArgs() &&
+								Members.Handler.OfExecutable.INSTANCE.isVarArgs(member) &&
 								((memberParameter.length - 1) > argumentsClassesAsList.size())
 							) {
 								return false;
 							}
-							Class<?>[] memberParameterTypes = Methods.INSTANCE.retrieveParameterTypes(member, argumentsClassesAsList);
+							Class<?>[] memberParameterTypes = Members.Handler.OfExecutable.INSTANCE.retrieveParameterTypes(member, argumentsClassesAsList);
 							if (argumentsClassesAsList.size() == memberParameterTypes.length) {
 								try {
 									return predicate.test(argumentsClassesAsList, memberParameterTypes, index);
@@ -190,4 +193,5 @@ public abstract class ExecutableMemberCriteria<
 		}
 		return (C)this;
 	}
+
 }

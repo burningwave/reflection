@@ -1,10 +1,9 @@
 package org.burningwave.reflection;
 
-import java.lang.reflect.Parameter;
 import java.util.Collection;
 
-import org.burningwave.function.ThrowingBiPredicate;
 import org.burningwave.function.ThrowingPredicate;
+import org.burningwave.function.ThrowingTriPredicate;
 import org.burningwave.reflection.service.Service;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
@@ -352,10 +351,10 @@ public class MethodsTest extends BaseTest {
 							cls.getName().equals(ClassLoader.class.getName());
 						}
 					}
-				    ).parameter(new ThrowingBiPredicate<Parameter[], Integer, Throwable>() {
+				    ).parameter(new ThrowingTriPredicate<Class<?>[], Boolean, Integer, Throwable>() {
 						@Override
-						public boolean test(Parameter[] params, Integer idx) throws Throwable {
-						    return Classes.INSTANCE.isAssignableFrom(params[idx].getType(), Class.class);
+						public boolean test(Class<?>[] params, Boolean isVarArgs, Integer idx) throws Throwable {
+						    return Classes.INSTANCE.isAssignableFrom(params[idx], Class.class);
 						}
 					}), ClassLoader.class
 				);

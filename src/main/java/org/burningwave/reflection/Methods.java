@@ -34,7 +34,6 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -45,11 +44,11 @@ import org.burningwave.function.Consumer;
 import org.burningwave.function.Function;
 import org.burningwave.function.Handler;
 import org.burningwave.function.Supplier;
-import org.burningwave.function.ThrowingBiPredicate;
 import org.burningwave.function.ThrowingFunction;
 import org.burningwave.function.ThrowingPredicate;
 import org.burningwave.function.ThrowingSupplier;
 import org.burningwave.function.ThrowingTriFunction;
+import org.burningwave.function.ThrowingTriPredicate;
 
 @SuppressWarnings("unchecked")
 public class Methods extends Members.Handler.OfExecutable<Method, MethodCriteria> {
@@ -314,10 +313,11 @@ public class Methods extends Members.Handler.OfExecutable<Method, MethodCriteria
 					.name(namePredicate)
 					.and().parameterTypesAreAssignableFrom(inputParameterTypesOrSubTypes);
 				if ((inputParameterTypesOrSubTypes != null) && (inputParameterTypesOrSubTypes.length == 0)) {
-					criteria = criteria.or(MethodCriteria.forEntireClassHierarchy().name(namePredicate).and().parameter(new ThrowingBiPredicate<Parameter[], Integer, Throwable>() {
+					criteria = criteria.or(MethodCriteria.forEntireClassHierarchy().name(namePredicate).and().parameter(
+						new ThrowingTriPredicate<Class<?>[], Boolean, Integer, Throwable>() {
 						@Override
-						public boolean test(final Parameter[] parameters, final Integer idx) {
-							return (parameters.length == 1) && parameters[0].isVarArgs();
+						public boolean test(final Class<?>[] parameters, Boolean isVarArgs, final Integer idx) {
+							return (parameters.length == 1) && isVarArgs;
 						}
 					}));
 				}

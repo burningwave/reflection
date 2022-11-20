@@ -34,9 +34,9 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Array;
-import java.lang.reflect.Executable;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Member;
-import java.lang.reflect.Parameter;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -56,6 +56,7 @@ import org.burningwave.function.ThrowingPredicate;
 import org.burningwave.function.ThrowingTriFunction;
 
 import io.github.toolfactory.jvm.function.template.ThrowingBiFunction;
+import io.github.toolfactory.jvm.util.Strings;
 
 @SuppressWarnings("unchecked")
 public class Members {
@@ -218,9 +219,59 @@ public class Members {
 
 	public static abstract class Handler<M extends Member, C extends MemberCriteria<M, C, ?>> {
 
-		public static abstract class OfExecutable<E extends Executable, C extends ExecutableMemberCriteria<E, C, ?>> extends Members.Handler<E, C> {
+		public static abstract class OfExecutable<E extends Member, C extends ExecutableMemberCriteria<E, C, ?>> extends Members.Handler<E, C> {
+			static final OfExecutable<?, ?> INSTANCE = new OfExecutable() {
+
+				@Override
+				MethodHandle retrieveMethodHandle(Lookup consulter, Member member)
+						throws NoSuchMethodException, IllegalAccessException {
+					if (member instanceof java.lang.reflect.Method) {
+						return Methods.INSTANCE.retrieveMethodHandle(consulter, (Method)member);
+					} else if (member instanceof java.lang.reflect.Constructor) {
+						return Constructors.INSTANCE.retrieveMethodHandle(consulter, (Constructor<?>)member);
+					} else {
+						throw new IllegalArgumentException(Strings.compile("Unsupported member type: {}", member.getClass()));
+					}
+				}
+
+				@Override
+				String retrieveNameForCaching(Member member) {
+					if (member instanceof java.lang.reflect.Method) {
+						return Methods.INSTANCE.retrieveNameForCaching((Method)member);
+					} else if (member instanceof java.lang.reflect.Constructor) {
+						return Constructors.INSTANCE.retrieveNameForCaching((Constructor<?>)member);
+					} else {
+						throw new IllegalArgumentException(Strings.compile("Unsupported member type: {}", member.getClass()));
+					}
+				}
+
+			};
 
 			OfExecutable() {}
+
+			Class<?>[] getParameterTypes(Member member) {
+				if (member instanceof java.lang.reflect.Method) {
+					return ((java.lang.reflect.Method)member).getParameterTypes();
+				} else if (member instanceof java.lang.reflect.Constructor) {
+					return ((java.lang.reflect.Constructor<?>)member).getParameterTypes();
+				} else {
+					throw new IllegalArgumentException(Strings.compile("Unsupported member type: {}", member.getClass()));
+				}
+			}
+
+			boolean isVarArgs(Member member) {
+				if (member instanceof java.lang.reflect.Method) {
+					return ((java.lang.reflect.Method)member).isVarArgs();
+				} else if (member instanceof java.lang.reflect.Constructor) {
+					return ((java.lang.reflect.Constructor<?>)member).isVarArgs();
+				} else {
+					throw new IllegalArgumentException(Strings.compile("Unsupported member type: {}", member.getClass()));
+				}
+			}
+
+			abstract  MethodHandle retrieveMethodHandle(MethodHandles.Lookup consulter, E member) throws NoSuchMethodException, IllegalAccessException;
+
+			abstract String retrieveNameForCaching(E member);
 
 			public Collection<MethodHandle> findAllDirectHandle(final C criteria, final Class<?> clsFrom) {
 				final Collection<MethodHandle> methodHandles = new LinkedHashSet<>();
@@ -254,7 +305,7 @@ public class Members {
 			Members.Handler.OfExecutable.Box<E> findDirectHandleBox(final E executable) {
 				final Class<?> targetClass = executable.getDeclaringClass();
 				final ClassLoader targetClassClassLoader = Classes.INSTANCE.getClassLoader(targetClass);
-				final String cacheKey = getCacheKey(targetClass, "equals " + retrieveNameForCaching(executable), executable.getParameterTypes());
+				final String cacheKey = getCacheKey(targetClass, "equals " + retrieveNameForCaching(executable), getParameterTypes(executable));
 				return findDirectHandleBox(executable, targetClassClassLoader, cacheKey);
 			}
 
@@ -295,33 +346,33 @@ public class Members {
 			}
 
 			List<Object> getArgumentListWithArrayForVarArgs(final E member, final Supplier<List<Object>> argumentListSupplier, final Object... arguments) {
-				final Parameter[] parameters = member.getParameters();
+				final Class<?>[] parameters = getParameterTypes(member);
 				final List<Object> argumentList = argumentListSupplier.get();
 				if (arguments != null) {
-					if ((parameters.length > 0) && parameters[parameters.length - 1].isVarArgs()) {
+					if ((parameters.length > 0) && isVarArgs(member)) {
 						for (int i = 0; (i < arguments.length) && (i < (parameters.length - 1)); i++) {
 							argumentList.add(arguments[i]);
 						}
-						final Parameter lastParameter = parameters[parameters.length -1];
+						final Class<?> lastParameter = parameters[parameters.length -1];
 						if (arguments.length == parameters.length) {
 							final Object lastArgument = arguments[arguments.length -1];
 							if ((lastArgument != null) &&
 								lastArgument.getClass().isArray() &&
-								lastArgument.getClass().equals(lastParameter.getType())) {
+								lastArgument.getClass().equals(lastParameter)) {
 								argumentList.add(lastArgument);
 							} else {
-								final Object array = Array.newInstance(lastParameter.getType().getComponentType(), 1);
+								final Object array = Array.newInstance(lastParameter.getComponentType(), 1);
 								Array.set(array, 0, lastArgument);
 								argumentList.add(array);
 							}
 						} else if (arguments.length > parameters.length) {
-							final Object array = Array.newInstance(lastParameter.getType().getComponentType(), arguments.length - (parameters.length - 1));
+							final Object array = Array.newInstance(lastParameter.getComponentType(), arguments.length - (parameters.length - 1));
 							for (int i = parameters.length - 1, j = 0; i < arguments.length; i++, j++) {
 								Array.set(array, j, arguments[i]);
 							}
 							argumentList.add(array);
 						} else if (arguments.length < parameters.length) {
-							argumentList.add(Array.newInstance(lastParameter.getType().getComponentType(),0));
+							argumentList.add(Array.newInstance(lastParameter.getComponentType(),0));
 						}
 					} else if (arguments.length > 0) {
 						for (final Object argument : arguments) {
@@ -335,19 +386,19 @@ public class Members {
 			}
 
 			List<Object> getFlatArgumentList(final E member, final Supplier<List<Object>> argumentListSupplier, final Object... arguments) {
-				final Parameter[] parameters = member.getParameters();
+				final Class<?>[] parameters = getParameterTypes(member);
 				final List<Object> argumentList = argumentListSupplier.get();
 				if (arguments != null) {
-					if ((parameters.length > 0) && parameters[parameters.length - 1].isVarArgs()) {
+					if ((parameters.length > 0) && isVarArgs(member)) {
 						for (int i = 0; (i < arguments.length) && (i < (parameters.length - 1)); i++) {
 							argumentList.add(arguments[i]);
 						}
 						if (arguments.length == parameters.length) {
-							final Parameter lastParameter = parameters[parameters.length -1];
+							final Class<?> lastParameter = parameters[parameters.length -1];
 							final Object lastArgument = arguments[arguments.length -1];
 							if ((lastArgument != null) &&
 								lastArgument.getClass().isArray() &&
-								lastArgument.getClass().equals(lastParameter.getType())) {
+								lastArgument.getClass().equals(lastParameter)) {
 								for (int i = 0; i < Array.getLength(lastArgument); i++) {
 									argumentList.add(Array.get(lastArgument, i));
 								}
@@ -372,20 +423,16 @@ public class Members {
 				return argumentList;
 			}
 
-			abstract MethodHandle retrieveMethodHandle(MethodHandles.Lookup consulter, E executable) throws NoSuchMethodException, IllegalAccessException;
-
-			abstract String retrieveNameForCaching(E executable);
-
-			Class<?>[] retrieveParameterTypes(final Executable member, final List<Class<?>> argumentsClassesAsList) {
-				final Parameter[] memberParameter = member.getParameters();
-				Class<?>[] memberParameterTypes = member.getParameterTypes();
-				if ((memberParameter.length > 0) && memberParameter[memberParameter.length - 1].isVarArgs()) {
+			Class<?>[] retrieveParameterTypes(final Member member, final List<Class<?>> argumentsClassesAsList) {
+				final Class<?>[] memberParameter = getParameterTypes(member);
+				Class<?>[] memberParameterTypes = getParameterTypes(member);
+				if ((memberParameter.length > 0) && isVarArgs(member)) {
 					final Class<?> varArgsType =
 						(argumentsClassesAsList.size() > 0) &&
 						(argumentsClassesAsList.get(argumentsClassesAsList.size()-1) != null) &&
 						argumentsClassesAsList.get(argumentsClassesAsList.size()-1).isArray()?
-						memberParameter[memberParameter.length - 1].getType():
-						memberParameter[memberParameter.length - 1].getType().getComponentType();
+						memberParameter[memberParameter.length - 1]:
+						memberParameter[memberParameter.length - 1].getComponentType();
 					if (memberParameter.length == 1) {
 						memberParameterTypes = new Class<?>[argumentsClassesAsList.size()];
 						for (int j = 0; j < memberParameterTypes.length; j++) {
@@ -395,7 +442,7 @@ public class Members {
 						memberParameterTypes = new Class<?>[argumentsClassesAsList.size()];
 						for (int j = 0; j < memberParameterTypes.length; j++) {
 							if (j < (memberParameter.length - 1)) {
-								memberParameterTypes[j] = memberParameter[j].getType();
+								memberParameterTypes[j] = memberParameter[j];
 							} else {
 								memberParameterTypes[j] = varArgsType;
 							}
@@ -411,16 +458,16 @@ public class Members {
 				final Collection<E> membersThatMatch = new TreeSet<>(new Comparator<E>() {
 					@Override
 					public int compare(final E executableOne, final E executableTwo) {
-						final Parameter[] executableOneParameters = executableOne.getParameters();
-						final Parameter[] executableTwoParameters = executableTwo.getParameters();
+						final Class<?>[] executableOneParameters = getParameterTypes(executableOne);
+						final Class<?>[] executableTwoParameters = getParameterTypes(executableTwo);
 						if (executableOneParameters.length == argumentsClassesAsList.size()) {
 							if (executableTwoParameters.length == argumentsClassesAsList.size()) {
-								if ((executableOneParameters.length > 0) && executableOneParameters[executableOneParameters.length - 1].isVarArgs()) {
-									if ((executableTwoParameters.length > 0) && executableTwoParameters[executableTwoParameters.length - 1].isVarArgs()) {
+								if ((executableOneParameters.length > 0) && isVarArgs(executableOne)) {
+									if ((executableTwoParameters.length > 0) && isVarArgs(executableTwo)) {
 										return 0;
 									}
 									return 1;
-								} else if ((executableTwoParameters.length > 0) && executableTwoParameters[executableTwoParameters.length - 1].isVarArgs()) {
+								} else if ((executableTwoParameters.length > 0) && isVarArgs(executableTwo)) {
 									return -1;
 								} else {
 									return 0;
@@ -452,7 +499,7 @@ public class Members {
 				return membersThatMatch;
 			}
 
-			public static class Box<E extends Executable> {
+			public static class Box<E extends Member> {
 				MethodHandles.Lookup consulter;
 				E executable;
 				MethodHandle handler;

@@ -33,7 +33,6 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -44,9 +43,9 @@ import org.burningwave.function.Consumer;
 import org.burningwave.function.Function;
 import org.burningwave.function.Handler;
 import org.burningwave.function.Supplier;
-import org.burningwave.function.ThrowingBiPredicate;
 import org.burningwave.function.ThrowingSupplier;
 import org.burningwave.function.ThrowingTriFunction;
+import org.burningwave.function.ThrowingTriPredicate;
 
 
 @SuppressWarnings("unchecked")
@@ -93,10 +92,10 @@ public class Constructors extends Members.Handler.OfExecutable<Constructor<?>, C
 			public Collection<Constructor<?>> get() {
 				final ConstructorCriteria criteria = ConstructorCriteria.withoutConsideringParentClasses().parameterTypesAreAssignableFrom(inputParameterTypesOrSubTypes);
 				if ((inputParameterTypesOrSubTypes != null) && (inputParameterTypesOrSubTypes.length == 0)) {
-					criteria.or().parameter(new ThrowingBiPredicate<Parameter[], Integer, Throwable>() {
+					criteria.or().parameter(new ThrowingTriPredicate<Class<?>[], Boolean, Integer, Throwable>() {
 						@Override
-						public boolean test(final Parameter[] parameters, final Integer idx) {
-							return (parameters.length == 1) && parameters[0].isVarArgs();
+						public boolean test(final Class<?>[] parameters, Boolean isVarArgs, final Integer idx) {
+							return (parameters.length == 1) && isVarArgs;
 						}
 					});
 				}

@@ -28,7 +28,6 @@
  */
 package org.burningwave;
 
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.burningwave.function.ThrowingSupplier;
@@ -42,7 +41,7 @@ public class Synchronizer {
 	}
 
 
-	Map<String, Mutex> mutexes;
+	ConcurrentHashMap<String, Mutex> mutexes;
 
 
 	private Synchronizer() {

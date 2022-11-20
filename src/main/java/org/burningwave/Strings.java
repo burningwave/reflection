@@ -31,7 +31,6 @@ package org.burningwave;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Objects;
 
 import org.burningwave.function.Function;
 
@@ -51,7 +50,7 @@ public class Strings {
 
 	public String compile(String message, Object... arguments) {
 		for (Object obj : arguments) {
-			message = message.replaceFirst("\\{\\}", Objects.isNull(obj) ? "null" : clear(obj.toString()));
+			message = message.replaceFirst("\\{\\}", obj == null ? "null" : clear(obj.toString()));
 		}
 		return message;
 	}
