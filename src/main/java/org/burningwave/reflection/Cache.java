@@ -38,8 +38,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.BiConsumer;
-import java.util.function.IntPredicate;
 
 import org.burningwave.Objects;
 import org.burningwave.Synchronizer;
@@ -134,7 +132,7 @@ class Cache {
 			this(partitionStartLevel, sharer, null);
 		}
 
-		public ObjectAndPathForResources(final Long partitionStartLevel, final Function<R, R> sharer, final BiConsumer<String, R> itemDestroyer) {
+		public ObjectAndPathForResources(final Long partitionStartLevel, final Function<R, R> sharer, final ThrowingBiConsumer<String, R, ? extends Throwable> itemDestroyer) {
 			this.resources = new ConcurrentHashMap<>();
 			this.pathForResourcesSupplier = new Supplier<PathForResources<R>>() {
 				@Override
@@ -228,7 +226,7 @@ class Cache {
 
 	public static class PathForResources<R> {
 		String instanceId;
-		BiConsumer<String, R> itemDestroyer;
+		ThrowingBiConsumer<String, R, ? extends Throwable> itemDestroyer;
 		Long partitionStartLevel;
 		Map<Long, Map<String, Map<String, R>>> resources;
 		Function<R, R> sharer;
@@ -242,7 +240,7 @@ class Cache {
 			}, null);
 		}
 
-		private PathForResources(final BiConsumer<String, R> itemDestroyer) {
+		private PathForResources(final ThrowingBiConsumer<String, R, ? extends Throwable> itemDestroyer) {
 			this(1L, new Function<R, R>() {
 				@Override
 				public R apply(final R item) {
@@ -255,7 +253,7 @@ class Cache {
 			this(1L, sharer, null);
 		}
 
-		private PathForResources(final Function<R, R> sharer, final BiConsumer<String, R> itemDestroyer) {
+		private PathForResources(final Function<R, R> sharer, final ThrowingBiConsumer<String, R, ? extends Throwable> itemDestroyer) {
 			this(1L, new Function<R, R>() {
 				@Override
 				public R apply(final R item) {
@@ -273,7 +271,7 @@ class Cache {
 			}, null);
 		}
 
-		private PathForResources(final Long partitionStartLevel, final BiConsumer<String, R> itemDestroyer) {
+		private PathForResources(final Long partitionStartLevel, final ThrowingBiConsumer<String, R, ? extends Throwable> itemDestroyer) {
 			this(partitionStartLevel, new Function<R, R>() {
 				@Override
 				public R apply(final R item) {
@@ -286,7 +284,7 @@ class Cache {
 			this(partitionStartLevel, sharer, null);
 		}
 
-		private PathForResources(final Long partitionStartLevel, final Function<R, R> sharer, final BiConsumer<String, R> itemDestroyer) {
+		private PathForResources(final Long partitionStartLevel, final Function<R, R> sharer, final ThrowingBiConsumer<String, R, ? extends Throwable> itemDestroyer) {
 			this.partitionStartLevel = partitionStartLevel;
 			this.sharer = sharer;
 			this.resources = new ConcurrentHashMap<>();
@@ -316,25 +314,25 @@ class Cache {
 		}
 
 		public R getOrUploadIfAbsent(final String path, final Supplier<R> resourceSupplier) {
-			final Long occurences = path.chars().filter(new IntPredicate() {
-				@Override
-				public boolean test(final int ch) {
-					return ch == '/';
-				}
-			}).count();
+			Long occurences = getSeparatorCount(path);
 			final Long partitionIndex = occurences > partitionStartLevel? occurences : partitionStartLevel;
 			final Map<String, Map<String, R>> partion = retrievePartition(resources, partitionIndex);
 			final Map<String, R> nestedPartition = retrievePartition(partion, partitionIndex, path);
 			return getOrUploadIfAbsent(nestedPartition, path, resourceSupplier);
 		}
 
+		public Long getSeparatorCount(final String path) {
+			Long occurences = 0L;
+			for (int i = 0; i < path.length(); i++) {
+	            if (path.charAt(i) == '/') {
+	            	occurences++;
+	            }
+	        }
+			return occurences;
+		}
+
 		public R remove(final String path, final boolean destroy) {
-			final Long occurences = path.chars().filter(new IntPredicate() {
-				@Override
-				public boolean test(final int ch) {
-					return ch == '/';
-				}
-			}).count();
+			final Long occurences = getSeparatorCount(path);
 			final Long partitionIndex = occurences > partitionStartLevel? occurences : partitionStartLevel;
 			final Map<String, Map<String, R>> partion = retrievePartition(resources, partitionIndex);
 			final Map<String, R> nestedPartition = retrievePartition(partion, partitionIndex, path);
@@ -346,7 +344,11 @@ class Cache {
 			});
 			if ((itemDestroyer != null) && destroy && (item != null)) {
 				final String finalPath = path;
-				itemDestroyer.accept(finalPath, item);
+				try {
+					itemDestroyer.accept(finalPath, item);
+				} catch (Throwable exc) {
+					Throwables.INSTANCE.throwException(exc);
+				}
 			}
 			return item;
 		}
@@ -366,12 +368,7 @@ class Cache {
 		}
 
 		public R upload(final String path, final Supplier<R> resourceSupplier, final boolean destroy) {
-			final Long occurences = path.chars().filter(new IntPredicate() {
-				@Override
-				public boolean test(final int ch) {
-					return ch == '/';
-				}
-			}).count();
+			final Long occurences = getSeparatorCount(path);
 			final Long partitionIndex = occurences > partitionStartLevel? occurences : partitionStartLevel;
 			final Map<String, Map<String, R>> partion = retrievePartition(resources, partitionIndex);
 			final Map<String, R> nestedPartition = retrievePartition(partion, partitionIndex, path);
@@ -385,7 +382,11 @@ class Cache {
 						deepClear(nestedPartition.getValue(), new ThrowingBiConsumer<String, R, RuntimeException>() {
 							@Override
 							public void accept(final String path, final R resource) throws RuntimeException {
-								PathForResources.this.itemDestroyer.accept(path, resource);
+								try {
+									PathForResources.this.itemDestroyer.accept(path, resource);
+								} catch (Throwable exc) {
+									Throwables.INSTANCE.throwException(exc);
+								}
 							}
 						});
 					} else {
