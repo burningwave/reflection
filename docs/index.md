@@ -149,7 +149,7 @@ public class MethodsHandler {
         Integer number = Methods.INSTANCE.invokeStatic(Integer.class, "valueOf", 1);
         
         //Invoking a method: the invoke method tries to execute the target method via MethodHandle and
-        //if that fails it tries with standart reflection
+        //if that fails it tries with standard reflection
         Methods.INSTANCE.invoke(System.out, "println", number);
         
         //Filtering and obtaining a MethodHandle reference
