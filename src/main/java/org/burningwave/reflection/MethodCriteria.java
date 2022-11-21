@@ -85,9 +85,8 @@ public class MethodCriteria extends ExecutableMemberCriteria<
 			@Override
 			public Method[] apply(final Class<?> clazz) throws Throwable {
 				final String cacheKey = Methods.INSTANCE.getCacheKey(clazz, Members.ALL_FOR_CLASS);
-				final ClassLoader targetClassClassLoader = Classes.INSTANCE.getClassLoader(clazz);
 				return Cache.INSTANCE.uniqueKeyForMethodsArray.getOrUploadIfAbsent(
-					targetClassClassLoader, cacheKey, new Supplier<Method[]>() {
+					cacheKey, new Supplier<Method[]>() {
 						@Override
 						public Method[] get() {
 							return Facade.INSTANCE.getDeclaredMethods(clazz);

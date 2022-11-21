@@ -66,9 +66,8 @@ public class Methods extends Members.Handler.OfExecutable<Method, MethodCriteria
 		final Class<?> targetClass
 	) {
 		final String cacheKey = getCacheKey(targetClass, Members.ALL_FOR_CLASS);
-		final ClassLoader targetClassClassLoader = Classes.INSTANCE.getClassLoader(targetClass);
 		return Cache.INSTANCE.uniqueKeyForAllMethods.getOrUploadIfAbsent(
-			targetClassClassLoader, cacheKey, new Supplier<Collection<Method>>() {
+			cacheKey, new Supplier<Collection<Method>>() {
 				@Override
 				public Collection<Method> get() {
 					return findAllAndMakeThemAccessible(
@@ -320,8 +319,7 @@ public class Methods extends Members.Handler.OfExecutable<Method, MethodCriteria
 		final Class<?>... inputParameterTypesOrSubTypes
 	) {
 		final String cacheKey = getCacheKey(targetClass, cacheKeyPrefix, inputParameterTypesOrSubTypes);
-		final ClassLoader targetClassClassLoader = Classes.INSTANCE.getClassLoader(targetClass);
-		return Cache.INSTANCE.uniqueKeyForAllMethods.getOrUploadIfAbsent(targetClassClassLoader, cacheKey, new Supplier<Collection<Method>>() {
+		return Cache.INSTANCE.uniqueKeyForAllMethods.getOrUploadIfAbsent(cacheKey, new Supplier<Collection<Method>>() {
 			@Override
 			public Collection<Method> get() {
 				MethodCriteria criteria = MethodCriteria.forEntireClassHierarchy()
@@ -337,7 +335,7 @@ public class Methods extends Members.Handler.OfExecutable<Method, MethodCriteria
 					}));
 				}
 				final MethodCriteria finalCriteria = criteria;
-				return Cache.INSTANCE.uniqueKeyForAllMethods.getOrUploadIfAbsent(targetClassClassLoader, cacheKey, new Supplier<Collection<Method>>() {
+				return Cache.INSTANCE.uniqueKeyForAllMethods.getOrUploadIfAbsent(cacheKey, new Supplier<Collection<Method>>() {
 					@Override
 					public Collection<Method> get() {
 						return findAllAndApply(
@@ -357,9 +355,8 @@ public class Methods extends Members.Handler.OfExecutable<Method, MethodCriteria
 
 	private Members.Handler.OfExecutable.Box<Method> findDirectHandleBox(final Class<?> targetClass, final String methodName, final Class<?>... inputParameterTypesOrSubTypes) {
 		final String cacheKey = getCacheKey(targetClass, "equals " + methodName, inputParameterTypesOrSubTypes);
-		final ClassLoader targetClassClassLoader = Classes.INSTANCE.getClassLoader(targetClass);
 		Members.Handler.OfExecutable.Box<Method> executableBox =
-			(Box<Method>)Cache.INSTANCE.uniqueKeyForExecutableAndMethodHandle.get(targetClassClassLoader, cacheKey);
+			(Box<Method>)Cache.INSTANCE.uniqueKeyForExecutableAndMethodHandle.get(cacheKey);
 		if (executableBox == null) {
 			final Method method = findFirstAndMakeItAccessible(targetClass, methodName, inputParameterTypesOrSubTypes);
 			if (method == null) {
@@ -372,7 +369,7 @@ public class Methods extends Members.Handler.OfExecutable<Method, MethodCriteria
 				);
 			}
 			executableBox = findDirectHandleBox(
-				method, targetClassClassLoader, cacheKey
+				method, cacheKey
 			);
 		}
 		return executableBox;

@@ -56,9 +56,7 @@ public class Fields extends Members.Handler<Field, FieldCriteria> {
 		final Class<?> targetClass
 	) {
 		final String cacheKey = getCacheKey(targetClass, Members.ALL_FOR_CLASS, (Class<?>[])null);
-		final ClassLoader targetClassClassLoader = Classes.INSTANCE.getClassLoader(targetClass);
 		return Cache.INSTANCE.uniqueKeyForAllFields.getOrUploadIfAbsent(
-			targetClassClassLoader,
 			cacheKey,
 			new Supplier<Collection<Field>>() {
 				@Override
@@ -84,9 +82,7 @@ public class Fields extends Members.Handler<Field, FieldCriteria> {
 		final Class<?> valueType
 	) {
 		final String cacheKey = getCacheKey(targetClass, "equals " + fieldName, valueType);
-		final ClassLoader targetClassClassLoader = Classes.INSTANCE.getClassLoader(targetClass);
 		return Cache.INSTANCE.uniqueKeyForAllFields.getOrUploadIfAbsent(
-			targetClassClassLoader,
 			cacheKey,
 			new Supplier<Collection<Field>>() {
 				@Override

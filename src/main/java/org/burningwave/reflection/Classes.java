@@ -50,14 +50,6 @@ public class Classes {
 		emptyConstructorsArray = new Constructor<?>[]{};
 	}
 
-	public ClassLoader getClassLoader(Class<?> cls) {
-		ClassLoader clsLoader = cls.getClassLoader();
-		if (clsLoader == null) {
-			clsLoader = ClassLoader.getSystemClassLoader();
-		}
-		return clsLoader;
-	}
-
 	public Class<?> getClassOrWrapper(Class<?> cls) {
 		if (cls.isPrimitive()) {
 			if (cls == short.class) {

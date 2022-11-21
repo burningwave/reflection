@@ -57,22 +57,22 @@ public class Cache {
 		INSTANCE = new Cache();
 	}
 
-	public final ObjectAndPathForResources<ClassLoader, Constructor<?>[]> uniqueKeyForConstructorsArray;
-	public final ObjectAndPathForResources<ClassLoader, Field[]> uniqueKeyForFieldsArray;
-	public final ObjectAndPathForResources<ClassLoader, Method[]> uniqueKeyForMethodsArray;
-	public final ObjectAndPathForResources<ClassLoader, Collection<Constructor<?>>> uniqueKeyForConstructors;
-	public final ObjectAndPathForResources<ClassLoader, Members.Handler.OfExecutable.Box<?>> uniqueKeyForExecutableAndMethodHandle;
-	public final ObjectAndPathForResources<ClassLoader, Collection<Field>> uniqueKeyForAllFields;
-	public final ObjectAndPathForResources<ClassLoader, Collection<Method>> uniqueKeyForAllMethods;
+	public final PathForResources<Constructor<?>[]> uniqueKeyForConstructorsArray;
+	public final PathForResources<Field[]> uniqueKeyForFieldsArray;
+	public final PathForResources<Method[]> uniqueKeyForMethodsArray;
+	public final PathForResources<Collection<Constructor<?>>> uniqueKeyForConstructors;
+	public final PathForResources<Members.Handler.OfExecutable.Box<?>> uniqueKeyForExecutableAndMethodHandle;
+	public final PathForResources<Collection<Field>> uniqueKeyForAllFields;
+	public final PathForResources<Collection<Method>> uniqueKeyForAllMethods;
 
 	private Cache() {
-		uniqueKeyForConstructorsArray = new ObjectAndPathForResources<>();
-		uniqueKeyForFieldsArray = new ObjectAndPathForResources<>();
-		uniqueKeyForMethodsArray = new ObjectAndPathForResources<>();
-		uniqueKeyForConstructors = new ObjectAndPathForResources<>();
-		uniqueKeyForExecutableAndMethodHandle = new ObjectAndPathForResources<>();
-		uniqueKeyForAllFields = new ObjectAndPathForResources<>();
-		uniqueKeyForAllMethods = new ObjectAndPathForResources<>();
+		uniqueKeyForConstructorsArray = new PathForResources<>();
+		uniqueKeyForFieldsArray = new PathForResources<>();
+		uniqueKeyForMethodsArray = new PathForResources<>();
+		uniqueKeyForConstructors = new PathForResources<>();
+		uniqueKeyForExecutableAndMethodHandle = new PathForResources<>();
+		uniqueKeyForAllFields = new PathForResources<>();
+		uniqueKeyForAllMethods = new PathForResources<>();
 	}
 
 	public void clear(final boolean destroyItems, final Object... excluded) {

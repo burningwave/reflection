@@ -81,9 +81,8 @@ public class FieldCriteria extends MemberCriteria<
 			@Override
 			public Field[] apply(final Class<?> clazz) throws Throwable {
 				final String cacheKey = Methods.INSTANCE.getCacheKey(clazz, Members.ALL_FOR_CLASS);
-				final ClassLoader targetClassClassLoader = Classes.INSTANCE.getClassLoader(clazz);
 				return Cache.INSTANCE.uniqueKeyForFieldsArray.getOrUploadIfAbsent(
-					targetClassClassLoader, cacheKey, new Supplier<Field[]>() {
+					cacheKey, new Supplier<Field[]>() {
 						@Override
 						public Field[] get() {
 							return Facade.INSTANCE.getDeclaredFields(clazz);

@@ -65,10 +65,8 @@ public class ConstructorCriteria extends ExecutableMemberCriteria<
 		return new ThrowingFunction<Class<?>, Constructor<?>[], Throwable>() {
 			@Override
 			public Constructor<?>[] apply(final Class<?> clazz) throws Throwable {
-				final String cacheKey = Constructors.INSTANCE.getCacheKey(clazz, Members.ALL_FOR_CLASS);
-				final ClassLoader targetClassClassLoader = Classes.INSTANCE.getClassLoader(clazz);
 				return Cache.INSTANCE.uniqueKeyForConstructorsArray.getOrUploadIfAbsent(
-					targetClassClassLoader, cacheKey, new Supplier<Constructor<?>[]>() {
+					Constructors.INSTANCE.getCacheKey(clazz, Members.ALL_FOR_CLASS), new Supplier<Constructor<?>[]>() {
 						@Override
 						public Constructor<?>[] get() {
 							return Facade.INSTANCE.getDeclaredConstructors(clazz);
