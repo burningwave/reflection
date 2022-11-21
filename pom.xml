@@ -31,7 +31,7 @@
 
 	<groupId>org.burningwave</groupId>
 	<artifactId>reflection</artifactId>
-	<version>3.1.5-SNAPSHOT</version>
+	<version>3.1.5</version>
 	<packaging>jar</packaging>
 
 	<name>Burningwave Reflection</name>
@@ -129,7 +129,7 @@
 		<connection>scm:git:${repository.url}</connection>
 		<developerConnection>scm:git:${repository.url}</developerConnection>
 		<url>https://github.com/burningwave/reflection</url>
-		<tag>HEAD</tag>
+		<tag>reflection-3.1.5</tag>
 	</scm>
 
 	<dependencies>
