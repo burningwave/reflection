@@ -148,13 +148,14 @@ public class MethodsHandler {
         Methods.invoke(System.out, "println", "Hello World");
         Integer number = Methods.INSTANCE.invokeStatic(Integer.class, "valueOf", 1);
         
-        //Invoking a method: the invoke method tries to execute the target method via MethodHandle and if that fails it tries with standart reflection
+        //Invoking a method: the invoke method tries to execute the target method via MethodHandle and
+        if that fails it tries with standart reflection
         Methods.INSTANCE.invoke(System.out, "println", number);
         
         //Filtering and obtaining a MethodHandle reference
         MethodHandle methodHandle = Methods.INSTANCE.findFirstDirectHandle(
             MethodCriteria.byScanUpTo((cls) ->
-            //We only analyze the ClassLoader class and not all of its hierarchy (default behavior)
+                //We only analyze the ClassLoader class and not all of its hierarchy (default behavior)
                 cls.getName().equals(ClassLoader.class.getName())
             ).name(
                 "defineClass"::equals
