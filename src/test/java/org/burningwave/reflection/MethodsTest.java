@@ -3,11 +3,11 @@ package org.burningwave.reflection;
 import java.util.Collection;
 
 import org.burningwave.function.ThrowingPredicate;
+import org.burningwave.function.ThrowingSupplier;
 import org.burningwave.function.ThrowingTriPredicate;
 import org.burningwave.reflection.service.Service;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.function.Executable;
-import org.junit.jupiter.api.function.ThrowingSupplier;
+import org.junit.Test;
+
 
 
 @SuppressWarnings("all")
@@ -16,7 +16,7 @@ public class MethodsTest extends BaseTest {
 	@Test
 	public void invokeTestOne() {
 		testNotNull(
-			new ThrowingSupplier<Object>() {
+			new ThrowingSupplier<Object, Throwable>() {
 				@Override
 				public Object get() throws Throwable {
 					return Methods.INSTANCE.INSTANCE.invokeStatic(Integer.class, "valueOf", 1);
@@ -28,7 +28,7 @@ public class MethodsTest extends BaseTest {
 	@Test
 	public void invokeDirectTestOne() {
 		testNotNull(
-			new ThrowingSupplier<Object>() {
+			new ThrowingSupplier<Object, Throwable>() {
 				@Override
 				public Object get() throws Throwable {
 					return Methods.INSTANCE.invokeStatic(Integer.class, "valueOf", 1);
@@ -40,7 +40,7 @@ public class MethodsTest extends BaseTest {
 	@Test
 	public void findAllAndMakeThemAccessibleTestOne() {
 		testNotEmpty(
-			new ThrowingSupplier<Collection<?>>() {
+			new ThrowingSupplier<Collection<?>, Throwable>() {
 				@Override
 				public Collection<?> get() throws Throwable {
 					Methods.INSTANCE.findAllAndMakeThemAccessible(System.out.getClass());
@@ -53,9 +53,9 @@ public class MethodsTest extends BaseTest {
 	@Test
 	public void invokeVoidTestOne() {
 		testDoesNotThrow(
-			new Executable() {
+			new Runnable() {
 				@Override
-				public void execute() throws Throwable {
+				public void run() {
 					Methods.INSTANCE.invoke(System.out, "println", "Hello World");
 				}
 			}
@@ -65,9 +65,9 @@ public class MethodsTest extends BaseTest {
 	@Test
 	public void invokeVoidTestThree() {
 		testDoesNotThrow(
-			new Executable() {
+			new Runnable() {
 				@Override
-				public void execute() throws Throwable {
+				public void run() {
 					final Object empty = new Object() {
 						void print(final String value) {
 							System.out.println(value);
@@ -82,9 +82,9 @@ public class MethodsTest extends BaseTest {
 	@Test
 	public void invokeDirectVoidTestThree() {
 		testDoesNotThrow(
-			new Executable() {
+			new Runnable() {
 				@Override
-				public void execute() throws Throwable {
+				public void run() {
 					final Object empty = new Object() {
 						void print(final String value) {
 							System.out.println(value);
@@ -99,9 +99,9 @@ public class MethodsTest extends BaseTest {
 	@Test
 	public void invokeDirectVoidTestTwo() {
 		testDoesNotThrow(
-			new Executable() {
+			new Runnable() {
 				@Override
-				public void execute() throws Throwable {
+				public void run() {
 					Methods.INSTANCE.invoke(System.out, "println", "Hello World");
 				}
 			}
@@ -110,9 +110,9 @@ public class MethodsTest extends BaseTest {
 
 	@Test
 	public void invokeVoidTestTwo() throws Throwable {
-		testDoesNotThrow(new Executable() {
+		testDoesNotThrow(new Runnable() {
 			@Override
-			public void execute() throws Throwable {
+			public void run() {
 				Methods.INSTANCE.invoke(new Service(), "apply", "Hello", "World!", new String[]{"How are you?"});
 			}
 		});
@@ -120,9 +120,9 @@ public class MethodsTest extends BaseTest {
 
 	@Test
 	public void invokeInterfaceDefaultMethod() throws Throwable {
-		testDoesNotThrow(new Executable() {
+		testDoesNotThrow(new Runnable() {
 			@Override
-			public void execute() throws Throwable {
+			public void run() {
 				Methods.INSTANCE.invoke(new Service(), "printMyName");
 			}
 		});
@@ -130,9 +130,9 @@ public class MethodsTest extends BaseTest {
 
 	@Test
 	public void invokeDirectInterfaceDefault() throws Throwable {
-		testDoesNotThrow(new Executable() {
+		testDoesNotThrow(new Runnable() {
 			@Override
-			public void execute() throws Throwable {
+			public void run() {
 				Methods.INSTANCE.invoke(new Service(), "printMyName");
 			}
 		});
@@ -140,9 +140,9 @@ public class MethodsTest extends BaseTest {
 
 	@Test
 	public void invokeDirectVoidWithVarArgsTestOne() throws Throwable {
-		testDoesNotThrow(new Executable() {
+		testDoesNotThrow(new Runnable() {
 			@Override
-			public void execute() throws Throwable {
+			public void run() {
 				Methods.INSTANCE.invoke(new Service(), "apply", "Hello", "World!", new String[]{"How are you?"});
 			}
 		});
@@ -150,9 +150,9 @@ public class MethodsTest extends BaseTest {
 
 	@Test
 	public void invokeVoidWithVarArgsTestTwo() throws Throwable {
-		testDoesNotThrow(new Executable() {
+		testDoesNotThrow(new Runnable() {
 			@Override
-			public void execute() throws Throwable {
+			public void run() {
 				Methods.INSTANCE.invoke(new Service(), "apply", "Hello", "World!", null);
 			}
 		});
@@ -160,9 +160,9 @@ public class MethodsTest extends BaseTest {
 
 	@Test
 	public void invokeDirectVoidWithVarArgsTestTwo() throws Throwable {
-		testDoesNotThrow(new Executable() {
+		testDoesNotThrow(new Runnable() {
 			@Override
-			public void execute() throws Throwable {
+			public void run() {
 				Methods.INSTANCE.invoke(new Service(), "apply", "Hello", "World!", null);
 			}
 		});
@@ -170,9 +170,9 @@ public class MethodsTest extends BaseTest {
 
 	@Test
 	public void invokeVoidWithVarArgsTestThree() throws Throwable {
-		testDoesNotThrow(new Executable() {
+		testDoesNotThrow(new Runnable() {
 			@Override
-			public void execute() throws Throwable {
+			public void run() {
 				Methods.INSTANCE.invoke(new Service(), "apply", "Hello", "World!");
 			}
 		});
@@ -180,9 +180,9 @@ public class MethodsTest extends BaseTest {
 
 	@Test
 	public void invokeStaticTestOne() throws Throwable {
-		testDoesNotThrow(new Executable() {
+		testDoesNotThrow(new Runnable() {
 			@Override
-			public void execute() throws Throwable {
+			public void run() {
 				Methods.INSTANCE.invokeStatic(Service.class, "staticApply", "Hello", "World!", "How are you?");
 			}
 		});
@@ -190,9 +190,9 @@ public class MethodsTest extends BaseTest {
 
 	@Test
 	public void invokeStaticWithVarArgsTestOne() throws Throwable {
-		testDoesNotThrow(new Executable() {
+		testDoesNotThrow(new Runnable() {
 			@Override
-			public void execute() throws Throwable {
+			public void run() {
 				Methods.INSTANCE.invokeStatic(Service.class, "staticApply", "Hello", "World!", "How are you?", "I'm well");
 			}
 		});
@@ -200,9 +200,9 @@ public class MethodsTest extends BaseTest {
 
 	@Test
 	public void invokeStaticDirectWithVarArgsTestOne() throws Throwable {
-		testDoesNotThrow(new Executable() {
+		testDoesNotThrow(new Runnable() {
 			@Override
-			public void execute() throws Throwable {
+			public void run() {
 				Methods.INSTANCE.invokeStatic(Service.class, "staticApply", "Hello", "World!", "How are you?", "I'm well");
 			}
 		});
@@ -210,9 +210,9 @@ public class MethodsTest extends BaseTest {
 
 	@Test
 	public void invokeDirectStaticTestOne() throws Throwable {
-		testDoesNotThrow(new Executable() {
+		testDoesNotThrow(new Runnable() {
 			@Override
-			public void execute() throws Throwable {
+			public void run() {
 				Methods.INSTANCE.invokeStatic(Service.class, "staticApply", "Hello", "World!", "How are you?");
 			}
 		});
@@ -220,9 +220,9 @@ public class MethodsTest extends BaseTest {
 
 	@Test
 	public void invokeDirectVoidWithVarArgsTestThree() throws Throwable {
-		testDoesNotThrow(new Executable() {
+		testDoesNotThrow(new Runnable() {
 			@Override
-			public void execute() throws Throwable {
+			public void run() {
 				Methods.INSTANCE.invoke(new Service(), "apply", "Hello", "World!", "");
 			}
 		});
@@ -230,9 +230,9 @@ public class MethodsTest extends BaseTest {
 
 	@Test
 	public void invokeVoidWithVarArgsTestFour() throws Throwable {
-		testDoesNotThrow(new Executable() {
+		testDoesNotThrow(new Runnable() {
 			@Override
-			public void execute() throws Throwable {
+			public void run() {
 				Methods.INSTANCE.invoke(new Service(), "apply", "Hello", "World!", "Hello again", "... And again");
 			}
 		});
@@ -240,9 +240,9 @@ public class MethodsTest extends BaseTest {
 
 	@Test
 	public void invokeDirectVoidWithVarArgsTestFour() throws Throwable {
-		testDoesNotThrow(new Executable() {
+		testDoesNotThrow(new Runnable() {
 			@Override
-			public void execute() throws Throwable {
+			public void run() {
 				Methods.INSTANCE.invoke(new Service(), "apply", "Hello", "World!", "Hello again", "... And again");
 			}
 		});
@@ -250,9 +250,9 @@ public class MethodsTest extends BaseTest {
 
 	@Test
 	public void invokeVoidWithVarArgsTestFive() throws Throwable {
-		testDoesNotThrow(new Executable() {
+		testDoesNotThrow(new Runnable() {
 			@Override
-			public void execute() throws Throwable {
+			public void run() {
 				Methods.INSTANCE.invoke(new Service(), "apply", "Hello", "World!", "Hello again");
 			}
 		});
@@ -260,9 +260,9 @@ public class MethodsTest extends BaseTest {
 
 	@Test
 	public void invokeDirectVoidWithVarArgsTestFive() throws Throwable {
-		testDoesNotThrow(new Executable() {
+		testDoesNotThrow(new Runnable() {
 			@Override
-			public void execute() throws Throwable {
+			public void run() {
 				Methods.INSTANCE.invoke(new Service(), "apply", "Hello", "World!", "Hello again");
 			}
 		});
@@ -270,9 +270,9 @@ public class MethodsTest extends BaseTest {
 
 	@Test
 	public void invokeNoArgs() throws Throwable {
-		testDoesNotThrow(new Executable() {
+		testDoesNotThrow(new Runnable() {
 			@Override
-			public void execute() throws Throwable {
+			public void run() {
 				Methods.INSTANCE.invoke(new Service(), "supply");
 			}
 		});
@@ -280,9 +280,9 @@ public class MethodsTest extends BaseTest {
 
 	@Test
 	public void invokeDirectNoArgs() throws Throwable {
-		testDoesNotThrow(new Executable() {
+		testDoesNotThrow(new Runnable() {
 			@Override
-			public void execute() throws Throwable {
+			public void run() {
 				Methods.INSTANCE.invoke(new Service(), "supply");
 			}
 		});
@@ -290,9 +290,9 @@ public class MethodsTest extends BaseTest {
 
 	@Test
 	public void invokeMethodWithVarArgsTestOne() throws Throwable {
-		testDoesNotThrow(new Executable() {
+		testDoesNotThrow(new Runnable() {
 			@Override
-			public void execute() throws Throwable {
+			public void run() {
 				Methods.INSTANCE.invoke(new Service(), "methodWithVarArgs");
 			}
 		});
@@ -300,9 +300,9 @@ public class MethodsTest extends BaseTest {
 
 	@Test
 	public void invokeDirectMethodWithVarArgsTestOne() throws Throwable {
-		testDoesNotThrow(new Executable() {
+		testDoesNotThrow(new Runnable() {
 			@Override
-			public void execute() throws Throwable {
+			public void run() {
 				Methods.INSTANCE.invoke(new Service(), "methodWithVarArgs");
 			}
 		});
@@ -310,9 +310,9 @@ public class MethodsTest extends BaseTest {
 
 	@Test
 	public void invokeMethodWithVarArgsTestTwo() throws Throwable {
-		testDoesNotThrow(new Executable() {
+		testDoesNotThrow(new Runnable() {
 			@Override
-			public void execute() throws Throwable {
+			public void run() {
 				Methods.INSTANCE.invoke(new Service(), "methodWithVarArgs", "Hello!");
 			}
 		});
@@ -320,9 +320,9 @@ public class MethodsTest extends BaseTest {
 
 	@Test
 	public void invokeDirectMethodWithVarArgsTestTwo() throws Throwable {
-		testDoesNotThrow(new Executable() {
+		testDoesNotThrow(new Runnable() {
 			@Override
-			public void execute() throws Throwable {
+			public void run() {
 				Methods.INSTANCE.invoke(new Service(), "methodWithVarArgs", "Hello!");
 			}
 		});
@@ -330,9 +330,9 @@ public class MethodsTest extends BaseTest {
 
 	@Test
 	public void invokeDirectMethodWithArrayTestOne() throws Throwable {
-		testDoesNotThrow(new Executable() {
+		testDoesNotThrow(new Runnable() {
 			@Override
-			public void execute() throws Throwable {
+			public void run() {
 				Methods.INSTANCE.invoke(new Service(), "withArray", new Object[] {new String[] {"methodWithArray"}});
 			}
 		});
@@ -340,7 +340,7 @@ public class MethodsTest extends BaseTest {
 
 	@Test
 	public void findAllTestOne() {
-        testNotEmpty(new ThrowingSupplier<Collection<?>>() {
+        testNotEmpty(new ThrowingSupplier<Collection<?>, Throwable>() {
 			@Override
 			public Collection<?> get() throws Throwable {
 				return Methods.INSTANCE.findAll(

@@ -31,7 +31,7 @@
 
 	<groupId>org.burningwave</groupId>
 	<artifactId>reflection</artifactId>
-	<version>4.0.0-SNAPSHOT</version>
+	<version>3.1.4-j7-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>Burningwave Reflection</name>
@@ -95,7 +95,7 @@
 		<jacoco-maven-plugin.version>0.7.6.201602180812</jacoco-maven-plugin.version>
 		<jakarta.validation.version>2.0.2</jakarta.validation.version>
 		<junit-jupiter.version>5.9.1</junit-jupiter.version>
-		<junit.version>1.9.1</junit.version>
+		<junit.version>4.12</junit.version>
 		<burningwave-jvm-driver.version>8.12.0</burningwave-jvm-driver.version>
 		<maven-antrun-plugin.version>3.0.0</maven-antrun-plugin.version>
 		<maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
@@ -144,29 +144,8 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter-engine</artifactId>
-			<version>${junit-jupiter.version}</version>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>org.junit.platform</groupId>
-			<artifactId>junit-platform-engine</artifactId>
-			<version>${junit.version}</version>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>org.junit.platform</groupId>
-			<artifactId>junit-platform-commons</artifactId>
-			<version>${junit.version}</version>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>org.junit.platform</groupId>
-			<artifactId>junit-platform-runner</artifactId>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
 			<version>${junit.version}</version>
 			<scope>test</scope>
 		</dependency>

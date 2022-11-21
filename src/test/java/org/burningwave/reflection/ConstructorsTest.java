@@ -1,16 +1,16 @@
 package org.burningwave.reflection;
 
 
+import org.burningwave.function.ThrowingSupplier;
 import org.burningwave.reflection.service.ExtendedService;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.function.ThrowingSupplier;
+import org.junit.Test;
 
 @SuppressWarnings("all")
 public class ConstructorsTest extends BaseTest {
 
 	@Test
 	public void newInstanceDirectOfTestOne() {
-		testNotNull(new ThrowingSupplier<Object>() {
+		testNotNull(new ThrowingSupplier<Object, Throwable>() {
 			@Override
 			public Object get() throws Throwable {
 				return Constructors.INSTANCE.newInstanceOf(ExtendedService.class);
@@ -20,7 +20,7 @@ public class ConstructorsTest extends BaseTest {
 
 	@Test
 	public void newInstanceDirectOfTestTwo() {
-		testNotNull(new ThrowingSupplier<Object>() {
+		testNotNull(new ThrowingSupplier<Object, Throwable>() {
 			@Override
 			public Object get() throws Throwable {
 				return Constructors.INSTANCE.newInstanceOf(
@@ -34,7 +34,7 @@ public class ConstructorsTest extends BaseTest {
 
 	@Test
 	public void newInstanceOfTestOne() {
-		testNotNull(new ThrowingSupplier<Object>() {
+		testNotNull(new ThrowingSupplier<Object, Throwable>() {
 			@Override
 			public Object get() throws Throwable {
 				return Constructors.INSTANCE.newInstanceOf(ExtendedService.class);
@@ -44,7 +44,7 @@ public class ConstructorsTest extends BaseTest {
 
 	@Test
 	public void newInstanceOfTestTwo() {
-		testNotNull(new ThrowingSupplier<Object>() {
+		testNotNull(new ThrowingSupplier<Object, Throwable>() {
 			@Override
 			public Object get() throws Throwable {
 				return Constructors.INSTANCE.newInstanceOf(
@@ -58,7 +58,7 @@ public class ConstructorsTest extends BaseTest {
 
 	@Test
 	public void convertToMethodHandleTestOne() {
-		testNotNull(new ThrowingSupplier<Object>() {
+		testNotNull(new ThrowingSupplier<Object, Throwable>() {
 			@Override
 			public Object get() throws Throwable {
 				return Constructors.INSTANCE.findDirectHandle(

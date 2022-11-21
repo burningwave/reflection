@@ -49,8 +49,7 @@
 		<coveralls-maven-plugin.version>4.3.0</coveralls-maven-plugin.version>
 		<jacoco-maven-plugin.version>0.7.6.201602180812</jacoco-maven-plugin.version>
 		<jakarta.validation.version>2.0.2</jakarta.validation.version>
-		<junit-jupiter.version>5.9.1</junit-jupiter.version>
-		<junit.version>1.9.1</junit.version>
+		<junit.version>4.12</junit.version>
 		<burningwave-jvm-driver.version>8.12.0</burningwave-jvm-driver.version>
 		<maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
 		<maven-surefire-plugin.version>3.0.0-M5</maven-surefire-plugin.version>
@@ -66,29 +65,8 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter-engine</artifactId>
-			<version>${junit-jupiter.version}</version>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>org.junit.platform</groupId>
-			<artifactId>junit-platform-engine</artifactId>
-			<version>${junit.version}</version>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>org.junit.platform</groupId>
-			<artifactId>junit-platform-commons</artifactId>
-			<version>${junit.version}</version>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>org.junit.platform</groupId>
-			<artifactId>junit-platform-runner</artifactId>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
 			<version>${junit.version}</version>
 			<scope>test</scope>
 		</dependency>

@@ -1,7 +1,8 @@
 package org.burningwave.reflection;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -9,11 +10,10 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Supplier;
 
+import org.burningwave.function.Supplier;
 import org.burningwave.reflection.bean.Complex;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.function.Executable;
+import org.junit.Test;
 
 public class FieldAccessorTest extends BaseTest {
 
@@ -102,9 +102,9 @@ public class FieldAccessorTest extends BaseTest {
 	}
 
 	public<T> void setIndexedValue(final Supplier<Collection> collSupplier) {
-		testDoesNotThrow(new Executable() {
+		testDoesNotThrow(new Runnable() {
 			@Override
-			public void execute() throws Throwable {
+			public void run() {
 				final Collection<Collection<Collection<String>>> nestedCollections = collSupplier.get();
 				nestedCollections.add(collSupplier.get());
 				nestedCollections.add(collSupplier.get());

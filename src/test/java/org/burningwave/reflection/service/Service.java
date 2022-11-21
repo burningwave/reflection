@@ -1,7 +1,6 @@
 package org.burningwave.reflection.service;
 
-import java.util.Arrays;
-
+import org.burningwave.Strings;
 import org.burningwave.function.Supplier;
 import org.burningwave.reflection.BaseTest;
 
@@ -215,7 +214,7 @@ public class Service extends ServiceInterface {
 			public String get() {
 				return Service.this.getClass().getName();
 			}
-		}, "withArray: " + String.join(", ", Arrays.asList(values)));
+		}, "withArray: " + Strings.INSTANCE.join(", ", values));
 	}
 
 	/*public interface Interf {

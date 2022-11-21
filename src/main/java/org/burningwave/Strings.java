@@ -55,6 +55,14 @@ public class Strings {
 		return message;
 	}
 
+	public <T> String join(String separator, Objects... objects) {
+		return join(separator, Arrays.asList(objects), null);
+	}
+
+	public <T> String join(String separator, String... objects) {
+		return join(separator, Arrays.asList(objects), null);
+	}
+
 	public <T> String join(String separator, Collection<T> objects) {
 		return join(separator, objects, null);
 	}

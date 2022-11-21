@@ -1,22 +1,22 @@
 package org.burningwave.reflection;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Collection;
 
 import org.burningwave.function.ThrowingBiPredicate;
 import org.burningwave.function.ThrowingPredicate;
+import org.burningwave.function.ThrowingSupplier;
 import org.burningwave.reflection.service.ExtendedService;
 import org.burningwave.reflection.service.Service;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.function.ThrowingSupplier;
+import org.junit.Test;
 
 
 public class MembersTest extends BaseTest {
 
 	@Test
 	public void findOneTestOne() {
-		testNotNull(new ThrowingSupplier<Object>() {
+		testNotNull(new ThrowingSupplier<Object, Throwable>() {
 			@Override
 			public Object get() throws Throwable {
 				return Members.INSTANCE.findOne(
@@ -55,7 +55,7 @@ public class MembersTest extends BaseTest {
 
 	@Test
 	public void findOneTestTwo() {
-		testNotNull(new ThrowingSupplier<Object>() {
+		testNotNull(new ThrowingSupplier<Object, Throwable>() {
 			@Override
 			public Object get() throws Throwable {
 				return Members.INSTANCE.findOne(
@@ -145,7 +145,7 @@ public class MembersTest extends BaseTest {
 
 	@Test
 	public void findAllTestOne() {
-		testNotEmpty(new ThrowingSupplier<Collection<?>>() {
+		testNotEmpty(new ThrowingSupplier<Collection<?>, Throwable>() {
 			@Override
 			public Collection<?> get() throws Throwable {
 				return Members.INSTANCE.findAll(
@@ -165,7 +165,7 @@ public class MembersTest extends BaseTest {
 
 	@Test
 	public void findFirstTestOne() {
-		testNotNull(new ThrowingSupplier<Object>() {
+		testNotNull(new ThrowingSupplier<Object, Throwable>() {
 			@Override
 			public Object get() throws Throwable {
 				return Members.INSTANCE.findFirst(

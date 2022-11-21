@@ -9,9 +9,8 @@ import java.util.Collection;
 import java.util.List;
 
 import org.burningwave.function.ThrowingPredicate;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.function.Executable;
-import org.junit.jupiter.api.function.ThrowingSupplier;
+import org.burningwave.function.ThrowingSupplier;
+import org.junit.Test;
 
 
 @SuppressWarnings("unused")
@@ -20,7 +19,7 @@ public class FieldsTest extends BaseTest {
 	@Test
 	public void getAllTestOne() {
 		testNotEmpty(
-			new ThrowingSupplier<Collection<?>>() {
+			new ThrowingSupplier<Collection<?>, Throwable>() {
 				@Override
 				public Collection<?> get() throws Throwable {
 					return Fields.INSTANCE.getAll(Facade.INSTANCE).values();
@@ -32,7 +31,7 @@ public class FieldsTest extends BaseTest {
 	@Test
 	public void getAllDirectTestOne() {
 		testNotEmpty(
-			new ThrowingSupplier<Collection<?>>() {
+			new ThrowingSupplier<Collection<?>, Throwable>() {
 				@Override
 				public Collection<?> get() throws Throwable {
 					return Fields.INSTANCE.getAllDirect(Facade.INSTANCE).values();
@@ -43,9 +42,9 @@ public class FieldsTest extends BaseTest {
 
 	@Test
 	public void setDirectTestOne() {
-		testDoesNotThrow(new Executable() {
+		testDoesNotThrow(new Runnable() {
 			@Override
-			public void execute() throws Throwable {
+			public void run() {
 				final Object obj = new Object() {
 					List<Object> objectValue;
 					int intValue;
@@ -87,9 +86,9 @@ public class FieldsTest extends BaseTest {
 
 	@Test
 	public void setDirectVolatileTestOne() {
-		testDoesNotThrow(new Executable() {
+		testDoesNotThrow(new Runnable() {
 			@Override
-			public void execute() throws Throwable {
+			public void run() {
 				final Object obj = new Object() {
 					volatile List<Object> objectValue;
 					volatile int intValue;
@@ -132,7 +131,7 @@ public class FieldsTest extends BaseTest {
 
 	@Test
 	public void getAllTestTwo() {
-		testNotEmpty(new ThrowingSupplier<Collection<?>>() {
+		testNotEmpty(new ThrowingSupplier<Collection<?>, Throwable>() {
 			@Override
 			public Collection<?> get() throws Throwable {
 				final Object obj = new Object() {

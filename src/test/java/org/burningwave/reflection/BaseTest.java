@@ -1,9 +1,9 @@
 package org.burningwave.reflection;
 
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -12,15 +12,14 @@ import org.burningwave.Strings;
 import org.burningwave.Throwables;
 import org.burningwave.function.Function;
 import org.burningwave.function.Supplier;
-import org.junit.jupiter.api.function.Executable;
-import org.junit.jupiter.api.function.ThrowingSupplier;
+import org.burningwave.function.ThrowingSupplier;
 
 @SuppressWarnings("unused")
 //@TestMethodOrder(Random.class)
 //@TestMethodOrder(MethodName.class)
 public class BaseTest {
 
-	public void testNotNull(final ThrowingSupplier<?> supplier) {
+	public void testNotNull(final ThrowingSupplier<?, ? extends Throwable> supplier) {
 		final long initialTime = System.currentTimeMillis();
 		Object object = null;
 		try {
@@ -57,11 +56,11 @@ public class BaseTest {
 		assertNotNull(object);
 	}
 
-	protected void testNotEmpty(final ThrowingSupplier<Collection<?>> supplier) {
+	protected void testNotEmpty(final ThrowingSupplier<Collection<?>, ? extends Throwable> supplier) {
 		testNotEmpty(supplier, false);
 	}
 
-	protected void testNotEmpty(final ThrowingSupplier<Collection<?>> supplier, final boolean printAllElements) {
+	protected void testNotEmpty(final ThrowingSupplier<Collection<?>, ? extends Throwable> supplier, final boolean printAllElements) {
 		final long initialTime = System.currentTimeMillis();
 		Collection<?> coll = null;
 		boolean isNotEmpty = false;
@@ -163,7 +162,7 @@ public class BaseTest {
 
 
 	public <T extends AutoCloseable> void testNotNull(
-		final ThrowingSupplier<T> autoCloseableSupplier,
+		final ThrowingSupplier<T, ? extends Throwable> autoCloseableSupplier,
 		final Function<T, ?> objectSupplier
 	) {
 		final long initialTime = System.currentTimeMillis();
@@ -186,7 +185,7 @@ public class BaseTest {
 	}
 
 
-	public void testDoesNotThrow(final Executable executable) {
+	public void testDoesNotThrow(final Runnable executable) {
 		Throwable throwable = null;
 		final long initialTime = System.currentTimeMillis();
 		try {
@@ -196,7 +195,7 @@ public class BaseTest {
 					return getClass().getName();
 				}
 			}, getCallerMethod() + " - Initializing logger");
-			executable.execute();
+			executable.run();
 			logInfo(new Supplier<String>() {
 				@Override
 				public String get() {
@@ -215,7 +214,7 @@ public class BaseTest {
 		assertNull(throwable);
 	}
 
-	public void testThrow(final Executable executable) {
+	public void testThrow(final Runnable executable) {
 		Throwable throwable = null;
 		final long initialTime = System.currentTimeMillis();
 		try {
@@ -225,7 +224,7 @@ public class BaseTest {
 					return getClass().getName();
 				}
 			}, getCallerMethod() + " - Initializing logger");
-			executable.execute();
+			executable.run();
 			logInfo(new Supplier<String>() {
 				@Override
 				public String get() {
@@ -264,7 +263,7 @@ public class BaseTest {
 	}
 
 	public static void logInfo(final Supplier<String> classNameSupplier, final String... arguments) {
-		System.out.println(classNameSupplier.get() + " - " + String.join("; ", arguments));
+		System.out.println(classNameSupplier.get() + " - " + Strings.INSTANCE.join("; ", arguments));
 
 	}
 
