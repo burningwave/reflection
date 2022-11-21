@@ -31,7 +31,7 @@
 
 	<groupId>org.burningwave</groupId>
 	<artifactId>reflection</artifactId>
-	<version>3.1.5-j8-SNAPSHOT</version>
+	<version>3.2.0-j7-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>Burningwave Reflection</name>
