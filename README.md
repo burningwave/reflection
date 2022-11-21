@@ -32,13 +32,22 @@ And now we will see:
 <br/>
 
 ## <a name="Including-Burningwave-Core-in-your-project"></a>Including Burningwave Reflection in your project 
-To include Burningwave Reflection library in your projects simply use with **Apache Maven**:
+If you are on Java 8 and later, to include Burningwave Reflection library in your projects simply use with **Apache Maven**:
 
 ```xml
 <dependency>
     <groupId>org.burningwave</groupId>
     <artifactId>reflection</artifactId>
-    <version>3.1.3</version>
+    <version>3.1.5</version>
+</dependency>
+```
+
+If you are on **Java 7 and later**, use this instead:
+```xml
+<dependency>
+    <groupId>org.burningwave</groupId>
+    <artifactId>reflection</artifactId>
+    <version>3.1.5-j7</version>
 </dependency>
 ```
 
@@ -55,7 +64,7 @@ By default the JVM Driver is not imported by the Reflection library, so if you w
 <dependency>
     <groupId>org.burningwave</groupId>
     <artifactId>jvm-driver</artifactId>
-    <version>8.12.0</version>
+    <version>8.14.0</version>
 </dependency>	
 ```
 ... And the following to your `module-info.java`: 
