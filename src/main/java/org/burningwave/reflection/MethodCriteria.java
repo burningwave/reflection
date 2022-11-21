@@ -28,6 +28,7 @@
  */
 package org.burningwave.reflection;
 
+import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 
 import org.burningwave.Criteria;
@@ -87,5 +88,15 @@ public class MethodCriteria extends ExecutableMemberCriteria<
 			}
 
 		};
+	}
+
+	@Override
+	Class<?>[] getParameterTypes(Member member) {
+		return ((Method)member).getParameterTypes();
+	}
+
+	@Override
+	boolean isVarArgs(Member member) {
+		return ((Method)member).isVarArgs();
 	}
 }

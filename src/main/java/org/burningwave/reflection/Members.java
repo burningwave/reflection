@@ -34,9 +34,7 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Array;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Member;
-import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -56,7 +54,6 @@ import org.burningwave.function.ThrowingPredicate;
 import org.burningwave.function.ThrowingTriFunction;
 
 import io.github.toolfactory.jvm.function.template.ThrowingBiFunction;
-import io.github.toolfactory.jvm.util.Strings;
 
 @SuppressWarnings("unchecked")
 public class Members {
@@ -220,56 +217,14 @@ public class Members {
 	public static abstract class Handler<M extends Member, C extends MemberCriteria<M, C, ?>> {
 
 		public static abstract class OfExecutable<E extends Member, C extends ExecutableMemberCriteria<E, C, ?>> extends Members.Handler<E, C> {
-			static final OfExecutable<?, ?> INSTANCE = new OfExecutable() {
-
-				@Override
-				MethodHandle retrieveMethodHandle(Lookup consulter, Member member)
-						throws NoSuchMethodException, IllegalAccessException {
-					if (member instanceof java.lang.reflect.Method) {
-						return Methods.INSTANCE.retrieveMethodHandle(consulter, (Method)member);
-					} else if (member instanceof java.lang.reflect.Constructor) {
-						return Constructors.INSTANCE.retrieveMethodHandle(consulter, (Constructor<?>)member);
-					} else {
-						throw new IllegalArgumentException(Strings.compile("Unsupported member type: {}", member.getClass()));
-					}
-				}
-
-				@Override
-				String retrieveNameForCaching(Member member) {
-					if (member instanceof java.lang.reflect.Method) {
-						return Methods.INSTANCE.retrieveNameForCaching((Method)member);
-					} else if (member instanceof java.lang.reflect.Constructor) {
-						return Constructors.INSTANCE.retrieveNameForCaching((Constructor<?>)member);
-					} else {
-						throw new IllegalArgumentException(Strings.compile("Unsupported member type: {}", member.getClass()));
-					}
-				}
-
-			};
 
 			OfExecutable() {}
 
-			Class<?>[] getParameterTypes(Member member) {
-				if (member instanceof java.lang.reflect.Method) {
-					return ((java.lang.reflect.Method)member).getParameterTypes();
-				} else if (member instanceof java.lang.reflect.Constructor) {
-					return ((java.lang.reflect.Constructor<?>)member).getParameterTypes();
-				} else {
-					throw new IllegalArgumentException(Strings.compile("Unsupported member type: {}", member.getClass()));
-				}
-			}
+			abstract Class<?>[] getParameterTypes(Member member);
 
-			boolean isVarArgs(Member member) {
-				if (member instanceof java.lang.reflect.Method) {
-					return ((java.lang.reflect.Method)member).isVarArgs();
-				} else if (member instanceof java.lang.reflect.Constructor) {
-					return ((java.lang.reflect.Constructor<?>)member).isVarArgs();
-				} else {
-					throw new IllegalArgumentException(Strings.compile("Unsupported member type: {}", member.getClass()));
-				}
-			}
+			abstract boolean isVarArgs(Member member);
 
-			abstract  MethodHandle retrieveMethodHandle(MethodHandles.Lookup consulter, E member) throws NoSuchMethodException, IllegalAccessException;
+			abstract MethodHandle retrieveMethodHandle(MethodHandles.Lookup consulter, E member) throws NoSuchMethodException, IllegalAccessException;
 
 			abstract String retrieveNameForCaching(E member);
 
@@ -423,10 +378,15 @@ public class Members {
 				return argumentList;
 			}
 
-			Class<?>[] retrieveParameterTypes(final Member member, final List<Class<?>> argumentsClassesAsList) {
-				final Class<?>[] memberParameter = getParameterTypes(member);
-				Class<?>[] memberParameterTypes = getParameterTypes(member);
-				if ((memberParameter.length > 0) && isVarArgs(member)) {
+			static Class<?>[] retrieveParameterTypes(
+				final Member member,
+				final List<Class<?>> argumentsClassesAsList,
+				Class<?>[] parameterTypes,
+				boolean isVarArgs
+			) {
+				final Class<?>[] memberParameter = parameterTypes;
+				Class<?>[] memberParameterTypes = parameterTypes.clone();
+				if ((memberParameter.length > 0) && isVarArgs) {
 					final Class<?> varArgsType =
 						(argumentsClassesAsList.size() > 0) &&
 						(argumentsClassesAsList.get(argumentsClassesAsList.size()-1) != null) &&
@@ -483,7 +443,12 @@ public class Members {
 				});
 
 				for (final E executable : members) {
-					final Class<?>[] parameterTypes = retrieveParameterTypes(executable, argumentsClassesAsList);
+					final Class<?>[] parameterTypes = retrieveParameterTypes(
+						executable,
+						argumentsClassesAsList,
+						getParameterTypes(executable),
+						isVarArgs(executable)
+					);
 					boolean exactMatch = true;
 					for (int i = 0; i < parameterTypes.length; i++) {
 						if ((argumentsClassesAsList.get(i) != null) &&

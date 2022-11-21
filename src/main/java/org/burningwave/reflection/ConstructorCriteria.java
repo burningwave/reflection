@@ -29,6 +29,7 @@
 package org.burningwave.reflection;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Member;
 
 import org.burningwave.Criteria;
 import org.burningwave.function.ThrowingBiPredicate;
@@ -66,6 +67,16 @@ public class ConstructorCriteria extends ExecutableMemberCriteria<
 				return Facade.INSTANCE.getDeclaredConstructors(clazz);
 			}
 		};
+	}
+
+	@Override
+	Class<?>[] getParameterTypes(Member member) {
+		return ((Constructor<?>)member).getParameterTypes();
+	}
+
+	@Override
+	boolean isVarArgs(Member member) {
+		return ((Constructor<?>)member).isVarArgs();
 	}
 
 }

@@ -32,6 +32,7 @@ package org.burningwave.reflection;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
+import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -296,6 +297,16 @@ public class Methods extends Members.Handler.OfExecutable<Method, MethodCriteria
 	@Override
 	String retrieveNameForCaching(final Method method) {
 		return method.getName();
+	}
+
+	@Override
+	Class<?>[] getParameterTypes(Member member) {
+		return ((Method)member).getParameterTypes();
+	}
+
+	@Override
+	boolean isVarArgs(Member member) {
+		return ((Method)member).isVarArgs();
 	}
 
 	private Collection<Method> findAllByNamePredicateAndMakeThemAccessible(

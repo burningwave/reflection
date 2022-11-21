@@ -53,7 +53,7 @@ public abstract class ExecutableMemberCriteria<
 				new ThrowingBiFunction<T, E, Class<?>[], Throwable>() {
 					@Override
 					public Class<?>[] apply(T testContext, E member) {
-						return Members.Handler.OfExecutable.INSTANCE.getParameterTypes(member);
+						return getParameterTypes(member);
 					}
 				},
 				new ThrowingTriPredicate<T, Class<?>[], Integer, Throwable>() {
@@ -61,7 +61,7 @@ public abstract class ExecutableMemberCriteria<
 					public boolean test(T testContext, Class<?>[] array, Integer index) throws Throwable {
 						return predicate.test(
 							array,
-							Members.Handler.OfExecutable.INSTANCE.isVarArgs(testContext.getEntity()),
+							isVarArgs(testContext.getEntity()),
 							index
 						);
 					}
@@ -78,7 +78,7 @@ public abstract class ExecutableMemberCriteria<
 				new ThrowingBiFunction<T, E, Class<?>[], Throwable>() {
 					@Override
 					public Class<?>[] apply(T testContext, E member) {
-						return Members.Handler.OfExecutable.INSTANCE.getParameterTypes(member);
+						return getParameterTypes(member);
 					}
 				},
 				new ThrowingTriPredicate<T, Class<?>[], Integer, Throwable>() {
@@ -99,7 +99,7 @@ public abstract class ExecutableMemberCriteria<
 			new ThrowingBiPredicate<T, E, Throwable>() {
 				@Override
 				public boolean test(T testContext, E member) throws Throwable {
-					return predicate.test(Members.Handler.OfExecutable.INSTANCE.getParameterTypes(member));
+					return predicate.test(getParameterTypes(member));
 				}
 			}
 		);
@@ -157,14 +157,19 @@ public abstract class ExecutableMemberCriteria<
 					new ThrowingBiPredicate<T, E, Throwable>() {
 						@Override
 						public boolean test(T context, E member) {
-							Class<?>[] memberParameter = Members.Handler.OfExecutable.INSTANCE.getParameterTypes(member);
+							Class<?>[] memberParameter = getParameterTypes(member);
 							if ((memberParameter.length > 1) &&
-								Members.Handler.OfExecutable.INSTANCE.isVarArgs(member) &&
+								isVarArgs(member) &&
 								((memberParameter.length - 1) > argumentsClassesAsList.size())
 							) {
 								return false;
 							}
-							Class<?>[] memberParameterTypes = Members.Handler.OfExecutable.INSTANCE.retrieveParameterTypes(member, argumentsClassesAsList);
+							Class<?>[] memberParameterTypes = Members.Handler.OfExecutable.retrieveParameterTypes(
+								member,
+								argumentsClassesAsList,
+								getParameterTypes(member),
+								isVarArgs(member)
+							);
 							if (argumentsClassesAsList.size() == memberParameterTypes.length) {
 								try {
 									return predicate.test(argumentsClassesAsList, memberParameterTypes, index);
@@ -193,5 +198,9 @@ public abstract class ExecutableMemberCriteria<
 		}
 		return (C)this;
 	}
+
+	abstract Class<?>[] getParameterTypes(Member member);
+
+	abstract boolean isVarArgs(Member member);
 
 }

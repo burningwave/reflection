@@ -33,6 +33,7 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Member;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -236,6 +237,16 @@ public class Constructors extends Members.Handler.OfExecutable<Constructor<?>, C
 		return retrieveNameForCaching(constructor.getDeclaringClass());
 	}
 
+	@Override
+	Class<?>[] getParameterTypes(Member member) {
+		return ((Constructor<?>)member).getParameterTypes();
+	}
+
+	@Override
+	boolean isVarArgs(Member member) {
+		return ((Constructor<?>)member).isVarArgs();
+	}
+
 	private Members.Handler.OfExecutable.Box<Constructor<?>> findDirectHandleBox(final Class<?> targetClass, final Class<?>... inputParameterTypesOrSubTypes) {
 		final String nameForCaching = retrieveNameForCaching(targetClass);
 		final String cacheKey = getCacheKey(targetClass, "equals " + nameForCaching, inputParameterTypesOrSubTypes);
@@ -250,4 +261,5 @@ public class Constructors extends Members.Handler.OfExecutable<Constructor<?>, C
 		}
 		return entry;
 	}
+
 }
