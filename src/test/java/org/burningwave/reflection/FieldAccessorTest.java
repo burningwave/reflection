@@ -33,7 +33,7 @@ public class FieldAccessorTest extends BaseTest {
 	}
 
 	@Test
-	void setTestTwo() {
+	public void setTestTwo() {
 		final Complex complex = new Complex();
 		final Complex.Data.Item newItem = new Complex.Data.Item("Sam");
 		FieldAccessor.INSTANCE.set(complex, "data.items[0][1]", newItem);
@@ -41,7 +41,7 @@ public class FieldAccessorTest extends BaseTest {
 	}
 
 	@Test
-	void setTestThree() {
+	public void setTestThree() {
 		final Complex complex = new Complex();
 		FieldAccessor.INSTANCE.set(complex, "data.itemsMap[items]",
 				FieldAccessor.INSTANCE.get(complex, "data.itemsMap[items]"));
@@ -50,7 +50,7 @@ public class FieldAccessorTest extends BaseTest {
 	}
 
 	@Test
-	void setTestFour() {
+	public void setTestFour() {
 		final Complex complex = new Complex();
 		FieldAccessor.INSTANCE.set(complex, "data", FieldAccessor.INSTANCE.get(complex, "data"));
 		assertEquals((Object) FieldAccessor.INSTANCE.get(complex, "data"),
@@ -58,7 +58,7 @@ public class FieldAccessorTest extends BaseTest {
 	}
 
 	@Test
-	void setTestFive() {
+	public void setTestFive() {
 		final Map<String, Map<String, Map<String, Object>>> nestedMaps= new LinkedHashMap<>();
 		final Map<String, Map<String, Object>> innerMapLevelOne = new LinkedHashMap<>();
 		final Map<String, Object> innerMapLevelTwo = new LinkedHashMap<>();
@@ -71,7 +71,7 @@ public class FieldAccessorTest extends BaseTest {
 	}
 
 	@Test
-	void setTestSix() {
+	public void setTestSix() {
 		setIndexedValue(new Supplier<Collection>() {
 			@Override
 			public Collection get() {
@@ -81,7 +81,7 @@ public class FieldAccessorTest extends BaseTest {
 	}
 
 	@Test
-	void setTestSeven() {
+	public void setTestSeven() {
 		final AtomicInteger hashCodeGenerator = new AtomicInteger(1);
 		setIndexedValue(new Supplier<Collection>() {
 			@Override

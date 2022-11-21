@@ -40,7 +40,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<target_version>7</target_version>
 		<skipTests>true</skipTests>
-		<project.test.testSuite>AllExceptHeavyTestsSuite</project.test.testSuite>
+		<project.test.testSuite>AllTestsSuite</project.test.testSuite>
 		<project.test.includes>**/${project.test.testSuite}.java</project.test.includes>
 		<project.test.excludes>**/*Test.java</project.test.excludes>
 		<project.generated.artifacts.prefix>bw</project.generated.artifacts.prefix>
