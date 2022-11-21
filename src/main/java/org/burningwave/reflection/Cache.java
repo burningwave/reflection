@@ -59,14 +59,20 @@ class Cache {
 
 	final ObjectAndPathForResources<ClassLoader, Collection<Constructor<?>>> uniqueKeyForConstructors;
 	final ObjectAndPathForResources<ClassLoader, Members.Handler.OfExecutable.Box<?>> uniqueKeyForExecutableAndMethodHandle;
-	final ObjectAndPathForResources<ClassLoader, Collection<Field>> uniqueKeyForFields;
-	final ObjectAndPathForResources<ClassLoader, Collection<Method>> uniqueKeyForMethods;
+	final ObjectAndPathForResources<ClassLoader, Collection<Field>> uniqueKeyForAllFields;
+	final ObjectAndPathForResources<ClassLoader, Collection<Method>> uniqueKeyForAllMethods;
+	final ObjectAndPathForResources<ClassLoader, Constructor<?>[]> uniqueKeyForConstructorsArray;
+	final ObjectAndPathForResources<ClassLoader, Field[]> uniqueKeyForFieldsArray;
+	final ObjectAndPathForResources<ClassLoader, Method[]> uniqueKeyForMethodsArray;
 
 	private Cache() {
-		uniqueKeyForFields = new ObjectAndPathForResources<>();
-		uniqueKeyForMethods = new ObjectAndPathForResources<>();
+		uniqueKeyForAllFields = new ObjectAndPathForResources<>();
+		uniqueKeyForAllMethods = new ObjectAndPathForResources<>();
 		uniqueKeyForConstructors = new ObjectAndPathForResources<>();
 		uniqueKeyForExecutableAndMethodHandle = new ObjectAndPathForResources<>();
+		uniqueKeyForFieldsArray = new ObjectAndPathForResources<>();
+		uniqueKeyForConstructorsArray = new ObjectAndPathForResources<>();
+		uniqueKeyForMethodsArray = new ObjectAndPathForResources<>();
 	}
 
 	public void clear(boolean destroyItems, Object... excluded) {
@@ -74,9 +80,9 @@ class Cache {
 			new HashSet<>(Arrays.asList(excluded)) :
 			null;
 		Set<Thread> tasks = new HashSet<>();
-		addCleaningTask(tasks, clear(uniqueKeyForFields, toBeExcluded, destroyItems));
+		addCleaningTask(tasks, clear(uniqueKeyForAllFields, toBeExcluded, destroyItems));
 		addCleaningTask(tasks, clear(uniqueKeyForConstructors, toBeExcluded, destroyItems));
-		addCleaningTask(tasks, clear(uniqueKeyForMethods, toBeExcluded, destroyItems));
+		addCleaningTask(tasks, clear(uniqueKeyForAllMethods, toBeExcluded, destroyItems));
 		addCleaningTask(tasks, clear(uniqueKeyForExecutableAndMethodHandle, toBeExcluded, destroyItems));
 		for (Thread task : tasks) {
 			try {

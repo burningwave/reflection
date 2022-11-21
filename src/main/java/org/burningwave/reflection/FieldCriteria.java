@@ -68,6 +68,14 @@ public class FieldCriteria extends MemberCriteria<
 
 	@Override
 	Function<Class<?>, Field[]> getMembersSupplierFunction() {
-		return Facade.INSTANCE::getDeclaredFields;
+		return clazz -> {
+			final String cacheKey = Constructors.INSTANCE.getCacheKey(clazz, Members.ALL_FOR_CLASS);
+			final ClassLoader targetClassClassLoader = Classes.INSTANCE.getClassLoader(clazz);
+			return Cache.INSTANCE.uniqueKeyForFieldsArray.getOrUploadIfAbsent(
+				targetClassClassLoader, cacheKey, () -> {
+					return Facade.INSTANCE.getDeclaredFields(clazz);
+				}
+			);
+		};
 	}
 }

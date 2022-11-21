@@ -61,9 +61,9 @@ public class Methods extends Members.Handler.OfExecutable<Method, MethodCriteria
 	public Collection<Method> findAllAndMakeThemAccessible(
 		Class<?> targetClass
 	) {
-		String cacheKey = getCacheKey(targetClass, "all methods");
+		String cacheKey = getCacheKey(targetClass, Members.ALL_FOR_CLASS);
 		ClassLoader targetClassClassLoader = Classes.INSTANCE.getClassLoader(targetClass);
-		Collection<Method> members = Cache.INSTANCE.uniqueKeyForMethods.getOrUploadIfAbsent(
+		Collection<Method> members = Cache.INSTANCE.uniqueKeyForAllMethods.getOrUploadIfAbsent(
 			targetClassClassLoader, cacheKey, () -> {
 				return findAllAndMakeThemAccessible(
 					MethodCriteria.forEntireClassHierarchy(), targetClass
@@ -228,7 +228,7 @@ public class Methods extends Members.Handler.OfExecutable<Method, MethodCriteria
 	) {
 		String cacheKey = getCacheKey(targetClass, cacheKeyPrefix, inputParameterTypesOrSubTypes);
 		ClassLoader targetClassClassLoader = Classes.INSTANCE.getClassLoader(targetClass);
-		return Cache.INSTANCE.uniqueKeyForMethods.getOrUploadIfAbsent(targetClassClassLoader, cacheKey, () -> {
+		return Cache.INSTANCE.uniqueKeyForAllMethods.getOrUploadIfAbsent(targetClassClassLoader, cacheKey, () -> {
 			MethodCriteria criteria = MethodCriteria.forEntireClassHierarchy()
 				.name(namePredicate)
 				.and().parameterTypesAreAssignableFrom(inputParameterTypesOrSubTypes);
@@ -236,7 +236,7 @@ public class Methods extends Members.Handler.OfExecutable<Method, MethodCriteria
 				criteria = criteria.or(MethodCriteria.forEntireClassHierarchy().name(namePredicate).and().parameter((parameters, idx) -> parameters.length == 1 && parameters[0].isVarArgs()));
 			}
 			MethodCriteria finalCriteria = criteria;
-			return Cache.INSTANCE.uniqueKeyForMethods.getOrUploadIfAbsent(targetClassClassLoader, cacheKey, () ->
+			return Cache.INSTANCE.uniqueKeyForAllMethods.getOrUploadIfAbsent(targetClassClassLoader, cacheKey, () ->
 				findAllAndApply(
 						finalCriteria, targetClass, (member) -> {
 						setAccessible(member, true);

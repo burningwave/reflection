@@ -55,7 +55,7 @@ public class Constructors extends Members.Handler.OfExecutable<Constructor<?>, C
 	public Collection<Constructor<?>> findAllAndMakeThemAccessible(
 		Class<?> targetClass
 	) {
-		String cacheKey = getCacheKey(targetClass, "all constructors");
+		String cacheKey = getCacheKey(targetClass, Members.ALL_FOR_CLASS);
 		ClassLoader targetClassClassLoader = Classes.INSTANCE.getClassLoader(targetClass);
 		Collection<Constructor<?>> members = Cache.INSTANCE.uniqueKeyForConstructors.getOrUploadIfAbsent(
 			targetClassClassLoader, cacheKey, () -> {
@@ -72,7 +72,7 @@ public class Constructors extends Members.Handler.OfExecutable<Constructor<?>, C
 		Class<?> targetClass,
 		Class<?>... inputParameterTypesOrSubTypes
 	) {
-		String cacheKey = getCacheKey(targetClass, "all constructors by input parameters assignable from", inputParameterTypesOrSubTypes);
+		String cacheKey = getCacheKey(targetClass, Members.ALL_FOR_CLASS + " by input parameters assignable from", inputParameterTypesOrSubTypes);
 		ClassLoader targetClassClassLoader = Classes.INSTANCE.getClassLoader(targetClass);
 		return Cache.INSTANCE.uniqueKeyForConstructors.getOrUploadIfAbsent(targetClassClassLoader, cacheKey, () -> {
 			ConstructorCriteria criteria = ConstructorCriteria.withoutConsideringParentClasses().parameterTypesAreAssignableFrom(inputParameterTypesOrSubTypes);

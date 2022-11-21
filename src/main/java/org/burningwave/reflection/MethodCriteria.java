@@ -71,6 +71,14 @@ public class MethodCriteria extends ExecutableMemberCriteria<
 
 	@Override
 	Function<Class<?>, Method[]> getMembersSupplierFunction() {
-		return  Facade.INSTANCE::getDeclaredMethods;
+		return clazz -> {
+			final String cacheKey = Constructors.INSTANCE.getCacheKey(clazz, Members.ALL_FOR_CLASS);
+			final ClassLoader targetClassClassLoader = Classes.INSTANCE.getClassLoader(clazz);
+			return Cache.INSTANCE.uniqueKeyForMethodsArray.getOrUploadIfAbsent(
+				targetClassClassLoader, cacheKey, () -> {
+					return Facade.INSTANCE.getDeclaredMethods(clazz);
+				}
+			);
+		};
 	}
 }

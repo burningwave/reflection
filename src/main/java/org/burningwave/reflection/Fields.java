@@ -54,9 +54,9 @@ public class Fields extends Members.Handler<Field, FieldCriteria> {
 	public Collection<Field> findAllAndMakeThemAccessible(
 		Class<?> targetClass
 	) {
-		String cacheKey = getCacheKey(targetClass, "all fields", (Class<?>[])null);
+		String cacheKey = getCacheKey(targetClass, Members.ALL_FOR_CLASS, (Class<?>[])null);
 		ClassLoader targetClassClassLoader = Classes.INSTANCE.getClassLoader(targetClass);
-		return Cache.INSTANCE.uniqueKeyForFields.getOrUploadIfAbsent(
+		return Cache.INSTANCE.uniqueKeyForAllFields.getOrUploadIfAbsent(
 			targetClassClassLoader,
 			cacheKey,
 			() ->
@@ -80,7 +80,7 @@ public class Fields extends Members.Handler<Field, FieldCriteria> {
 	) {
 		String cacheKey = getCacheKey(targetClass, "equals " + fieldName, valueType);
 		ClassLoader targetClassClassLoader = Classes.INSTANCE.getClassLoader(targetClass);
-		return Cache.INSTANCE.uniqueKeyForFields.getOrUploadIfAbsent(
+		return Cache.INSTANCE.uniqueKeyForAllFields.getOrUploadIfAbsent(
 			targetClassClassLoader,
 			cacheKey,
 			() ->
