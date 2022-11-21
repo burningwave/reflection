@@ -166,25 +166,26 @@ public class Methods extends Members.Handler.OfExecutable<Method, MethodCriteria
 	}
 
 	public <T> T invoke(final Object target, final String methodName, final Object... arguments) {
-		return Handler.getFirst(new ThrowingSupplier<T, RuntimeException>() {
-			@Override
-			public T get() throws RuntimeException {
-				return (T)invokeDirect(
-					Classes.INSTANCE.retrieveFrom(target),
-					target, methodName, new Supplier<List<Object>>() {
-						@Override
-						public List<Object> get() {
-							final List<Object> argumentList = new ArrayList<>();
-							argumentList.add(target);
-							return argumentList;
-						}
-					},
-					arguments != null ? arguments : null
-				);
-			}
-		}, new ThrowingSupplier<T, RuntimeException>() {
+		return Handler.getFirst(
+			new ThrowingSupplier<T,Throwable>() {
 				@Override
-				public T get() throws RuntimeException {
+				public T get() {
+					return (T)invokeDirect(
+						Classes.INSTANCE.retrieveFrom(target),
+						target, methodName, new Supplier<List<Object>>() {
+							@Override
+							public List<Object> get() {
+								final List<Object> argumentList = new ArrayList<>();
+								argumentList.add(target);
+								return argumentList;
+							}
+						},
+						arguments != null ? arguments : null
+					);
+				}
+			}, new ThrowingSupplier<T, Throwable>() {
+				@Override
+				public T get() throws Throwable {
 					return invoke(
 						Classes.INSTANCE.retrieveFrom(target),
 						null, methodName, new ThrowingFunction<Method, T, Throwable>() {
