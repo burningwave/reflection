@@ -7,9 +7,9 @@
 [![Maven Central with version prefix filter](https://img.shields.io/maven-central/v/org.burningwave/reflection/3)](https://maven-badges.herokuapp.com/maven-central/org.burningwave/reflection/)
 [![GitHub](https://img.shields.io/github/license/burningwave/reflection)](https://github.com/burningwave/reflection/blob/master/LICENSE)
 
-[![Platforms](https://img.shields.io/badge/platforms-Windows%2C%20Mac%20OS%2C%20Linux-orange)](https://github.com/burningwave/reflection/actions/runs/3500618943)
+[![Platforms](https://img.shields.io/badge/platforms-Windows%2C%20Mac%20OS%2C%20Linux-orange)](https://github.com/burningwave/reflection/actions/runs/3512579512)
 
-[![Supported JVM](https://img.shields.io/badge/supported%20JVM-8%2C%209+%20(19)-blueviolet)](https://github.com/burningwave/reflection/actions/runs/3500618943)
+[![Supported JVM](https://img.shields.io/badge/supported%20JVM-8%2C%209+%20(19)-blueviolet)](https://github.com/burningwave/reflection/actions/runs/3512579512)
 
 [![Coveralls github branch](https://img.shields.io/coveralls/github/burningwave/reflection/main)](https://coveralls.io/github/burningwave/reflection?branch=main)
 [![GitHub open issues](https://img.shields.io/github/issues/burningwave/reflection)](https://github.com/burningwave/reflection/issues)
@@ -38,7 +38,7 @@ To include Burningwave Reflection library in your projects simply use with **Apa
 <dependency>
     <groupId>org.burningwave</groupId>
     <artifactId>reflection</artifactId>
-    <version>3.1.0</version>
+    <version>3.1.4</version>
 </dependency>
 ```
 
