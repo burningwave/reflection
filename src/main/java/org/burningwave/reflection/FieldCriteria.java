@@ -70,9 +70,8 @@ public class FieldCriteria extends MemberCriteria<
 	Function<Class<?>, Field[]> getMembersSupplierFunction() {
 		return clazz -> {
 			final String cacheKey = Constructors.INSTANCE.getCacheKey(clazz, Members.ALL_FOR_CLASS);
-			final ClassLoader targetClassClassLoader = Classes.INSTANCE.getClassLoader(clazz);
 			return Cache.INSTANCE.uniqueKeyForFieldsArray.getOrUploadIfAbsent(
-				targetClassClassLoader, cacheKey, () -> {
+				cacheKey, () -> {
 					return Facade.INSTANCE.getDeclaredFields(clazz);
 				}
 			);

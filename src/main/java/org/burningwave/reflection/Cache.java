@@ -57,22 +57,22 @@ public class Cache {
 		INSTANCE = new Cache();
 	}
 
-	public final ObjectAndPathForResources<ClassLoader, Collection<Constructor<?>>> uniqueKeyForConstructors;
-	public final ObjectAndPathForResources<ClassLoader, Members.Handler.OfExecutable.Box<?>> uniqueKeyForExecutableAndMethodHandle;
-	public final ObjectAndPathForResources<ClassLoader, Collection<Field>> uniqueKeyForAllFields;
-	public final ObjectAndPathForResources<ClassLoader, Collection<Method>> uniqueKeyForAllMethods;
-	public final ObjectAndPathForResources<ClassLoader, Constructor<?>[]> uniqueKeyForConstructorsArray;
-	public final ObjectAndPathForResources<ClassLoader, Field[]> uniqueKeyForFieldsArray;
-	public final ObjectAndPathForResources<ClassLoader, Method[]> uniqueKeyForMethodsArray;
+	public final PathForResources<Constructor<?>[]> uniqueKeyForConstructorsArray;
+	public final PathForResources<Field[]> uniqueKeyForFieldsArray;
+	public final PathForResources<Method[]> uniqueKeyForMethodsArray;
+	public final PathForResources<Collection<Constructor<?>>> uniqueKeyForConstructors;
+	public final PathForResources<Members.Handler.OfExecutable.Box<?>> uniqueKeyForExecutableAndMethodHandle;
+	public final PathForResources<Collection<Field>> uniqueKeyForAllFields;
+	public final PathForResources<Collection<Method>> uniqueKeyForAllMethods;
 
 	private Cache() {
-		uniqueKeyForAllFields = new ObjectAndPathForResources<>();
-		uniqueKeyForAllMethods = new ObjectAndPathForResources<>();
-		uniqueKeyForConstructors = new ObjectAndPathForResources<>();
-		uniqueKeyForExecutableAndMethodHandle = new ObjectAndPathForResources<>();
-		uniqueKeyForFieldsArray = new ObjectAndPathForResources<>();
-		uniqueKeyForConstructorsArray = new ObjectAndPathForResources<>();
-		uniqueKeyForMethodsArray = new ObjectAndPathForResources<>();
+		uniqueKeyForConstructorsArray = new PathForResources<>();
+		uniqueKeyForFieldsArray = new PathForResources<>();
+		uniqueKeyForMethodsArray = new PathForResources<>();
+		uniqueKeyForConstructors = new PathForResources<>();
+		uniqueKeyForExecutableAndMethodHandle = new PathForResources<>();
+		uniqueKeyForAllFields = new PathForResources<>();
+		uniqueKeyForAllMethods = new PathForResources<>();
 	}
 
 	public void clear(boolean destroyItems, Object... excluded) {
@@ -80,13 +80,13 @@ public class Cache {
 			new HashSet<>(Arrays.asList(excluded)) :
 			null;
 		Set<Thread> tasks = new HashSet<>();
-		addCleaningTask(tasks, clear(uniqueKeyForAllFields, toBeExcluded, destroyItems));
-		addCleaningTask(tasks, clear(uniqueKeyForConstructors, toBeExcluded, destroyItems));
-		addCleaningTask(tasks, clear(uniqueKeyForAllMethods, toBeExcluded, destroyItems));
-		addCleaningTask(tasks, clear(uniqueKeyForExecutableAndMethodHandle, toBeExcluded, destroyItems));
-		addCleaningTask(tasks, clear(uniqueKeyForFieldsArray, toBeExcluded, destroyItems));
 		addCleaningTask(tasks, clear(uniqueKeyForConstructorsArray, toBeExcluded, destroyItems));
+		addCleaningTask(tasks, clear(uniqueKeyForFieldsArray, toBeExcluded, destroyItems));
 		addCleaningTask(tasks, clear(uniqueKeyForMethodsArray, toBeExcluded, destroyItems));
+		addCleaningTask(tasks, clear(uniqueKeyForConstructors, toBeExcluded, destroyItems));
+		addCleaningTask(tasks, clear(uniqueKeyForExecutableAndMethodHandle, toBeExcluded, destroyItems));
+		addCleaningTask(tasks, clear(uniqueKeyForAllFields, toBeExcluded, destroyItems));
+		addCleaningTask(tasks, clear(uniqueKeyForAllMethods, toBeExcluded, destroyItems));
 		for (Thread task : tasks) {
 			try {
 				task.join();

@@ -225,9 +225,8 @@ public class Members {
 
 			Members.Handler.OfExecutable.Box<E> findDirectHandleBox(E executable) {
 				Class<?> targetClass = executable.getDeclaringClass();
-				ClassLoader targetClassClassLoader = Classes.INSTANCE.getClassLoader(targetClass);
 				String cacheKey = getCacheKey(targetClass, "equals " + retrieveNameForCaching(executable), executable.getParameterTypes());
-				return findDirectHandleBox(executable, targetClassClassLoader, cacheKey);
+				return findDirectHandleBox(executable, cacheKey);
 			}
 
 			Members.Handler.OfExecutable.Box<E> checkAndGetExecutableBox(Members.Handler.OfExecutable.Box<E> executableBox) {
@@ -237,10 +236,9 @@ public class Members {
 				return Throwables.INSTANCE.throwException(executableBox.getException());
 			}
 
-			Members.Handler.OfExecutable.Box<E> findDirectHandleBox(E executable, ClassLoader classLoader, String cacheKey) {
+			Members.Handler.OfExecutable.Box<E> findDirectHandleBox(E executable, String cacheKey) {
 				return checkAndGetExecutableBox(
 					(Members.Handler.OfExecutable.Box<E>)Cache.INSTANCE.uniqueKeyForExecutableAndMethodHandle.getOrUploadIfAbsent(
-						classLoader,
 						cacheKey, () -> {
 							Class<?> methodDeclaringClass = executable.getDeclaringClass();
 							Collection<Members.Handler.OfExecutable.Box<E>> executableBoxes = new ArrayList<>();

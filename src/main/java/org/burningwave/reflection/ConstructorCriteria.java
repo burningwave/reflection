@@ -58,10 +58,8 @@ public class ConstructorCriteria extends ExecutableMemberCriteria<
 	@Override
 	Function<Class<?>, Constructor<?>[]> getMembersSupplierFunction() {
 		return clazz -> {
-			final String cacheKey = Constructors.INSTANCE.getCacheKey(clazz, Members.ALL_FOR_CLASS);
-			final ClassLoader targetClassClassLoader = Classes.INSTANCE.getClassLoader(clazz);
 			return Cache.INSTANCE.uniqueKeyForConstructorsArray.getOrUploadIfAbsent(
-				targetClassClassLoader, cacheKey, () -> {
+				Constructors.INSTANCE.getCacheKey(clazz, Members.ALL_FOR_CLASS), () -> {
 					return Facade.INSTANCE.getDeclaredConstructors(clazz);
 				}
 			);

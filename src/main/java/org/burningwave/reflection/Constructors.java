@@ -55,10 +55,8 @@ public class Constructors extends Members.Handler.OfExecutable<Constructor<?>, C
 	public Collection<Constructor<?>> findAllAndMakeThemAccessible(
 		Class<?> targetClass
 	) {
-		String cacheKey = getCacheKey(targetClass, Members.ALL_FOR_CLASS);
-		ClassLoader targetClassClassLoader = Classes.INSTANCE.getClassLoader(targetClass);
 		Collection<Constructor<?>> members = Cache.INSTANCE.uniqueKeyForConstructors.getOrUploadIfAbsent(
-			targetClassClassLoader, cacheKey, () -> {
+				getCacheKey(targetClass, Members.ALL_FOR_CLASS), () -> {
 				return findAllAndApply(
 					ConstructorCriteria.withoutConsideringParentClasses(), targetClass, (member) ->
 					setAccessible(member, true)
@@ -73,8 +71,7 @@ public class Constructors extends Members.Handler.OfExecutable<Constructor<?>, C
 		Class<?>... inputParameterTypesOrSubTypes
 	) {
 		String cacheKey = getCacheKey(targetClass, Members.ALL_FOR_CLASS + " by input parameters assignable from", inputParameterTypesOrSubTypes);
-		ClassLoader targetClassClassLoader = Classes.INSTANCE.getClassLoader(targetClass);
-		return Cache.INSTANCE.uniqueKeyForConstructors.getOrUploadIfAbsent(targetClassClassLoader, cacheKey, () -> {
+		return Cache.INSTANCE.uniqueKeyForConstructors.getOrUploadIfAbsent(cacheKey, () -> {
 			ConstructorCriteria criteria = ConstructorCriteria.withoutConsideringParentClasses().parameterTypesAreAssignableFrom(inputParameterTypesOrSubTypes);
 			if (inputParameterTypesOrSubTypes != null && inputParameterTypesOrSubTypes.length == 0) {
 				criteria.or().parameter((parameters, idx) -> parameters.length == 1 && parameters[0].isVarArgs());
@@ -178,13 +175,12 @@ public class Constructors extends Members.Handler.OfExecutable<Constructor<?>, C
 	private Members.Handler.OfExecutable.Box<Constructor<?>> findDirectHandleBox(Class<?> targetClass, Class<?>... inputParameterTypesOrSubTypes) {
 		String nameForCaching = retrieveNameForCaching(targetClass);
 		String cacheKey = getCacheKey(targetClass, "equals " + nameForCaching, inputParameterTypesOrSubTypes);
-		ClassLoader targetClassClassLoader = Classes.INSTANCE.getClassLoader(targetClass);
 		Members.Handler.OfExecutable.Box<Constructor<?>> entry =
-			(Box<Constructor<?>>)Cache.INSTANCE.uniqueKeyForExecutableAndMethodHandle.get(targetClassClassLoader, cacheKey);
+			(Box<Constructor<?>>)Cache.INSTANCE.uniqueKeyForExecutableAndMethodHandle.get(cacheKey);
 		if (entry == null) {
 			Constructor<?> ctor = findFirstAndMakeItAccessible(targetClass, inputParameterTypesOrSubTypes);
 			entry = findDirectHandleBox(
-				ctor, targetClassClassLoader, cacheKey
+				ctor, cacheKey
 			);
 		}
 		return entry;
