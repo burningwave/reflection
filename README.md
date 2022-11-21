@@ -1,4 +1,4 @@
-# Burningwave Reflection [![Tweet](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://twitter.com/intent/tweet?text=%40burningwave_sw%20Core%2C%20the%20%23Java%20frameworks%20building%20library%20%28works%20on%20%23Java8%20%23Java9%20%23Java10%20%23Java11%20%23Java12%20%23Java13%20%23Java14%20%23Java15%20%23Java16%20%23Java17%20%23Java18%20%23Java19%29&url=https://burningwave.github.io/core/)
+# Burningwave Reflection [![Tweet](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://twitter.com/intent/tweet?text=%40burningwave_sw%20Reflection%2C%20the%20%23advanced%20reflection%20engine%20%28works%20on%20%23Java8%20%23Java9%20%23Java10%20%23Java11%20%23Java12%20%23Java13%20%23Java14%20%23Java15%20%23Java16%20%23Java17%20%23Java18%20%23Java19%29&url=https://burningwave.github.io/reflection/)
 
 <a href="https://www.burningwave.org">
 <img src="https://raw.githubusercontent.com/burningwave/burningwave.github.io/main/logo.png" alt="logo.png" height="180px" align="right"/>
@@ -7,9 +7,9 @@
 [![Maven Central with version prefix filter](https://img.shields.io/maven-central/v/org.burningwave/reflection/3)](https://maven-badges.herokuapp.com/maven-central/org.burningwave/reflection/)
 [![GitHub](https://img.shields.io/github/license/burningwave/reflection)](https://github.com/burningwave/reflection/blob/master/LICENSE)
 
-[![Platforms](https://img.shields.io/badge/platforms-Windows%2C%20Mac%20OS%2C%20Linux-orange)](https://github.com/burningwave/reflection/actions/runs/3514365414)
+[![Platforms](https://img.shields.io/badge/platforms-Windows%2C%20Mac%20OS%2C%20Linux-orange)](https://github.com/burningwave/reflection/actions/runs/3505065806)
 
-[![Supported JVM](https://img.shields.io/badge/supported%20JVM-7%2C%208%2C%209+-blueviolet)](https://github.com/burningwave/reflection/actions/runs/3514365414)
+[![Supported JVM](https://img.shields.io/badge/supported%20JVM-7%2C%208%2C%209+-blueviolet)](https://github.com/burningwave/reflection/actions/runs/3505065806)
 
 [![Coveralls github branch](https://img.shields.io/coveralls/github/burningwave/reflection/main)](https://coveralls.io/github/burningwave/reflection?branch=main)
 [![GitHub open issues](https://img.shields.io/github/issues/burningwave/reflection)](https://github.com/burningwave/reflection/issues)
@@ -20,7 +20,7 @@
 
 Extracted from [**Burningwave Core**](https://burningwave.github.io/core/), Burningwave Reflection is an advanced, free and open source reflection engine.
 
-The main difference with Burningwave Core's reflection engine is that **the use of the [JVM driver](https://burningwave.github.io/jvm-driver/) is optional and if the library that contain it is not present in the class path it is not used by default**. 
+The main difference with Burningwave Core's reflection engine is that **the use of the [JVM Driver](https://burningwave.github.io/jvm-driver/) is optional and if the library that contain it is not present in the class path it is not used by default**. 
 
 And now we will see:
 * [including Burningwave Reflection in your project](#Including-Burningwave-Reflection-in-your-project)
@@ -32,8 +32,17 @@ And now we will see:
 <br/>
 
 ## <a name="Including-Burningwave-Core-in-your-project"></a>Including Burningwave Reflection in your project 
-To include Burningwave Reflection library in your projects simply use with **Apache Maven**:
+If you are on Java 8 and later, to include Burningwave Reflection library in your projects simply use with **Apache Maven**:
 
+```xml
+<dependency>
+    <groupId>org.burningwave</groupId>
+    <artifactId>reflection</artifactId>
+    <version>3.1.5</version>
+</dependency>
+```
+
+If you are on **Java 7 and later**, use this instead:
 ```xml
 <dependency>
     <groupId>org.burningwave</groupId>
@@ -49,7 +58,7 @@ To use Burningwave Reflection as a Java module you need to add the following to 
 ```java
 requires org.burningwave.reflection;
 ```
-### Enabling the JVM driver
+### Enabling the JVM Driver
 By default the JVM Driver is not imported by the Reflection library, so if you want to use it you just need to add the following to your pom:
 ```xml
 <dependency>
@@ -103,7 +112,7 @@ public class FieldsHandler {
             volatile char charValue = 'c';
         };
         
-        //Get all filtered field values of an object through memory address access
+        //Get all filtered field values of an object
         Fields.INSTANCE.getAll(
             FieldCriteria.forEntireClassHierarchy().allThoseThatMatch(field -> {
                 return field.getType().isPrimitive();
@@ -139,6 +148,7 @@ public class MethodsHandler {
         Methods.invoke(System.out, "println", "Hello World");
         Integer number = Methods.INSTANCE.invokeStatic(Integer.class, "valueOf", 1);
         
+        //Invoking a method
         Methods.INSTANCE.invoke(System.out, "println", number);
         
         //Filtering and obtaining a MethodHandle reference
@@ -185,9 +195,8 @@ import org.burningwave.core.classes.MemoryClassLoader;
 public class ConstructorsHandler {
     
     public static void execute() {
-        //Invoking constructor by using reflection
+        //Invoking constructor
         MemoryClassLoader classLoader = Constructors.INSTANCE.newInstanceOf(MemoryClassLoader.class, Thread.currentThread().getContextClassLoader());
-        
         classLoader = Constructors.INSTANCE.newInstanceOf(MemoryClassLoader.class, null);
     }
     
