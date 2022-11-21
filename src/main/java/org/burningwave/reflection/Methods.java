@@ -180,7 +180,7 @@ public class Methods extends Members.Handler.OfExecutable<Method, MethodCriteria
 							return argumentList;
 						}
 					},
-					arguments
+					arguments != null ? arguments : null
 				);
 			}
 		}, new ThrowingSupplier<T, RuntimeException>() {
@@ -194,12 +194,14 @@ public class Methods extends Members.Handler.OfExecutable<Method, MethodCriteria
 								return invoke(
 									target,
 									method,
-									getArgumentArray(
-										method,
-										buildArgumentListSupplier(),
-										buildNewListSupplier()
-									),
-									arguments
+									arguments != null ?
+										getArgumentArray(
+											method,
+											buildArgumentListSupplier(),
+											buildNewListSupplier(),
+											arguments
+										) :
+										null
 								);
 							}
 						},
@@ -220,7 +222,7 @@ public class Methods extends Members.Handler.OfExecutable<Method, MethodCriteria
 						null,
 						methodName,
 						buildNewListSupplier(),
-						arguments
+						arguments != null ? arguments : null
 					);
 				}
 			},
@@ -233,12 +235,14 @@ public class Methods extends Members.Handler.OfExecutable<Method, MethodCriteria
 							public T apply(final Method method) throws Throwable {
 								return (T)invoke(null,
 									method,
-									getArgumentArray(
-										method,
-										buildArgumentListSupplier(),
-										buildNewListSupplier(),
-										arguments
-									)
+									arguments != null?
+										getArgumentArray(
+											method,
+											buildArgumentListSupplier(),
+											buildNewListSupplier(),
+											arguments
+										) :
+										null
 								);
 							}
 						},
@@ -394,13 +398,13 @@ public class Methods extends Members.Handler.OfExecutable<Method, MethodCriteria
 	}
 
 	private <T> T invokeDirect(final Class<?> targetClass, final Object target, final String methodName, final Supplier<List<Object>> listSupplier,  final Object... arguments) {
-		final Class<?>[] argsType = Classes.INSTANCE.retrieveFrom(arguments);
+		final Class<?>[] argsType = Classes.INSTANCE.retrieveFrom(arguments != null ? arguments : null);
 		final Members.Handler.OfExecutable.Box<Method> methodHandleBox = findDirectHandleBox(targetClass, methodName, argsType);
 		return Handler.get(new ThrowingSupplier<T, Throwable>() {
 			@Override
 			public T get() throws Throwable {
 					final Method method = methodHandleBox.getExecutable();
-					final List<Object> argumentList = getFlatArgumentList(method, listSupplier, arguments);
+					final List<Object> argumentList = getFlatArgumentList(method, listSupplier, arguments != null ? arguments : null);
 					return (T)methodHandleBox.getHandler().invokeWithArguments(argumentList);
 				}
 		}

@@ -293,7 +293,7 @@ public class Members {
 			) {
 				List<Object> argumentList;
 				try {
-					argumentList = argumentListSupplier.apply(member, listSupplier, arguments);
+					argumentList = argumentListSupplier.apply(member, listSupplier, arguments != null ? arguments : null);
 					return argumentList.toArray(new Object[argumentList.size()]);
 				} catch (final Throwable exc) {
 					return Throwables.INSTANCE.throwException(exc);

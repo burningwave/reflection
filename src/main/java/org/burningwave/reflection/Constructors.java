@@ -163,7 +163,7 @@ public class Constructors extends Members.Handler.OfExecutable<Constructor<?>, C
 			new ThrowingSupplier<T, RuntimeException>() {
 				@Override
 				public T get() throws RuntimeException {
-					final Class<?>[] argsType = Classes.INSTANCE.retrieveFrom(arguments);
+					final Class<?>[] argsType = Classes.INSTANCE.retrieveFrom(arguments != null ? arguments : null);
 					final Members.Handler.OfExecutable.Box<Constructor<?>> methodHandleBox = findDirectHandleBox(targetClass, argsType);
 					return Handler.get(new ThrowingSupplier<T, Throwable>() {
 						@Override
@@ -177,7 +177,7 @@ public class Constructors extends Members.Handler.OfExecutable<Constructor<?>, C
 												return new ArrayList<>();
 											}
 										},
-										arguments
+										arguments != null ? arguments : null
 									)
 								);
 							}
@@ -187,32 +187,33 @@ public class Constructors extends Members.Handler.OfExecutable<Constructor<?>, C
 			}, new ThrowingSupplier<T, RuntimeException>() {
 				@Override
 				public T get() throws RuntimeException {
-					final Constructor<?> ctor = findFirstAndMakeItAccessible(targetClass, Classes.INSTANCE.retrieveFrom(arguments));
+					final Constructor<?> ctor = findFirstAndMakeItAccessible(targetClass, Classes.INSTANCE.retrieveFrom(arguments != null ? arguments : null));
 					if (ctor == null) {
 						Throwables.INSTANCE.throwException("Constructor not found in {}", targetClass.getName());
 					}
 					return (T)Facade.INSTANCE.newInstance(
 						ctor,
-						getArgumentArray(
-							ctor,
-							new ThrowingTriFunction<Constructor<?>, Supplier<List<Object>>, Object[], List<Object>, Throwable>() {
-								@Override
-								public List<Object> apply(final Constructor<?> member, final Supplier<List<Object>> collector, final Object[] arguments) throws Throwable {
-									return Constructors.this.getArgumentListWithArrayForVarArgs(
-										member,
-										collector,
-										arguments
-									);
-								}
-							},
-							new Supplier<List<Object>>() {
-								@Override
-								public List<Object> get() {
-									return new ArrayList<>();
-								}
-							},
-							arguments
-						)
+						arguments != null ?
+							getArgumentArray(
+								ctor,
+								new ThrowingTriFunction<Constructor<?>, Supplier<List<Object>>, Object[], List<Object>, Throwable>() {
+									@Override
+									public List<Object> apply(final Constructor<?> member, final Supplier<List<Object>> collector, final Object[] arguments) throws Throwable {
+										return Constructors.this.getArgumentListWithArrayForVarArgs(
+											member,
+											collector,
+											arguments
+										);
+									}
+								},
+								new Supplier<List<Object>>() {
+									@Override
+									public List<Object> get() {
+										return new ArrayList<>();
+									}
+								},
+								arguments
+							) : null
 					);
 				}
 			}
