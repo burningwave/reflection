@@ -170,7 +170,6 @@ public class BaseTest {
 
 	public static void logInfo(Supplier<String> classNameSupplier, String... arguments) {
 		System.out.println(classNameSupplier.get() + " - " + String.join("; ", arguments));
-
 	}
 
 	public static void logDebug(Supplier<String> classNameSupplier, String message, Object... arguments) {

@@ -218,6 +218,8 @@ public class MethodsTest extends BaseTest {
 	public void invokeDirectMethodWithVarArgsTestOne() throws Throwable {
 		testDoesNotThrow(() -> {
 			Methods.INSTANCE.invoke(new Service(), "methodWithVarArgs");
+			Methods.INSTANCE.invoke(new Service(), "methodWithVarArgs");
+			Methods.INSTANCE.invoke(new Service(), "methodWithVarArgs");
 		});
 	}
 

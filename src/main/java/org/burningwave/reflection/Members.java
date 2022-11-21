@@ -36,6 +36,7 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Executable;
 import java.lang.reflect.Member;
 import java.lang.reflect.Parameter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -229,18 +230,51 @@ public class Members {
 				return findDirectHandleBox(executable, targetClassClassLoader, cacheKey);
 			}
 
+			Members.Handler.OfExecutable.Box<E> checkAndGetExecutableBox(Members.Handler.OfExecutable.Box<E> executableBox) {
+				if (executableBox.getHandler() != null) {
+					return executableBox;
+				}
+				return Throwables.INSTANCE.throwException(executableBox.getException());
+			}
+
 			Members.Handler.OfExecutable.Box<E> findDirectHandleBox(E executable, ClassLoader classLoader, String cacheKey) {
-				return (Box<E>)Cache.INSTANCE.uniqueKeyForExecutableAndMethodHandle.getOrUploadIfAbsent(classLoader, cacheKey, () -> {
-					Class<?> methodDeclaringClass = executable.getDeclaringClass();
-					return (Members.Handler.OfExecutable.Box<E>)Facade.INSTANCE.executeWithConsulter(
-						methodDeclaringClass,
-						consulter ->
-						new Members.Handler.OfExecutable.Box<>(consulter,
-							executable,
-							retrieveMethodHandle(consulter, executable)
-						)
-					).getValue();
-				});
+				return checkAndGetExecutableBox(
+					(Members.Handler.OfExecutable.Box<E>)Cache.INSTANCE.uniqueKeyForExecutableAndMethodHandle.getOrUploadIfAbsent(
+						classLoader,
+						cacheKey, () -> {
+							Class<?> methodDeclaringClass = executable.getDeclaringClass();
+							Collection<Members.Handler.OfExecutable.Box<E>> executableBoxes = new ArrayList<>();
+							try {
+								return (Members.Handler.OfExecutable.Box<E>)Facade.INSTANCE.executeWithConsulter(
+									methodDeclaringClass,
+									consulter -> {
+										Throwable exception = null;
+										MethodHandle methodHandle = null;
+										try {
+											methodHandle = retrieveMethodHandle(consulter, executable);
+										} catch (Throwable exc) {
+											exception = exc;
+										}
+										Members.Handler.OfExecutable.Box<E> executableBox = new Members.Handler.OfExecutable.Box<>(consulter,
+											executable,
+											methodHandle,
+											exception
+										);
+										executableBoxes.add(
+											executableBox
+										);
+										if (exception != null) {
+											throw exception;
+										}
+										return executableBox;
+									}
+								).getValue();
+							} catch (Throwable exc) {
+								return executableBoxes.iterator().next();
+							}
+						}
+					)
+				);
 			}
 
 			Object[] getArgumentArray(
@@ -411,16 +445,18 @@ public class Members {
 				return membersThatMatch;
 			}
 
-			public static class Box<E extends Executable> {
+			public static class Box<E extends Member> {
 				MethodHandles.Lookup consulter;
 				E executable;
 				MethodHandle handler;
+				Throwable exception;
 
-				Box(MethodHandles.Lookup consulter, E executable, MethodHandle handler) {
+				Box(final MethodHandles.Lookup consulter, final E executable, final MethodHandle handler, final Throwable exception) {
 					super();
 					this.consulter = consulter;
 					this.executable = executable;
 					this.handler = handler;
+					this.exception = exception;
 				}
 
 				public MethodHandles.Lookup getConsulter() {
@@ -433,6 +469,10 @@ public class Members {
 
 				public MethodHandle getHandler() {
 					return handler;
+				}
+
+				public Throwable getException() {
+					return exception;
 				}
 
 			}

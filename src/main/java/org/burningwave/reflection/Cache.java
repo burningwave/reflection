@@ -49,7 +49,7 @@ import org.burningwave.Throwables;
 import io.github.toolfactory.jvm.function.template.ThrowingBiConsumer;
 
 
-class Cache {
+public class Cache {
 
 	public final static Cache INSTANCE;
 
@@ -57,13 +57,13 @@ class Cache {
 		INSTANCE = new Cache();
 	}
 
-	final ObjectAndPathForResources<ClassLoader, Collection<Constructor<?>>> uniqueKeyForConstructors;
-	final ObjectAndPathForResources<ClassLoader, Members.Handler.OfExecutable.Box<?>> uniqueKeyForExecutableAndMethodHandle;
-	final ObjectAndPathForResources<ClassLoader, Collection<Field>> uniqueKeyForAllFields;
-	final ObjectAndPathForResources<ClassLoader, Collection<Method>> uniqueKeyForAllMethods;
-	final ObjectAndPathForResources<ClassLoader, Constructor<?>[]> uniqueKeyForConstructorsArray;
-	final ObjectAndPathForResources<ClassLoader, Field[]> uniqueKeyForFieldsArray;
-	final ObjectAndPathForResources<ClassLoader, Method[]> uniqueKeyForMethodsArray;
+	public final ObjectAndPathForResources<ClassLoader, Collection<Constructor<?>>> uniqueKeyForConstructors;
+	public final ObjectAndPathForResources<ClassLoader, Members.Handler.OfExecutable.Box<?>> uniqueKeyForExecutableAndMethodHandle;
+	public final ObjectAndPathForResources<ClassLoader, Collection<Field>> uniqueKeyForAllFields;
+	public final ObjectAndPathForResources<ClassLoader, Collection<Method>> uniqueKeyForAllMethods;
+	public final ObjectAndPathForResources<ClassLoader, Constructor<?>[]> uniqueKeyForConstructorsArray;
+	public final ObjectAndPathForResources<ClassLoader, Field[]> uniqueKeyForFieldsArray;
+	public final ObjectAndPathForResources<ClassLoader, Method[]> uniqueKeyForMethodsArray;
 
 	private Cache() {
 		uniqueKeyForAllFields = new ObjectAndPathForResources<>();
@@ -84,6 +84,9 @@ class Cache {
 		addCleaningTask(tasks, clear(uniqueKeyForConstructors, toBeExcluded, destroyItems));
 		addCleaningTask(tasks, clear(uniqueKeyForAllMethods, toBeExcluded, destroyItems));
 		addCleaningTask(tasks, clear(uniqueKeyForExecutableAndMethodHandle, toBeExcluded, destroyItems));
+		addCleaningTask(tasks, clear(uniqueKeyForFieldsArray, toBeExcluded, destroyItems));
+		addCleaningTask(tasks, clear(uniqueKeyForConstructorsArray, toBeExcluded, destroyItems));
+		addCleaningTask(tasks, clear(uniqueKeyForMethodsArray, toBeExcluded, destroyItems));
 		for (Thread task : tasks) {
 			try {
 				task.join();
@@ -111,30 +114,30 @@ class Cache {
 		return null;
 	}
 
-	public static class ObjectAndPathForResources<T, R> {
+	static class ObjectAndPathForResources<T, R> {
 		String instanceId;
 		Supplier<PathForResources<R>> pathForResourcesSupplier;
 		Map<T, PathForResources<R>> resources;
 
-		public ObjectAndPathForResources() {
+		ObjectAndPathForResources() {
 			this(1L, item -> item, null );
 		}
 
-		public ObjectAndPathForResources(Long partitionStartLevel) {
+		ObjectAndPathForResources(Long partitionStartLevel) {
 			this(partitionStartLevel, item -> item, null);
 		}
 
-		public ObjectAndPathForResources(Long partitionStartLevel, Function<R, R> sharer) {
+		ObjectAndPathForResources(Long partitionStartLevel, Function<R, R> sharer) {
 			this(partitionStartLevel, sharer, null);
 		}
 
-		public ObjectAndPathForResources(Long partitionStartLevel, Function<R, R> sharer, BiConsumer<String, R> itemDestroyer) {
+		ObjectAndPathForResources(Long partitionStartLevel, Function<R, R> sharer, BiConsumer<String, R> itemDestroyer) {
 			this.resources = new ConcurrentHashMap<>();
 			this.pathForResourcesSupplier = () -> new PathForResources<>(partitionStartLevel, sharer, itemDestroyer);
 			this.instanceId = Objects.INSTANCE.getId(this);
 		}
 
-		public R get(T object, String path) {
+		R get(T object, String path) {
 			PathForResources<R> pathForResources = resources.get(object);
 			if (pathForResources == null) {
 				pathForResources = Synchronizer.INSTANCE.execute(instanceId + "_mutexManagerForResources_" + Objects.INSTANCE.getId(object), () -> {
@@ -149,7 +152,7 @@ class Cache {
 			return pathForResources.get(path);
 		}
 
-		public R getOrUploadIfAbsent(T object, String path, Supplier<R> resourceSupplier) {
+		R getOrUploadIfAbsent(T object, String path, Supplier<R> resourceSupplier) {
 			PathForResources<R> pathForResources = resources.get(object);
 			if (pathForResources == null) {
 				pathForResources = Synchronizer.INSTANCE.execute(instanceId + "_" + Objects.INSTANCE.getId(object), () -> {
@@ -164,7 +167,7 @@ class Cache {
 			return pathForResources.getOrUploadIfAbsent(path, resourceSupplier);
 		}
 
-		public PathForResources<R> remove(T object, boolean destroyItems) {
+		PathForResources<R> remove(T object, boolean destroyItems) {
 			PathForResources<R> pathForResources = resources.remove(object);
 			if ((pathForResources != null) && destroyItems) {
 				pathForResources.clearInBackground(destroyItems);
@@ -172,11 +175,11 @@ class Cache {
 			return pathForResources;
 		}
 
-		public R removePath(T object, String path) {
+		R removePath(T object, String path) {
 			return removePath(object, path, false);
 		}
 
-		public R removePath(T object, String path, boolean destroyItem) {
+		R removePath(T object, String path, boolean destroyItem) {
 			PathForResources<R> pathForResources = resources.get(object);
 			if (pathForResources != null) {
 				return pathForResources.remove(path, destroyItem);
@@ -206,7 +209,7 @@ class Cache {
 
 	}
 
-	public static class PathForResources<R> {
+	static class PathForResources<R> {
 		String instanceId;
 		BiConsumer<String, R> itemDestroyer;
 		Long partitionStartLevel;
@@ -249,7 +252,7 @@ class Cache {
 			this.instanceId = this.toString();
 		}
 
-		public <K, V, E extends Throwable> void deepClear(Map<K,V> map, ThrowingBiConsumer<K, V, E> itemDestroyer) throws E {
+		<K, V, E extends Throwable> void deepClear(Map<K,V> map, ThrowingBiConsumer<K, V, E> itemDestroyer) throws E {
 			java.util.Iterator<Entry<K, V>> itr = map.entrySet().iterator();
 			while (itr.hasNext()) {
 				Entry<K, V> entry = itr.next();
@@ -262,15 +265,15 @@ class Cache {
 			}
 		}
 
-		public R get(String path) {
+		R get(String path) {
 			return getOrUploadIfAbsent(path, null);
 		}
 
-		public int getLoadedResourcesCount() {
+		int getLoadedResourcesCount() {
 			return getLoadedResourcesCount(resources);
 		}
 
-		public R getOrUploadIfAbsent(String path, Supplier<R> resourceSupplier) {
+		R getOrUploadIfAbsent(String path, Supplier<R> resourceSupplier) {
 			Long occurences = path.chars().filter(ch -> ch == '/').count();
 			Long partitionIndex = occurences > partitionStartLevel? occurences : partitionStartLevel;
 			Map<String, Map<String, R>> partion = retrievePartition(resources, partitionIndex);
@@ -278,7 +281,7 @@ class Cache {
 			return getOrUploadIfAbsent(nestedPartition, path, resourceSupplier);
 		}
 
-		public R remove(String path, boolean destroy) {
+		R remove(String path, boolean destroy) {
 			Long occurences = path.chars().filter(ch -> ch == '/').count();
 			Long partitionIndex = occurences > partitionStartLevel? occurences : partitionStartLevel;
 			Map<String, Map<String, R>> partion = retrievePartition(resources, partitionIndex);
@@ -293,7 +296,7 @@ class Cache {
 			return item;
 		}
 
-		public R upload(Map<String, R> loadedResources, String path, Supplier<R> resourceSupplier, boolean destroy) {
+		R upload(Map<String, R> loadedResources, String path, Supplier<R> resourceSupplier, boolean destroy) {
 			R oldResource = remove(path, destroy);
 			 Synchronizer.INSTANCE.execute(instanceId + "_mutexManagerForLoadedResources_" + path, () -> {
 				R resourceTemp = resourceSupplier.get();
@@ -304,7 +307,7 @@ class Cache {
 			return oldResource;
 		}
 
-		public R upload(String path, Supplier<R> resourceSupplier, boolean destroy) {
+		R upload(String path, Supplier<R> resourceSupplier, boolean destroy) {
 			Long occurences = path.chars().filter(ch -> ch == '/').count();
 			Long partitionIndex = occurences > partitionStartLevel? occurences : partitionStartLevel;
 			Map<String, Map<String, R>> partion = retrievePartition(resources, partitionIndex);
