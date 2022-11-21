@@ -32,6 +32,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Member;
 
 import org.burningwave.Criteria;
+import org.burningwave.function.Supplier;
 import org.burningwave.function.ThrowingBiPredicate;
 import org.burningwave.function.ThrowingFunction;
 
@@ -64,7 +65,16 @@ public class ConstructorCriteria extends ExecutableMemberCriteria<
 		return new ThrowingFunction<Class<?>, Constructor<?>[], Throwable>() {
 			@Override
 			public Constructor<?>[] apply(final Class<?> clazz) throws Throwable {
-				return Facade.INSTANCE.getDeclaredConstructors(clazz);
+				final String cacheKey = Constructors.INSTANCE.getCacheKey(clazz, Members.ALL_FOR_CLASS);
+				final ClassLoader targetClassClassLoader = Classes.INSTANCE.getClassLoader(clazz);
+				return Cache.INSTANCE.uniqueKeyForConstructorsArray.getOrUploadIfAbsent(
+					targetClassClassLoader, cacheKey, new Supplier<Constructor<?>[]>() {
+						@Override
+						public Constructor<?>[] get() {
+							return Facade.INSTANCE.getDeclaredConstructors(clazz);
+						}
+					}
+				);
 			}
 		};
 	}

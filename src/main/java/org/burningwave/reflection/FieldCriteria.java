@@ -31,6 +31,7 @@ package org.burningwave.reflection;
 import java.lang.reflect.Field;
 
 import org.burningwave.Criteria;
+import org.burningwave.function.Supplier;
 import org.burningwave.function.ThrowingBiPredicate;
 import org.burningwave.function.ThrowingFunction;
 import org.burningwave.function.ThrowingPredicate;
@@ -79,7 +80,16 @@ public class FieldCriteria extends MemberCriteria<
 		return new ThrowingFunction<Class<?>, Field[], Throwable>() {
 			@Override
 			public Field[] apply(final Class<?> clazz) throws Throwable {
-				return Facade.INSTANCE.getDeclaredFields(clazz);
+				final String cacheKey = Methods.INSTANCE.getCacheKey(clazz, Members.ALL_FOR_CLASS);
+				final ClassLoader targetClassClassLoader = Classes.INSTANCE.getClassLoader(clazz);
+				return Cache.INSTANCE.uniqueKeyForFieldsArray.getOrUploadIfAbsent(
+					targetClassClassLoader, cacheKey, new Supplier<Field[]>() {
+						@Override
+						public Field[] get() {
+							return Facade.INSTANCE.getDeclaredFields(clazz);
+						}
+					}
+				);
 			}
 		};
 

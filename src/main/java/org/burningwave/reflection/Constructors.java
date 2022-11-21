@@ -62,7 +62,7 @@ public class Constructors extends Members.Handler.OfExecutable<Constructor<?>, C
 	public Collection<Constructor<?>> findAllAndMakeThemAccessible(
 		final Class<?> targetClass
 	) {
-		final String cacheKey = getCacheKey(targetClass, "all constructors");
+		final String cacheKey = getCacheKey(targetClass, Members.ALL_FOR_CLASS);
 		final ClassLoader targetClassClassLoader = Classes.INSTANCE.getClassLoader(targetClass);
 		final Collection<Constructor<?>> members = Cache.INSTANCE.uniqueKeyForConstructors.getOrUploadIfAbsent(
 			targetClassClassLoader, cacheKey, new Supplier<Collection<Constructor<?>>>() {
@@ -86,7 +86,7 @@ public class Constructors extends Members.Handler.OfExecutable<Constructor<?>, C
 		final Class<?> targetClass,
 		final Class<?>... inputParameterTypesOrSubTypes
 	) {
-		final String cacheKey = getCacheKey(targetClass, "all constructors by input parameters assignable from", inputParameterTypesOrSubTypes);
+		final String cacheKey = getCacheKey(targetClass, Members.ALL_FOR_CLASS + " by input parameters assignable from", inputParameterTypesOrSubTypes);
 		final ClassLoader targetClassClassLoader = Classes.INSTANCE.getClassLoader(targetClass);
 		return Cache.INSTANCE.uniqueKeyForConstructors.getOrUploadIfAbsent(targetClassClassLoader, cacheKey, new Supplier<Collection<Constructor<?>>>() {
 			@Override

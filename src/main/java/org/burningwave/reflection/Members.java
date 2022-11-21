@@ -58,6 +58,7 @@ import io.github.toolfactory.jvm.function.template.ThrowingBiFunction;
 @SuppressWarnings("unchecked")
 public class Members {
 	public static final Members INSTANCE;
+	static final String ALL_FOR_CLASS = "all for class";
 
 	static {
 		INSTANCE = new Members();

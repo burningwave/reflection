@@ -44,13 +44,11 @@ public class Classes {
 	Method[] emptyMethodsArray;
 	Field[] emtpyFieldsArray;
 
-
 	private Classes() {
 		emtpyFieldsArray = new Field[]{};
 		emptyMethodsArray = new Method[]{};
 		emptyConstructorsArray = new Constructor<?>[]{};
 	}
-
 
 	public ClassLoader getClassLoader(Class<?> cls) {
 		ClassLoader clsLoader = cls.getClassLoader();

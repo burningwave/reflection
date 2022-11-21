@@ -65,9 +65,9 @@ public class Methods extends Members.Handler.OfExecutable<Method, MethodCriteria
 	public Collection<Method> findAllAndMakeThemAccessible(
 		final Class<?> targetClass
 	) {
-		final String cacheKey = getCacheKey(targetClass, "all methods");
+		final String cacheKey = getCacheKey(targetClass, Members.ALL_FOR_CLASS);
 		final ClassLoader targetClassClassLoader = Classes.INSTANCE.getClassLoader(targetClass);
-		final Collection<Method> members = Cache.INSTANCE.uniqueKeyForMethods.getOrUploadIfAbsent(
+		return Cache.INSTANCE.uniqueKeyForAllMethods.getOrUploadIfAbsent(
 			targetClassClassLoader, cacheKey, new Supplier<Collection<Method>>() {
 				@Override
 				public Collection<Method> get() {
@@ -77,7 +77,6 @@ public class Methods extends Members.Handler.OfExecutable<Method, MethodCriteria
 				}
 			}
 		);
-		return members;
 	}
 
 	public Collection<Method> findAllByExactNameAndMakeThemAccessible(
@@ -321,7 +320,7 @@ public class Methods extends Members.Handler.OfExecutable<Method, MethodCriteria
 	) {
 		final String cacheKey = getCacheKey(targetClass, cacheKeyPrefix, inputParameterTypesOrSubTypes);
 		final ClassLoader targetClassClassLoader = Classes.INSTANCE.getClassLoader(targetClass);
-		return Cache.INSTANCE.uniqueKeyForMethods.getOrUploadIfAbsent(targetClassClassLoader, cacheKey, new Supplier<Collection<Method>>() {
+		return Cache.INSTANCE.uniqueKeyForAllMethods.getOrUploadIfAbsent(targetClassClassLoader, cacheKey, new Supplier<Collection<Method>>() {
 			@Override
 			public Collection<Method> get() {
 				MethodCriteria criteria = MethodCriteria.forEntireClassHierarchy()
@@ -337,7 +336,7 @@ public class Methods extends Members.Handler.OfExecutable<Method, MethodCriteria
 					}));
 				}
 				final MethodCriteria finalCriteria = criteria;
-				return Cache.INSTANCE.uniqueKeyForMethods.getOrUploadIfAbsent(targetClassClassLoader, cacheKey, new Supplier<Collection<Method>>() {
+				return Cache.INSTANCE.uniqueKeyForAllMethods.getOrUploadIfAbsent(targetClassClassLoader, cacheKey, new Supplier<Collection<Method>>() {
 					@Override
 					public Collection<Method> get() {
 						return findAllAndApply(

@@ -32,6 +32,7 @@ import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 
 import org.burningwave.Criteria;
+import org.burningwave.function.Supplier;
 import org.burningwave.function.ThrowingBiPredicate;
 import org.burningwave.function.ThrowingFunction;
 import org.burningwave.function.ThrowingPredicate;
@@ -81,12 +82,19 @@ public class MethodCriteria extends ExecutableMemberCriteria<
 	@Override
 	ThrowingFunction<Class<?>, Method[], ? extends Throwable> getMembersSupplierFunction() {
 		return new ThrowingFunction<Class<?>, Method[], Throwable>() {
-
 			@Override
-			public Method[] apply(Class<?> clazz) throws Throwable {
-				return Facade.INSTANCE.getDeclaredMethods(clazz);
+			public Method[] apply(final Class<?> clazz) throws Throwable {
+				final String cacheKey = Methods.INSTANCE.getCacheKey(clazz, Members.ALL_FOR_CLASS);
+				final ClassLoader targetClassClassLoader = Classes.INSTANCE.getClassLoader(clazz);
+				return Cache.INSTANCE.uniqueKeyForMethodsArray.getOrUploadIfAbsent(
+					targetClassClassLoader, cacheKey, new Supplier<Method[]>() {
+						@Override
+						public Method[] get() {
+							return Facade.INSTANCE.getDeclaredMethods(clazz);
+						}
+					}
+				);
 			}
-
 		};
 	}
 
