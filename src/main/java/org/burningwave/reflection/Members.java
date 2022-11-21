@@ -266,45 +266,54 @@ public class Members {
 				return findDirectHandleBox(executable, targetClassClassLoader, cacheKey);
 			}
 
+			Members.Handler.OfExecutable.Box<E> checkAndGetExecutableBox(Members.Handler.OfExecutable.Box<E> executableBox) {
+				if (executableBox.getHandler() != null) {
+					return executableBox;
+				}
+				return Throwables.INSTANCE.throwException(executableBox.getException());
+			}
+
 			Members.Handler.OfExecutable.Box<E> findDirectHandleBox(final E executable, final ClassLoader classLoader, final String cacheKey) {
-				return (Box<E>)Cache.INSTANCE.uniqueKeyForExecutableAndMethodHandle.getOrUploadIfAbsent(classLoader, cacheKey, new Supplier<Box<?>>() {
-					@Override
-					public Box<?> get() {
-						final Class<?> methodDeclaringClass = executable.getDeclaringClass();
-						final Collection<Members.Handler.OfExecutable.Box<E>> executableBoxes = new ArrayList<>();
-						try {
-							return (Members.Handler.OfExecutable.Box<E>)Facade.INSTANCE.executeWithConsulter(
-								methodDeclaringClass,
-								new ThrowingFunction<Lookup, Box<E>, Throwable>() {
-									@Override
-									public Box<E> apply(final Lookup consulter) throws Throwable {
-										Throwable exception = null;
-										MethodHandle methodHandle = null;
-										try {
-											methodHandle = retrieveMethodHandle(consulter, executable);
-										} catch (Throwable exc) {
-											exception = exc;
+				return checkAndGetExecutableBox(
+					(Box<E>)Cache.INSTANCE.uniqueKeyForExecutableAndMethodHandle.getOrUploadIfAbsent(classLoader, cacheKey, new Supplier<Box<?>>() {
+						@Override
+						public Box<?> get() {
+							final Class<?> methodDeclaringClass = executable.getDeclaringClass();
+							final Collection<Members.Handler.OfExecutable.Box<E>> executableBoxes = new ArrayList<>();
+							try {
+								return (Members.Handler.OfExecutable.Box<E>)Facade.INSTANCE.executeWithConsulter(
+									methodDeclaringClass,
+									new ThrowingFunction<Lookup, Box<E>, Throwable>() {
+										@Override
+										public Box<E> apply(final Lookup consulter) throws Throwable {
+											Throwable exception = null;
+											MethodHandle methodHandle = null;
+											try {
+												methodHandle = retrieveMethodHandle(consulter, executable);
+											} catch (Throwable exc) {
+												exception = exc;
+											}
+											Members.Handler.OfExecutable.Box<E> executableBox = new Members.Handler.OfExecutable.Box<>(consulter,
+												executable,
+												methodHandle,
+												exception
+											);
+											executableBoxes.add(
+												executableBox
+											);
+											if (exception != null) {
+												throw exception;
+											}
+											return executableBox;
 										}
-										Members.Handler.OfExecutable.Box<E> executableBox = new Members.Handler.OfExecutable.Box<>(consulter,
-											executable,
-											methodHandle,
-											exception
-										);
-										executableBoxes.add(
-											executableBox
-										);
-										if (exception != null) {
-											throw exception;
-										}
-										return executableBox;
 									}
-								}
-							).getValue();
-						} catch (Throwable exception) {
-							return executableBoxes.iterator().next();
+								).getValue();
+							} catch (Throwable exception) {
+								return executableBoxes.iterator().next();
+							}
 						}
-					}
-				});
+					})
+				);
 			}
 
 			Object[] getArgumentArray(

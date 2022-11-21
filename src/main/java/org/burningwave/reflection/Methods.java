@@ -358,9 +358,9 @@ public class Methods extends Members.Handler.OfExecutable<Method, MethodCriteria
 	private Members.Handler.OfExecutable.Box<Method> findDirectHandleBox(final Class<?> targetClass, final String methodName, final Class<?>... inputParameterTypesOrSubTypes) {
 		final String cacheKey = getCacheKey(targetClass, "equals " + methodName, inputParameterTypesOrSubTypes);
 		final ClassLoader targetClassClassLoader = Classes.INSTANCE.getClassLoader(targetClass);
-		Members.Handler.OfExecutable.Box<Method> entry =
+		Members.Handler.OfExecutable.Box<Method> executableBox =
 			(Box<Method>)Cache.INSTANCE.uniqueKeyForExecutableAndMethodHandle.get(targetClassClassLoader, cacheKey);
-		if (entry == null) {
+		if (executableBox == null) {
 			final Method method = findFirstAndMakeItAccessible(targetClass, methodName, inputParameterTypesOrSubTypes);
 			if (method == null) {
 				Throwables.INSTANCE.throwException(
@@ -371,11 +371,11 @@ public class Methods extends Members.Handler.OfExecutable<Method, MethodCriteria
 					)
 				);
 			}
-			entry = findDirectHandleBox(
+			executableBox = findDirectHandleBox(
 				method, targetClassClassLoader, cacheKey
 			);
 		}
-		return entry;
+		return executableBox;
 	}
 
 	private <T> T invoke(final Class<?> targetClass, final Object target, final String methodName, final ThrowingFunction<Method, T, Throwable> methodInvoker, final Object... arguments) {

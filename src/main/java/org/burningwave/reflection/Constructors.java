@@ -252,15 +252,15 @@ public class Constructors extends Members.Handler.OfExecutable<Constructor<?>, C
 		final String nameForCaching = retrieveNameForCaching(targetClass);
 		final String cacheKey = getCacheKey(targetClass, "equals " + nameForCaching, inputParameterTypesOrSubTypes);
 		final ClassLoader targetClassClassLoader = Classes.INSTANCE.getClassLoader(targetClass);
-		Members.Handler.OfExecutable.Box<Constructor<?>> entry =
+		Members.Handler.OfExecutable.Box<Constructor<?>> executableBox =
 			(Box<Constructor<?>>)Cache.INSTANCE.uniqueKeyForExecutableAndMethodHandle.get(targetClassClassLoader, cacheKey);
-		if (entry == null) {
+		if (executableBox == null) {
 			final Constructor<?> ctor = findFirstAndMakeItAccessible(targetClass, inputParameterTypesOrSubTypes);
-			entry = findDirectHandleBox(
+			executableBox = findDirectHandleBox(
 				ctor, targetClassClassLoader, cacheKey
 			);
 		}
-		return entry;
+		return executableBox;
 	}
 
 }
