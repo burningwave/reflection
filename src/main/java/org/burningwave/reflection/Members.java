@@ -35,6 +35,7 @@ import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Array;
 import java.lang.reflect.Member;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -270,18 +271,38 @@ public class Members {
 					@Override
 					public Box<?> get() {
 						final Class<?> methodDeclaringClass = executable.getDeclaringClass();
-						return (Members.Handler.OfExecutable.Box<E>)Facade.INSTANCE.executeWithConsulter(
-							methodDeclaringClass,
-							new ThrowingFunction<Lookup, Box<E>, Throwable>() {
-								@Override
-								public Box<E> apply(final Lookup consulter) throws Throwable {
-									return new Members.Handler.OfExecutable.Box<>(consulter,
-										executable,
-										retrieveMethodHandle(consulter, executable)
-									);
+						final Collection<Members.Handler.OfExecutable.Box<E>> executableBoxes = new ArrayList<>();
+						try {
+							return (Members.Handler.OfExecutable.Box<E>)Facade.INSTANCE.executeWithConsulter(
+								methodDeclaringClass,
+								new ThrowingFunction<Lookup, Box<E>, Throwable>() {
+									@Override
+									public Box<E> apply(final Lookup consulter) throws Throwable {
+										Throwable exception = null;
+										MethodHandle methodHandle = null;
+										try {
+											methodHandle = retrieveMethodHandle(consulter, executable);
+										} catch (Throwable exc) {
+											exception = exc;
+										}
+										Members.Handler.OfExecutable.Box<E> executableBox = new Members.Handler.OfExecutable.Box<>(consulter,
+											executable,
+											methodHandle,
+											exception
+										);
+										executableBoxes.add(
+											executableBox
+										);
+										if (exception != null) {
+											throw exception;
+										}
+										return executableBox;
+									}
 								}
-							}
-						).getValue();
+							).getValue();
+						} catch (Throwable exception) {
+							return executableBoxes.iterator().next();
+						}
 					}
 				});
 			}
@@ -469,12 +490,14 @@ public class Members {
 				MethodHandles.Lookup consulter;
 				E executable;
 				MethodHandle handler;
+				Throwable exception;
 
-				Box(final MethodHandles.Lookup consulter, final E executable, final MethodHandle handler) {
+				Box(final MethodHandles.Lookup consulter, final E executable, final MethodHandle handler, final Throwable exception) {
 					super();
 					this.consulter = consulter;
 					this.executable = executable;
 					this.handler = handler;
+					this.exception = exception;
 				}
 
 				public MethodHandles.Lookup getConsulter() {
@@ -487,6 +510,10 @@ public class Members {
 
 				public MethodHandle getHandler() {
 					return handler;
+				}
+
+				public Throwable getException() {
+					return exception;
 				}
 
 			}
