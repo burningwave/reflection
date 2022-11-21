@@ -46,6 +46,30 @@ public abstract class ExecutableMemberCriteria<
 	T extends Criteria.TestContext<E, C>
 > extends MemberCriteria<E, C, T> {
 
+	public C parameter(final ThrowingBiPredicate<java.lang.reflect.Parameter[], Integer, ? extends Throwable> predicate) {
+		this.predicate = concat(
+			this.predicate,
+			getPredicateWrapper(
+				new ThrowingBiFunction<T, E, java.lang.reflect.Parameter[], Throwable>() {
+					@Override
+					public java.lang.reflect.Parameter[] apply(T testContext, E member) {
+						return getParameters(member);
+					}
+				},
+				new ThrowingTriPredicate<T, java.lang.reflect.Parameter[], Integer, Throwable>() {
+					@Override
+					public boolean test(T testContext, java.lang.reflect.Parameter[] parameters, Integer index) throws Throwable {
+						return predicate.test(
+							parameters,
+							index
+						);
+					}
+				}
+			)
+		);
+		return (C)this;
+	}
+
 	public C parameter(final ThrowingTriPredicate<Class<?>[], Boolean, Integer, ? extends Throwable> predicate) {
 		this.predicate = concat(
 			this.predicate,
@@ -198,6 +222,8 @@ public abstract class ExecutableMemberCriteria<
 		}
 		return (C)this;
 	}
+
+	abstract java.lang.reflect.Parameter[] getParameters(Member member);
 
 	abstract Class<?>[] getParameterTypes(Member member);
 

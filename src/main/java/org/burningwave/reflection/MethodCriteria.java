@@ -99,4 +99,9 @@ public class MethodCriteria extends ExecutableMemberCriteria<
 	boolean isVarArgs(Member member) {
 		return ((Method)member).isVarArgs();
 	}
+
+	@Override
+	java.lang.reflect.Parameter[] getParameters(Member member) {
+		return ((Method)member).getParameters();
+	}
 }

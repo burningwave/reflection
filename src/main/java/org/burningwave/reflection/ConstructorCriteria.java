@@ -79,4 +79,9 @@ public class ConstructorCriteria extends ExecutableMemberCriteria<
 		return ((Constructor<?>)member).isVarArgs();
 	}
 
+	@Override
+	java.lang.reflect.Parameter[] getParameters(Member member) {
+		return ((Constructor<?>)member).getParameters();
+	}
+
 }
