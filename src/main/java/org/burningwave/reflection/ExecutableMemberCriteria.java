@@ -37,6 +37,7 @@ import java.util.function.Predicate;
 
 import org.burningwave.Criteria;
 import org.burningwave.function.TriPredicate;
+import org.burningwave.reflection.Members.Handler;
 
 @SuppressWarnings("unchecked")
 public abstract class ExecutableMemberCriteria<
@@ -49,8 +50,8 @@ public abstract class ExecutableMemberCriteria<
 		this.predicate = concat(
 			this.predicate,
 			getPredicateWrapper(
-				(criteria, member) -> member.getParameters(),
-				(criteria, array, index) -> predicate.test(array, index)
+				(testContext, member) -> member.getParameters(),
+				(testContext, array, index) -> predicate.test(array, index)
 			)
 		);
 		return (C)this;
@@ -60,8 +61,8 @@ public abstract class ExecutableMemberCriteria<
 		this.predicate = concat(
 			this.predicate,
 			getPredicateWrapper(
-				(criteria, member) -> member.getParameterTypes(),
-				(criteria, array, index) -> predicate.test(array, index)
+				(testContext, member) -> member.getParameterTypes(),
+				(testContext, array, index) -> predicate.test(array, index)
 			)
 		);
 		return (C)this;
@@ -121,7 +122,7 @@ public abstract class ExecutableMemberCriteria<
 						) {
 							return false;
 						}
-						Class<?>[] memberParameterTypes = Methods.INSTANCE.retrieveParameterTypes(member, argumentsClassesAsList);
+						Class<?>[] memberParameterTypes = Handler.OfExecutable.retrieveParameterTypes(member, argumentsClassesAsList);
 						if (argumentsClassesAsList.size() == memberParameterTypes.length) {
 							return predicate.test(argumentsClassesAsList, memberParameterTypes, index);
 						} else {
