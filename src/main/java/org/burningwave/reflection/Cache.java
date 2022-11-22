@@ -39,7 +39,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.burningwave.Objects;
 import org.burningwave.Synchronizer;
 import org.burningwave.Throwables;
 import org.burningwave.function.Function;
@@ -79,158 +78,38 @@ public class Cache {
 		final Set<Object> toBeExcluded = (excluded != null) && (excluded.length > 0) ?
 			new HashSet<>(Arrays.asList(excluded)) :
 			null;
-		final Set<Thread> tasks = new HashSet<>();
-		addCleaningTask(tasks, clear(uniqueKeyForConstructorsArray, toBeExcluded, destroyItems));
-		addCleaningTask(tasks, clear(uniqueKeyForFieldsArray, toBeExcluded, destroyItems));
-		addCleaningTask(tasks, clear(uniqueKeyForMethodsArray, toBeExcluded, destroyItems));
-		addCleaningTask(tasks, clear(uniqueKeyForConstructors, toBeExcluded, destroyItems));
-		addCleaningTask(tasks, clear(uniqueKeyForExecutableAndMethodHandle, toBeExcluded, destroyItems));
-		addCleaningTask(tasks, clear(uniqueKeyForAllFields, toBeExcluded, destroyItems));
-		addCleaningTask(tasks, clear(uniqueKeyForAllMethods, toBeExcluded, destroyItems));
-		for (final Thread task : tasks) {
-			try {
-				task.join();
-			} catch (final InterruptedException exc) {
-				Throwables.INSTANCE.throwException(exc);
-			}
-		}
+		final Set<Runnable> deepCleaners = new HashSet<>();
+		addCleaningTask(deepCleaners, clear(uniqueKeyForConstructorsArray, toBeExcluded, destroyItems));
+		addCleaningTask(deepCleaners, clear(uniqueKeyForFieldsArray, toBeExcluded, destroyItems));
+		addCleaningTask(deepCleaners, clear(uniqueKeyForMethodsArray, toBeExcluded, destroyItems));
+		addCleaningTask(deepCleaners, clear(uniqueKeyForConstructors, toBeExcluded, destroyItems));
+		addCleaningTask(deepCleaners, clear(uniqueKeyForExecutableAndMethodHandle, toBeExcluded, destroyItems));
+		addCleaningTask(deepCleaners, clear(uniqueKeyForAllFields, toBeExcluded, destroyItems));
+		addCleaningTask(deepCleaners, clear(uniqueKeyForAllMethods, toBeExcluded, destroyItems));
+		new Thread() {
+			@Override
+			public void run() {
+				for (Runnable task : deepCleaners) {
+					task.run();
+				}
+			};
+		}.start();
 	}
 
-	private boolean addCleaningTask(final Set<Thread> tasks, final Thread task) {
+	private boolean addCleaningTask(Set<Runnable> tasks, Runnable task) {
 		if (task != null) {
 			return tasks.add(task);
 		}
 		return false;
 	}
 
-	private Thread clear(final Object cache, final Set<Object> excluded, final boolean destroyItems) {
+	private Runnable clear(Object cache, Set<Object> excluded, boolean destroyItems) {
 		if ((excluded == null) || !excluded.contains(cache)) {
-			if (cache instanceof ObjectAndPathForResources) {
-				return ((ObjectAndPathForResources<?,?>)cache).clearInBackground(destroyItems);
-			}  else if (cache instanceof PathForResources) {
-				return ((PathForResources<?>)cache).clearInBackground(destroyItems);
+			if (cache instanceof PathForResources) {
+				return ((PathForResources<?>)cache).clear(destroyItems);
 			}
 		}
 		return null;
-	}
-
-	static class ObjectAndPathForResources<T, R> {
-		String instanceId;
-		Supplier<PathForResources<R>> pathForResourcesSupplier;
-		Map<T, PathForResources<R>> resources;
-
-		ObjectAndPathForResources() {
-			this(1L, new Function<R, R>() {
-				@Override
-				public R apply(final R item) {
-					return item;
-				}
-			}, null );
-		}
-
-		ObjectAndPathForResources(final Long partitionStartLevel) {
-			this(partitionStartLevel, new Function<R, R>() {
-				@Override
-				public R apply(final R item) {
-					return item;
-				}
-			}, null);
-		}
-
-		ObjectAndPathForResources(final Long partitionStartLevel, final Function<R, R> sharer) {
-			this(partitionStartLevel, sharer, null);
-		}
-
-		ObjectAndPathForResources(final Long partitionStartLevel, final Function<R, R> sharer, final ThrowingBiConsumer<String, R, ? extends Throwable> itemDestroyer) {
-			this.resources = new ConcurrentHashMap<>();
-			this.pathForResourcesSupplier = new Supplier<PathForResources<R>>() {
-				@Override
-				public PathForResources<R> get() {
-					return new PathForResources<>(partitionStartLevel, sharer, itemDestroyer);
-				}
-			};
-			this.instanceId = Objects.INSTANCE.getId(this);
-		}
-
-		R get(final T object, final String path) {
-			PathForResources<R> pathForResources = resources.get(object);
-			if (pathForResources == null) {
-				pathForResources = Synchronizer.INSTANCE.execute(instanceId + "_mutexManagerForResources_" + Objects.INSTANCE.getId(object), new ThrowingSupplier<PathForResources<R>, Throwable>() {
-					@Override
-					public PathForResources<R> get() throws Throwable {
-						PathForResources<R> pathForResourcesTemp = resources.get(object);
-						if (pathForResourcesTemp == null) {
-							pathForResourcesTemp = pathForResourcesSupplier.get();
-							resources.put(object, pathForResourcesTemp);
-						}
-						return pathForResourcesTemp;
-					}
-				});
-			}
-			return pathForResources.get(path);
-		}
-
-		R getOrUploadIfAbsent(final T object, final String path, final Supplier<R> resourceSupplier) {
-			PathForResources<R> pathForResources = resources.get(object);
-			if (pathForResources == null) {
-				pathForResources = Synchronizer.INSTANCE.execute(instanceId + "_" + Objects.INSTANCE.getId(object), new ThrowingSupplier<PathForResources<R>, Throwable>() {
-					@Override
-					public PathForResources<R> get() throws Throwable {
-						PathForResources<R> pathForResourcesTemp = resources.get(object);
-						if (pathForResourcesTemp == null) {
-							pathForResourcesTemp = pathForResourcesSupplier.get();
-							resources.put(object, pathForResourcesTemp);
-						}
-						return pathForResourcesTemp;
-					}
-				});
-			}
-			return pathForResources.getOrUploadIfAbsent(path, resourceSupplier);
-		}
-
-		PathForResources<R> remove(final T object, final boolean destroyItems) {
-			final PathForResources<R> pathForResources = resources.remove(object);
-			if ((pathForResources != null) && destroyItems) {
-				pathForResources.clearInBackground(destroyItems);
-			}
-			return pathForResources;
-		}
-
-		R removePath(final T object, final String path) {
-			return removePath(object, path, false);
-		}
-
-		R removePath(final T object, final String path, final boolean destroyItem) {
-			final PathForResources<R> pathForResources = resources.get(object);
-			if (pathForResources != null) {
-				return pathForResources.remove(path, destroyItem);
-			}
-			return null;
-		}
-
-		Thread clearInBackground(final boolean destroyItems) {
-			final Map<T, PathForResources<R>> resources;
-			synchronized (this.resources) {
-				resources = this.resources;
-				this.resources = new ConcurrentHashMap<>();
-			}
-			final Thread thread = new Thread(new Runnable() {
-				@Override
-				public void run() {
-					for (final Entry<T, PathForResources<R>> item : resources.entrySet()) {
-						try {
-							item.getValue().clearInBackground(destroyItems).join();
-						} catch (final InterruptedException exc) {
-							Throwables.INSTANCE.throwException(exc);
-						}
-					}
-					resources.clear();
-				}
-			});
-			thread.start();
-			return thread;
-		}
-
 	}
 
 	static class PathForResources<R> {
@@ -469,20 +348,18 @@ public class Cache {
 			return innerPartion;
 		}
 
-		private Thread clearInBackground(final boolean destroyItems) {
+		private Runnable clear(final boolean destroyItems) {
 			final Map<Long, Map<String, Map<String, R>>> partitions;
 			synchronized (this.resources) {
 				partitions = this.resources;
 				this.resources = new ConcurrentHashMap<>();
 			}
-			final Thread thread = new Thread(new Runnable() {
+			return new Runnable() {
 				@Override
 				public void run() {
 					clearResources(partitions, destroyItems);
 				}
-			});
-			thread.start();
-			return thread;
+			};
 		}
 
 		private int getLoadedResourcesCount(final Map<Long, Map<String, Map<String, R>>> resources) {

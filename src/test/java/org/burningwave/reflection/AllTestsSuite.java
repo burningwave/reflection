@@ -6,11 +6,18 @@ import org.junit.runners.Suite.SuiteClasses;
 
 @RunWith(Suite.class)
 @SuiteClasses({
-	ConstructorsTest.class,
+    ConstructorsTest.class,
     FieldsTest.class,
     FieldAccessorTest.class,
     MembersTest.class,
-    MethodsTest.class
+    MethodsTest.class,
+    DriverTest.class,
+    CacheTest.class,
+    RepeatedConstructorTest.class,
+    RepeatedFieldsTest.class,
+    RepeatedFieldAccessorTest.class,
+    RepeatedMembersTest.class,
+    RepeatedMethodsTest.class
 })
 public class AllTestsSuite {
 

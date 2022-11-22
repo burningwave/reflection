@@ -162,6 +162,19 @@ public class Facade {
 		methodInvokers = new ArrayList<>();
 		constructorInvokers = new ArrayList<>();
 		consulterRetrievers = new ArrayList<>();
+		init(driver != null);
+	}
+
+	private void init(boolean driverEnabled) {
+		fieldRetrievers.clear();
+		methodRetrievers.clear();
+		constructorRetrievers.clear();
+		accessibleSetters.clear();
+		fieldValueRetrievers.clear();
+		fieldValueSetters.clear();
+		methodInvokers.clear();
+		constructorInvokers.clear();
+		consulterRetrievers.clear();
 		if (driver != null) {
 			fieldRetrievers.add(new ThrowingFunction<Class<?>, Field[], Throwable>() {
 				@Override
@@ -329,6 +342,24 @@ public class Facade {
 
 	public <D> D getDriver() {
 		return (D)driver;
+	}
+
+	public Facade disableDriver() {
+		init(false);
+		return this;
+	}
+
+	public Facade enableDriver() {
+		if (driver == null) {
+			driver = io.github.toolfactory.jvm.Driver.Factory.getNewDynamic();
+		}
+		init(true);
+		return this;
+	}
+
+	public Facade clearCache() {
+		Cache.INSTANCE.clear(true);
+		return this;
 	}
 
 	public <R> Map.Entry<MethodHandles.Lookup, R> executeWithConsulter(final Class<?> cls, final ThrowingFunction<MethodHandles.Lookup, R, ? extends Throwable> executor) {
