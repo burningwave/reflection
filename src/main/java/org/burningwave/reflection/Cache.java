@@ -42,9 +42,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import org.burningwave.Objects;
 import org.burningwave.Synchronizer;
-import org.burningwave.Throwables;
 
 import io.github.toolfactory.jvm.function.template.ThrowingBiConsumer;
 
@@ -57,13 +55,13 @@ public class Cache {
 		INSTANCE = new Cache();
 	}
 
-	public final PathForResources<Constructor<?>[]> uniqueKeyForConstructorsArray;
-	public final PathForResources<Field[]> uniqueKeyForFieldsArray;
-	public final PathForResources<Method[]> uniqueKeyForMethodsArray;
-	public final PathForResources<Collection<Constructor<?>>> uniqueKeyForConstructors;
-	public final PathForResources<Members.Handler.OfExecutable.Box<?>> uniqueKeyForExecutableAndMethodHandle;
-	public final PathForResources<Collection<Field>> uniqueKeyForAllFields;
-	public final PathForResources<Collection<Method>> uniqueKeyForAllMethods;
+	final PathForResources<Constructor<?>[]> uniqueKeyForConstructorsArray;
+	final PathForResources<Field[]> uniqueKeyForFieldsArray;
+	final PathForResources<Method[]> uniqueKeyForMethodsArray;
+	final PathForResources<Collection<Constructor<?>>> uniqueKeyForConstructors;
+	final PathForResources<Members.Handler.OfExecutable.Box<?>> uniqueKeyForExecutableAndMethodHandle;
+	final PathForResources<Collection<Field>> uniqueKeyForAllFields;
+	final PathForResources<Collection<Method>> uniqueKeyForAllMethods;
 
 	private Cache() {
 		uniqueKeyForConstructorsArray = new PathForResources<>();
@@ -75,138 +73,43 @@ public class Cache {
 		uniqueKeyForAllMethods = new PathForResources<>();
 	}
 
-	public void clear(boolean destroyItems, Object... excluded) {
+	void clear(boolean destroyItems, Object... excluded) {
 		Set<Object> toBeExcluded = (excluded != null) && (excluded.length > 0) ?
 			new HashSet<>(Arrays.asList(excluded)) :
 			null;
-		Set<Thread> tasks = new HashSet<>();
-		addCleaningTask(tasks, clear(uniqueKeyForConstructorsArray, toBeExcluded, destroyItems));
-		addCleaningTask(tasks, clear(uniqueKeyForFieldsArray, toBeExcluded, destroyItems));
-		addCleaningTask(tasks, clear(uniqueKeyForMethodsArray, toBeExcluded, destroyItems));
-		addCleaningTask(tasks, clear(uniqueKeyForConstructors, toBeExcluded, destroyItems));
-		addCleaningTask(tasks, clear(uniqueKeyForExecutableAndMethodHandle, toBeExcluded, destroyItems));
-		addCleaningTask(tasks, clear(uniqueKeyForAllFields, toBeExcluded, destroyItems));
-		addCleaningTask(tasks, clear(uniqueKeyForAllMethods, toBeExcluded, destroyItems));
-		for (Thread task : tasks) {
-			try {
-				task.join();
-			} catch (InterruptedException exc) {
-				Throwables.INSTANCE.throwException(exc);
-			}
-		}
+		Set<Runnable> deepCleaners = new HashSet<>();
+		addCleaningTask(deepCleaners, clear(uniqueKeyForConstructorsArray, toBeExcluded, destroyItems));
+		addCleaningTask(deepCleaners, clear(uniqueKeyForFieldsArray, toBeExcluded, destroyItems));
+		addCleaningTask(deepCleaners, clear(uniqueKeyForMethodsArray, toBeExcluded, destroyItems));
+		addCleaningTask(deepCleaners, clear(uniqueKeyForConstructors, toBeExcluded, destroyItems));
+		addCleaningTask(deepCleaners, clear(uniqueKeyForExecutableAndMethodHandle, toBeExcluded, destroyItems));
+		addCleaningTask(deepCleaners, clear(uniqueKeyForAllFields, toBeExcluded, destroyItems));
+		addCleaningTask(deepCleaners, clear(uniqueKeyForAllMethods, toBeExcluded, destroyItems));
+		new Thread() {
+			@Override
+			public void run() {
+				for (Runnable task : deepCleaners) {
+					task.run();
+				}
+			};
+		}.start();
+
 	}
 
-	private boolean addCleaningTask(Set<Thread> tasks, Thread task) {
+	private boolean addCleaningTask(Set<Runnable> tasks, Runnable task) {
 		if (task != null) {
 			return tasks.add(task);
 		}
 		return false;
 	}
 
-	private Thread clear(Object cache, Set<Object> excluded, boolean destroyItems) {
+	private Runnable clear(Object cache, Set<Object> excluded, boolean destroyItems) {
 		if ((excluded == null) || !excluded.contains(cache)) {
-			if (cache instanceof ObjectAndPathForResources) {
-				return ((ObjectAndPathForResources<?,?>)cache).clearInBackground(destroyItems);
-			}  else if (cache instanceof PathForResources) {
-				return ((PathForResources<?>)cache).clearInBackground(destroyItems);
+			if (cache instanceof PathForResources) {
+				return ((PathForResources<?>)cache).clear(destroyItems);
 			}
 		}
 		return null;
-	}
-
-	static class ObjectAndPathForResources<T, R> {
-		String instanceId;
-		Supplier<PathForResources<R>> pathForResourcesSupplier;
-		Map<T, PathForResources<R>> resources;
-
-		ObjectAndPathForResources() {
-			this(1L, item -> item, null );
-		}
-
-		ObjectAndPathForResources(Long partitionStartLevel) {
-			this(partitionStartLevel, item -> item, null);
-		}
-
-		ObjectAndPathForResources(Long partitionStartLevel, Function<R, R> sharer) {
-			this(partitionStartLevel, sharer, null);
-		}
-
-		ObjectAndPathForResources(Long partitionStartLevel, Function<R, R> sharer, BiConsumer<String, R> itemDestroyer) {
-			this.resources = new ConcurrentHashMap<>();
-			this.pathForResourcesSupplier = () -> new PathForResources<>(partitionStartLevel, sharer, itemDestroyer);
-			this.instanceId = Objects.INSTANCE.getId(this);
-		}
-
-		R get(T object, String path) {
-			PathForResources<R> pathForResources = resources.get(object);
-			if (pathForResources == null) {
-				pathForResources = Synchronizer.INSTANCE.execute(instanceId + "_mutexManagerForResources_" + Objects.INSTANCE.getId(object), () -> {
-					PathForResources<R> pathForResourcesTemp = resources.get(object);
-					if (pathForResourcesTemp == null) {
-						pathForResourcesTemp = pathForResourcesSupplier.get();
-						resources.put(object, pathForResourcesTemp);
-					}
-					return pathForResourcesTemp;
-				});
-			}
-			return pathForResources.get(path);
-		}
-
-		R getOrUploadIfAbsent(T object, String path, Supplier<R> resourceSupplier) {
-			PathForResources<R> pathForResources = resources.get(object);
-			if (pathForResources == null) {
-				pathForResources = Synchronizer.INSTANCE.execute(instanceId + "_" + Objects.INSTANCE.getId(object), () -> {
-					PathForResources<R> pathForResourcesTemp = resources.get(object);
-					if (pathForResourcesTemp == null) {
-						pathForResourcesTemp = pathForResourcesSupplier.get();
-						resources.put(object, pathForResourcesTemp);
-					}
-					return pathForResourcesTemp;
-				});
-			}
-			return pathForResources.getOrUploadIfAbsent(path, resourceSupplier);
-		}
-
-		PathForResources<R> remove(T object, boolean destroyItems) {
-			PathForResources<R> pathForResources = resources.remove(object);
-			if ((pathForResources != null) && destroyItems) {
-				pathForResources.clearInBackground(destroyItems);
-			}
-			return pathForResources;
-		}
-
-		R removePath(T object, String path) {
-			return removePath(object, path, false);
-		}
-
-		R removePath(T object, String path, boolean destroyItem) {
-			PathForResources<R> pathForResources = resources.get(object);
-			if (pathForResources != null) {
-				return pathForResources.remove(path, destroyItem);
-			}
-			return null;
-		}
-
-		Thread clearInBackground(boolean destroyItems) {
-			Map<T, PathForResources<R>> resources;
-			synchronized (this.resources) {
-				resources = this.resources;
-				this.resources = new ConcurrentHashMap<>();
-			}
-			Thread thread = new Thread(() -> {
-				for (Entry<T, PathForResources<R>> item : resources.entrySet()) {
-					try {
-						item.getValue().clearInBackground(destroyItems).join();
-					} catch (InterruptedException exc) {
-						Throwables.INSTANCE.throwException(exc);
-					}
-				}
-				resources.clear();
-			});
-			thread.start();
-			return thread;
-		}
-
 	}
 
 	static class PathForResources<R> {
@@ -384,17 +287,14 @@ public class Cache {
 			return innerPartion;
 		}
 
-		private Thread clearInBackground(boolean destroyItems) {
+		private Runnable clear(boolean destroyItems) {
 			Map<Long, Map<String, Map<String, R>>> partitions;
 			synchronized (this.resources) {
 				partitions = this.resources;
 				this.resources = new ConcurrentHashMap<>();
 			}
-			Thread thread = new Thread(() -> {
+			return () ->
 				clearResources(partitions, destroyItems);
-			});
-			thread.start();
-			return thread;
 		}
 
 		private int getLoadedResourcesCount(Map<Long, Map<String, Map<String, R>>> resources) {
