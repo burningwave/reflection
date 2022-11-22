@@ -7,9 +7,9 @@
 [![Maven Central with version prefix filter](https://img.shields.io/maven-central/v/org.burningwave/reflection/3)](https://maven-badges.herokuapp.com/maven-central/org.burningwave/reflection/)
 [![GitHub](https://img.shields.io/github/license/burningwave/reflection)](https://github.com/burningwave/reflection/blob/master/LICENSE)
 
-[![Platforms](https://img.shields.io/badge/platforms-Windows%2C%20Mac%20OS%2C%20Linux-orange)](https://github.com/burningwave/reflection/actions/runs/3518424154)
+[![Platforms](https://img.shields.io/badge/platforms-Windows%2C%20Mac%20OS%2C%20Linux-orange)](https://github.com/burningwave/reflection/actions/runs/3521693592)
 
-[![Supported JVM](https://img.shields.io/badge/supported%20JVM-7%2C%208%2C%209+-blueviolet)](https://github.com/burningwave/reflection/actions/runs/3518424154)
+[![Supported JVM](https://img.shields.io/badge/supported%20JVM-7%2C%208%2C%209+-blueviolet)](https://github.com/burningwave/reflection/actions/runs/3521693592)
 
 [![Coveralls github branch](https://img.shields.io/coveralls/github/burningwave/reflection/main)](https://coveralls.io/github/burningwave/reflection?branch=main)
 [![GitHub open issues](https://img.shields.io/github/issues/burningwave/reflection)](https://github.com/burningwave/reflection/issues)
@@ -38,7 +38,7 @@ If you are on Java 8 and later, to include Burningwave Reflection library in you
 <dependency>
     <groupId>org.burningwave</groupId>
     <artifactId>reflection</artifactId>
-    <version>3.3.0</version>
+    <version>3.4.1</version>
 </dependency>
 ```
 
@@ -47,7 +47,7 @@ If you are on **Java 7 and later**, use this instead:
 <dependency>
     <groupId>org.burningwave</groupId>
     <artifactId>reflection</artifactId>
-    <version>3.3.0-j7</version>
+    <version>3.4.0-fjs</version>
 </dependency>
 ```
 
@@ -80,7 +80,7 @@ If you want to add the JVM Driver to your project it is also possible to [disabl
 
 ## <a name="Handling-privates-and-all-other-members-of-an-object"></a>Handling privates and all other members of an object
 Through **Fields**, **Constructors** and **Methods** components it is possible to get or set fields value, invoking or finding constructors or methods of an object.
-Members handlers use to cache all members for faster access.
+**Members handlers use to cache all members for faster access**.
 For fields handling we are going to use **Fields** component:
 ```java
 import org.burningwave.reflection.Fields;
