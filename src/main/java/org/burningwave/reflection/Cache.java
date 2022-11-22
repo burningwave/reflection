@@ -47,7 +47,7 @@ import org.burningwave.Synchronizer;
 import io.github.toolfactory.jvm.function.template.ThrowingBiConsumer;
 
 
-public class Cache {
+class Cache {
 
 	public final static Cache INSTANCE;
 
@@ -55,13 +55,13 @@ public class Cache {
 		INSTANCE = new Cache();
 	}
 
-	public final PathForResources<Constructor<?>[]> uniqueKeyForConstructorsArray;
-	public final PathForResources<Field[]> uniqueKeyForFieldsArray;
-	public final PathForResources<Method[]> uniqueKeyForMethodsArray;
-	public final PathForResources<Collection<Constructor<?>>> uniqueKeyForConstructors;
-	public final PathForResources<Members.Handler.OfExecutable.Box<?>> uniqueKeyForExecutableAndMethodHandle;
-	public final PathForResources<Collection<Field>> uniqueKeyForAllFields;
-	public final PathForResources<Collection<Method>> uniqueKeyForAllMethods;
+	final PathForResources<Constructor<?>[]> uniqueKeyForConstructorsArray;
+	final PathForResources<Field[]> uniqueKeyForFieldsArray;
+	final PathForResources<Method[]> uniqueKeyForMethodsArray;
+	final PathForResources<Collection<Constructor<?>>> uniqueKeyForConstructors;
+	final PathForResources<Members.Handler.OfExecutable.Box<?>> uniqueKeyForExecutableAndMethodHandle;
+	final PathForResources<Collection<Field>> uniqueKeyForAllFields;
+	final PathForResources<Collection<Method>> uniqueKeyForAllMethods;
 
 	private Cache() {
 		uniqueKeyForConstructorsArray = new PathForResources<>();
