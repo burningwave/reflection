@@ -5,9 +5,6 @@ public class RepeatedMethodsTest extends MethodsTest {
 
 
 	@Override
-	public void findAllAndMakeThemAccessibleTestOne() {
-		// TODO Auto-generated method stub
-
-	}
+	public void findAllAndMakeThemAccessibleTestOne() {}
 
 }
