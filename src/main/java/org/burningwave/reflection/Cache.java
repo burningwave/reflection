@@ -55,13 +55,13 @@ public class Cache {
 		INSTANCE = new Cache();
 	}
 
-	final PathForResources<Constructor<?>[]> uniqueKeyForConstructorsArray;
-	final PathForResources<Field[]> uniqueKeyForFieldsArray;
-	final PathForResources<Method[]> uniqueKeyForMethodsArray;
-	final PathForResources<Collection<Constructor<?>>> uniqueKeyForConstructors;
-	final PathForResources<Members.Handler.OfExecutable.Box<?>> uniqueKeyForExecutableAndMethodHandle;
-	final PathForResources<Collection<Field>> uniqueKeyForAllFields;
-	final PathForResources<Collection<Method>> uniqueKeyForAllMethods;
+	public final PathForResources<Constructor<?>[]> uniqueKeyForConstructorsArray;
+	public final PathForResources<Field[]> uniqueKeyForFieldsArray;
+	public final PathForResources<Method[]> uniqueKeyForMethodsArray;
+	public final PathForResources<Collection<Constructor<?>>> uniqueKeyForConstructors;
+	public final PathForResources<Members.Handler.OfExecutable.Box<?>> uniqueKeyForExecutableAndMethodHandle;
+	public final PathForResources<Collection<Field>> uniqueKeyForAllFields;
+	public final PathForResources<Collection<Method>> uniqueKeyForAllMethods;
 
 	private Cache() {
 		uniqueKeyForConstructorsArray = new PathForResources<>();
@@ -85,14 +85,11 @@ public class Cache {
 		addCleaningTask(deepCleaners, clear(uniqueKeyForExecutableAndMethodHandle, toBeExcluded, destroyItems));
 		addCleaningTask(deepCleaners, clear(uniqueKeyForAllFields, toBeExcluded, destroyItems));
 		addCleaningTask(deepCleaners, clear(uniqueKeyForAllMethods, toBeExcluded, destroyItems));
-		new Thread() {
-			@Override
-			public void run() {
-				for (Runnable task : deepCleaners) {
-					task.run();
-				}
-			};
-		}.start();
+		new Thread(() -> {
+			for (Runnable task : deepCleaners) {
+				task.run();
+			}
+		}).start();
 
 	}
 
