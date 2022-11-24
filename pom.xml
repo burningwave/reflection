@@ -125,13 +125,13 @@
 			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
 		</repository>
 	</distributionManagement>
-
-	<scm>
-		<connection>scm:git:git@github.com:burningwave/reflection.git</connection>
-		<developerConnection>scm:git:git@github.com:burningwave/reflection.git</developerConnection>
-		<url>https://burningwave@github.com/burningwave/reflection.git</url>
-		<tag>HEAD</tag>
-	</scm>
+	
+    <scm>
+        <connection>scm:git:https://burningwave@github.com/burningwave/reflection.git</connection>
+        <developerConnection>scm:git:https://burningwave@github.com/burningwave/reflection.git</developerConnection>
+        <url>https://burningwave@github.com/burningwave/reflection.git</url>
+        <tag>HEAD</tag>
+    </scm>
 
 	<dependencies>
 		
