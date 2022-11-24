@@ -31,7 +31,7 @@
 
 	<groupId>org.burningwave</groupId>
 	<artifactId>reflection</artifactId>
-	<version>3.4.4-fjs-SNAPSHOT</version>
+	<version>3.4.3-fjs-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>Burningwave Reflection</name>
@@ -89,7 +89,7 @@
 		<project.test.includes>**/${project.test.testSuite}.java</project.test.includes>
 		<project.test.excludes>**/*Test.java</project.test.excludes>
 		<project.generated.artifacts.prefix>bw</project.generated.artifacts.prefix>
-		<repository.url>git@github.com:burningwave/reflection.git</repository.url>
+		<repository.url>https://burningwave@github.com/burningwave/reflection.git</repository.url>
 
 		<coveralls-maven-plugin.version>4.3.0</coveralls-maven-plugin.version>
 		<jacoco-maven-plugin.version>0.7.6.201602180812</jacoco-maven-plugin.version>
@@ -125,13 +125,13 @@
 			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
 		</repository>
 	</distributionManagement>
-	
-    <scm>
-        <connection>scm:git:https://burningwave@github.com/burningwave/reflection.git</connection>
-        <developerConnection>scm:git:https://burningwave@github.com/burningwave/reflection.git</developerConnection>
-        <url>https://burningwave@github.com/burningwave/reflection.git</url>
-        <tag>HEAD</tag>
-    </scm>
+
+	<scm>
+		<connection>scm:git:${repository.url}</connection>
+		<developerConnection>scm:git:${repository.url}</developerConnection>
+		<url>https://github.com/burningwave/reflection</url>
+		<tag>HEAD</tag>
+	</scm>
 
 	<dependencies>
 		
