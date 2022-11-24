@@ -54,6 +54,8 @@ jobs:
           server-password: MAVEN_PASSWORD
       - name: Publish to the Maven Central repository
         run: |
+          export GPG_TTY=$(tty)
+          echo "${{ secrets.gpg_private_key }}" | gpg --batch --import
           git config user.name "${{ github.event.head_commit.committer.name }}"
           git config user.email "${{ github.event.head_commit.committer.email }}"
           mvn -B release:prepare release:perform -DskipTests=true -Dgpg.passphrase=${{ secrets.gpg_passphrase }} -Dgpg.keyname=${{ secrets.gpg_key_id }} \
