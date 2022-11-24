@@ -89,11 +89,10 @@
 		<project.test.includes>**/${project.test.testSuite}.java</project.test.includes>
 		<project.test.excludes>**/*Test.java</project.test.excludes>
 		<project.generated.artifacts.prefix>bw</project.generated.artifacts.prefix>
-		<repository.url>https://burningwave@github.com/burningwave/reflection.git</repository.url>
+		<repository.url>git@github.com:burningwave/reflection.git</repository.url>
 
 		<coveralls-maven-plugin.version>4.3.0</coveralls-maven-plugin.version>
 		<jacoco-maven-plugin.version>0.7.6.201602180812</jacoco-maven-plugin.version>
-		<jakarta.validation.version>2.0.2</jakarta.validation.version>
 		<junit-jupiter.version>5.9.1</junit-jupiter.version>
 		<junit.version>4.12</junit.version>
 		<burningwave-jvm-driver.version>8.14.0</burningwave-jvm-driver.version>
@@ -127,12 +126,12 @@
 		</repository>
 	</distributionManagement>
 
-	<scm>
-		<connection>scm:git:${repository.url}</connection>
-		<developerConnection>scm:git:${repository.url}</developerConnection>
-		<url>https://github.com/burningwave/reflection</url>
-		<tag>HEAD</tag>
-	</scm>
+    <scm>
+        <connection>scm:git:${repository.url}</connection>
+        <developerConnection>scm:git:${repository.url}</developerConnection>
+        <url>${repository.url}</url>
+        <tag>HEAD</tag>
+    </scm>
 
 	<dependencies>
 		
@@ -490,6 +489,7 @@
 						<configuration>
 					        <excludes>
 					            <exclude>**/*org/burningwave/reflection/ConsulterHandlerForJava7.class</exclude>
+					            <exclude>**/*org/burningwave/Throwables$ThrowerImpl.class</exclude>
 					        </excludes>
 					    </configuration>
 					</plugin>
