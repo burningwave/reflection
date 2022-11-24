@@ -104,6 +104,7 @@
 		<maven-jxr-plugin.version>2.5</maven-jxr-plugin.version>
 		<maven-release-plugin.version>3.0.0-M7</maven-release-plugin.version>
 		<maven-source-plugin.version>3.0.1</maven-source-plugin.version>
+		<maven-scm-provider-gitexe.version>1.9.5</maven-scm-provider-gitexe.version>
 		<maven-surefire-plugin.version>3.0.0-M5</maven-surefire-plugin.version>
 		<nexus-staging-maven-plugin.version>1.6.12</nexus-staging-maven-plugin.version>
 	</properties>
@@ -246,6 +247,13 @@
                     <releaseProfiles>release</releaseProfiles>
                     <arguments>-Prelease</arguments>
                 </configuration>
+				<dependencies>
+					<dependency>
+						<groupId>org.apache.maven.scm</groupId>
+						<artifactId>maven-scm-provider-gitexe</artifactId>
+						<version>${maven-scm-provider-gitexe.version}</version>
+					</dependency>
+				</dependencies>
             </plugin>
 			<plugin>
 				<groupId>org.sonatype.plugins</groupId>
