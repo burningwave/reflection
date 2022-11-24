@@ -130,7 +130,7 @@
 		<connection>scm:git:${repository.url}</connection>
 		<developerConnection>scm:git:${repository.url}</developerConnection>
 		<url>https://github.com/burningwave/reflection</url>
-		<tag>reflection-3.4.3-fjs</tag>
+		<tag>HEAD</tag>
 	</scm>
 
 	<dependencies>
