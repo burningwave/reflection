@@ -426,7 +426,7 @@
 										<arg>loopback</arg>
 									</gpgArguments>
 		                            <keyname>${gpg.keyname}</keyname>
-                        			<passphraseServerId>${gpg.keyname}</passphraseServerId>
+                        			<passphraseServerId>${gpg.passphrase}</passphraseServerId>
 								</configuration>
 							</execution>
 						</executions>
