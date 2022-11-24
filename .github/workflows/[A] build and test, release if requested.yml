@@ -49,11 +49,15 @@ jobs:
           java-version: 19
           distribution: 'zulu'
           architecture: x64
-          gpg-private-key: ${{ secrets.gpg_private_key }}
+          server-id: ossrh
+          server-username: MAVEN_USERNAME
+          server-password: MAVEN_PASSWORD
       - name: Publish to the Maven Central repository
         run: |
           git config user.name "${{ github.event.head_commit.committer.name }}"
           git config user.email "${{ github.event.head_commit.committer.email }}"
           mvn -B release:prepare release:perform -DskipTests=true -Dgpg.passphrase=${{ secrets.gpg_passphrase }} -Dgpg.keyname=${{ secrets.gpg_key_id }} \
-          -Drepository.url=https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git \
-          -Dcentral.username=${{ secrets.nexus_username }} -Dcentral.password=${{ secrets.nexus_password }}
+          -Drepository.url=https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+        env:
+          MAVEN_USERNAME: ${{ secrets.nexus_username }}
+          MAVEN_PASSWORD: ${{ secrets.nexus_password }}
