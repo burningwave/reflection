@@ -89,7 +89,6 @@
 		<project.test.includes>**/${project.test.testSuite}.java</project.test.includes>
 		<project.test.excludes>**/*Test.java</project.test.excludes>
 		<project.generated.artifacts.prefix>bw</project.generated.artifacts.prefix>
-		<repository.url>git@github.com:burningwave/reflection.git</repository.url>
 
 		<coveralls-maven-plugin.version>4.3.0</coveralls-maven-plugin.version>
 		<jacoco-maven-plugin.version>0.7.6.201602180812</jacoco-maven-plugin.version>
@@ -103,7 +102,7 @@
 		<maven-jar-plugin.version>3.2.0</maven-jar-plugin.version>
 		<maven-javadoc-plugin.version>3.2.0</maven-javadoc-plugin.version>
 		<maven-jxr-plugin.version>2.5</maven-jxr-plugin.version>
-		<maven-release-plugin.version>2.5.3</maven-release-plugin.version>
+		<maven-release-plugin.version>3.0.0-M7</maven-release-plugin.version>
 		<maven-source-plugin.version>3.0.1</maven-source-plugin.version>
 		<maven-scm-provider-gitexe.version>1.9.5</maven-scm-provider-gitexe.version>
 		<maven-surefire-plugin.version>3.0.0-M5</maven-surefire-plugin.version>
@@ -126,12 +125,12 @@
 		</repository>
 	</distributionManagement>
 
-    <scm>
-        <connection>scm:git:${repository.url}</connection>
-        <developerConnection>scm:git:${repository.url}</developerConnection>
-        <url>${repository.url}</url>
-        <tag>HEAD</tag>
-    </scm>
+	<scm>
+		<connection>scm:git:git@github.com:burningwave/reflection.git</connection>
+		<developerConnection>scm:git:git@github.com:burningwave/reflection.git</developerConnection>
+		<url>https://burningwave@github.com/burningwave/reflection.git</url>
+		<tag>HEAD</tag>
+	</scm>
 
 	<dependencies>
 		
@@ -225,7 +224,7 @@
 							<Bundle-Vendor>Burningwave</Bundle-Vendor>
 							<Bundle-Description>${project.description}</Bundle-Description>
 							<Bundle-Version>${project.version}</Bundle-Version>
-							<Require-Capability>osgi.ee;filter:="(&amp;(osgi.ee=JavaSE)(version=1.8))"</Require-Capability>
+							<Require-Capability>osgi.ee;filter:="(&amp;(osgi.ee=JavaSE)(version=1.7))"</Require-Capability>
 							<Import-Package>io.github.toolfactory.jvm;version="9.4.2";resolution:=optional,org.burningwave.jvm;version="8.10.1";resolution:=optional</Import-Package>
 							<Export-Package>org.burningwave.function;version="1.0.0",org.burningwave.reflection;version="1.0.0";uses:="io.github.toolfactory.jvm.function.template,org.burningwave,org.burningwave.function",org.burningwave;version="1.0.0";uses:="org.burningwave.function"</Export-Package>
 							<Multi-Release>true</Multi-Release>
