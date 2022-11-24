@@ -97,7 +97,7 @@
 		<burningwave-jvm-driver.version>8.14.0</burningwave-jvm-driver.version>
 		<maven-antrun-plugin.version>3.0.0</maven-antrun-plugin.version>
 		<maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
-		<maven-deploy-plugin.version>2.8.2</maven-deploy-plugin.version>
+		<maven-deploy-plugin.version>3.0.0</maven-deploy-plugin.version>
 		<maven-gpg-plugin.version>1.6</maven-gpg-plugin.version>
 		<maven-jar-plugin.version>3.2.0</maven-jar-plugin.version>
 		<maven-javadoc-plugin.version>3.2.0</maven-javadoc-plugin.version>
@@ -231,19 +231,11 @@
 					</archive>
 				</configuration>
 			</plugin>
-			<plugin>
-				<artifactId>maven-deploy-plugin</artifactId>
-				<version>${maven-deploy-plugin.version}</version>
-				<executions>
-					<execution>
-						<id>default-deploy</id>
-						<phase>deploy</phase>
-						<goals>
-							<goal>deploy</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <version>${maven-deploy-plugin.version}</version>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>
@@ -433,6 +425,8 @@
 										<arg>--pinentry-mode</arg>
 										<arg>loopback</arg>
 									</gpgArguments>
+		                            <keyname>${gpg.keyname}</keyname>
+                        			<passphraseServerId>${gpg.keyname}</passphraseServerId>
 								</configuration>
 							</execution>
 						</executions>
