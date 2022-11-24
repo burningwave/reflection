@@ -44,11 +44,9 @@
 		<project.test.includes>**/${project.test.testSuite}.java</project.test.includes>
 		<project.test.excludes>**/*Test.java</project.test.excludes>
 		<project.generated.artifacts.prefix>bw</project.generated.artifacts.prefix>
-		<repository.url>https://burningwave@github.com/burningwave/reflection.git</repository.url>
 
 		<coveralls-maven-plugin.version>4.3.0</coveralls-maven-plugin.version>
 		<jacoco-maven-plugin.version>0.7.6.201602180812</jacoco-maven-plugin.version>
-		<jakarta.validation.version>2.0.2</jakarta.validation.version>
 		<junit.version>4.12</junit.version>
 		<burningwave-jvm-driver.version>8.14.0</burningwave-jvm-driver.version>
 		<maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
