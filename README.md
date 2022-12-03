@@ -189,20 +189,28 @@ For constructors handling we are going to use **Constructors** component:
 ```java
 import org.burningwave.reflection.Constructors;
 
-import org.burningwave.core.classes.MemoryClassLoader;
-
 public class ConstructorsHandler {
-    
+
     public static void execute() {
         //Invoking constructor
-        MemoryClassLoader classLoader = Constructors.INSTANCE.newInstanceOf(MemoryClassLoader.class, Thread.currentThread().getContextClassLoader());
-        classLoader = Constructors.INSTANCE.newInstanceOf(MemoryClassLoader.class, null);
+    	ForTest object = Constructors.INSTANCE.newInstanceOf(ForTest.class, 10);
+    }
+
+    public static class ForTest {
+
+    	int value;
+
+    	public ForTest(int value) {
+    		this.value = value;
+    		System.out.println("Constructor invoked, value: " + value);
+    	}
+
     }
     
     public static void main(String[] args) {
         execute();
     }
-    
+
 }
 ```
 
