@@ -220,7 +220,7 @@ public class ConstructorsHandler {
 Through **FieldAccessor** it is possible to get and set field of an object bean by using path. So for this example we will use these Java beans:
 
 ```java
-package org.burningwave.core.bean;
+package org.burningwave.reflection.examples.bean;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -308,7 +308,7 @@ public class Complex {
 ```java
 import org.burningwave.reflection.FieldAccessor;
 
-import org.burningwave.core.bean.Complex;
+import org.burningwave.reflection.examples.bean.Complex;
 
 public class GetAndSetPropertiesThroughPath{
     
