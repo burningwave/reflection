@@ -88,6 +88,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import org.burningwave.reflection.FieldCriteria;
 import org.burningwave.reflection.Fields;
 
 public class FieldsHandler {
@@ -128,23 +129,21 @@ public class FieldsHandler {
 ```
 For methods handling we are going to use **Methods** component:
 ```java
-import org.burningwave.reflection.Classes;
-import org.burningwave.reflection.Methods;
-
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.security.ProtectionDomain;
 import java.util.Collection;
 
-import org.burningwave.core.classes.MethodCriteria;
+import org.burningwave.reflection.Classes;
+import org.burningwave.reflection.MethodCriteria;
+import org.burningwave.reflection.Methods;
 
 
-@SuppressWarnings("unused")
 public class MethodsHandler {
     
     public static void execute() {
-        Methods.invoke(System.out, "println", "Hello World");
+        Methods.INSTANCE.invoke(System.out, "println", "Hello World");
         Integer number = Methods.INSTANCE.invokeStatic(Integer.class, "valueOf", 1);
         
         //Invoking a method: the invoke method tries to execute the target method via MethodHandle and
