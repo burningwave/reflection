@@ -83,24 +83,16 @@ Through **Fields**, **Constructors** and **Methods** components it is possible t
 **Members handlers use to cache all members for faster access**.
 For fields handling we are going to use **Fields** component:
 ```java
-import org.burningwave.reflection.Fields;
-
 import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import org.burningwave.core.classes.FieldCriteria;
+import org.burningwave.reflection.Fields;
 
-
-@SuppressWarnings("unused")
 public class FieldsHandler {
-    
+
     public static void execute() {
-        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        Collection<Class<?>> loadedClasses = Fields.INSTANCE.get(classLoader, "classes");
-        values = Fields.INSTANCE.getAll(classLoader);
-        
         Object obj = new Object() {
             volatile List<Object> objectValue;
             volatile int intValue = 1;
@@ -111,20 +103,27 @@ public class FieldsHandler {
             volatile byte byteValue = (byte)5;
             volatile char charValue = 'c';
         };
-        
+
         //Get all filtered field values of an object
-        Fields.INSTANCE.getAll(
+        Collection<?> values = Fields.INSTANCE.getAll(
             FieldCriteria.forEntireClassHierarchy().allThoseThatMatch(field -> {
                 return field.getType().isPrimitive();
-            }), 
+            }),
             obj
         ).values();
+
+        Fields.INSTANCE.set(obj, "intValue", 15);
+        System.out.println(Fields.INSTANCE.get(obj, "intValue").toString());
+
+    	ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        Collection<Class<?>> loadedClasses = Fields.INSTANCE.get(classLoader, "classes");
+        Map<Field, ?> valueForField = Fields.INSTANCE.getAll(classLoader);
     }
-    
+
     public static void main(String[] args) {
         execute();
     }
-    
+
 }
 ```
 For methods handling we are going to use **Methods** component:
