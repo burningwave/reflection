@@ -171,6 +171,7 @@
 	</dependencies>
 
 	<build>
+		<finalName>${project.groupId}.${project.artifactId}-${project.version}</finalName>
 		<resources>
 			<resource>
 				<directory>${project.basedir}</directory>
@@ -257,11 +258,15 @@
 				<version>${maven-deploy-plugin.version}</version>
 				<executions>
 					<execution>
-						<id>default-deploy</id>
 						<phase>deploy</phase>
 						<goals>
-							<goal>deploy</goal>
+							<goal>deploy-file</goal>
 						</goals>
+						<configuration>
+							<file>${build.directory}/${project.build.finalName}.${project.packaging}</file>
+	                        <generatePom>false</generatePom>
+                        	<pomFile>pom.xml</pomFile>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>
