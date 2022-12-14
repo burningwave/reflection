@@ -15,6 +15,7 @@
 [![GitHub open issues](https://img.shields.io/github/issues/burningwave/reflection)](https://github.com/burningwave/reflection/issues)
 [![GitHub closed issues](https://img.shields.io/github/issues-closed/burningwave/reflection)](https://github.com/burningwave/reflection/issues?q=is%3Aissue+is%3Aclosed)
 
+[![Artifact downloads](https://www.burningwave.org/generators/generate-burningwave-artifact-downloads-badge.php?artifactId=core)](https://www.burningwave.org/artifact-downloads/?show-overall-trend-chart=false&artifactId=reflection&startDate=2022-11)
 [![Repository dependents](https://badgen.net/github/dependents-repo/burningwave/reflection)](https://github.com/burningwave/reflection/network/dependents)
 [![HitCount](https://www.burningwave.org/generators/generate-visited-pages-badge.php)](https://www.burningwave.org#bw-counters)
 
