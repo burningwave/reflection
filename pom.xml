@@ -171,7 +171,6 @@
 	</dependencies>
 
 	<build>
-		<finalName>${project.groupId}.${project.artifactId}-${project.version}</finalName>
 		<resources>
 			<resource>
 				<directory>${project.basedir}</directory>
@@ -258,18 +257,11 @@
 				<version>${maven-deploy-plugin.version}</version>
 				<executions>
 					<execution>
+						<id>default-deploy</id>
 						<phase>deploy</phase>
 						<goals>
-							<goal>deploy-file</goal>
+							<goal>deploy</goal>
 						</goals>
-						<configuration>
-						<repositoryId>nexus-site</repositoryId>
-							<url>https://oss.sonatype.org/service/local/repositories/releases</url>
-							<file>${build.directory}/${project.build.finalName}.${project.packaging}</file>
-	                        <generatePom>false</generatePom>
-                        	<pomFile>pom.xml</pomFile>
-                        	<version>3.5.2</version>
-						</configuration>
 					</execution>
 				</executions>
 			</plugin>
