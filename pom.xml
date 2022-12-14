@@ -263,9 +263,12 @@
 							<goal>deploy-file</goal>
 						</goals>
 						<configuration>
+						<repositoryId>nexus-site</repositoryId>
+							<url>https://oss.sonatype.org/service/local/repositories/releases</url>
 							<file>${build.directory}/${project.build.finalName}.${project.packaging}</file>
 	                        <generatePom>false</generatePom>
                         	<pomFile>pom.xml</pomFile>
+                        	<version>3.5.2</version>
 						</configuration>
 					</execution>
 				</executions>
