@@ -245,7 +245,7 @@
 							<Bundle-Description>${project.description}</Bundle-Description>
 							<Bundle-Version>${project.version}</Bundle-Version>
 							<Require-Capability>osgi.ee;filter:="(&amp;(osgi.ee=JavaSE)(version=1.8))"</Require-Capability>
-							<Import-Package>io.github.toolfactory.jvm;version="9.4.2";resolution:=optional,org.burningwave.jvm;version="8.12.0";resolution:=optional</Import-Package>
+							<Import-Package>io.github.toolfactory.jvm;version="9.4.3";resolution:=optional,org.burningwave.jvm;version="8.14.1";resolution:=optional</Import-Package>
 							<Export-Package>org.burningwave.function;version="1.0.0",org.burningwave.reflection;version="1.0.0";uses:="io.github.toolfactory.jvm.function.template,org.burningwave,org.burningwave.function",org.burningwave;version="1.0.0";uses:="org.burningwave.function"</Export-Package>
 							<Multi-Release>true</Multi-Release>
 						</manifestEntries>
