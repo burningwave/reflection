@@ -51,7 +51,7 @@ public abstract class FieldAccessor {
 
 	public final static FieldAccessor INSTANCE;
 
-	private final static String REG_EXP_FOR_INDEXES_OF_INDEXED_FIELDS = "\\[([a-zA-Z0-9]*)\\]";
+	private final static String REG_EXP_FOR_INDEXES_OF_INDEXED_FIELDS = "\\[(.*?)\\]";
 	private final static String REG_EXP_FOR_SIMPLE_FIELDS = "([a-zA-Z\\$\\_\\-0-9]*)(\\[*.*)";
 
 	static {
