@@ -19,7 +19,7 @@ public class MethodsTest extends BaseTest {
 			new ThrowingSupplier<Object, Throwable>() {
 				@Override
 				public Object get() throws Throwable {
-					return Methods.INSTANCE.INSTANCE.invokeStatic(Integer.class, "valueOf", 1);
+					return Methods.INSTANCE.invokeStatic(Integer.class, "valueOf", 1);
 				}
 			}
 		);
