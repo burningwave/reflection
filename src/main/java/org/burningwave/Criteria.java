@@ -90,7 +90,7 @@ public class Criteria<E, C extends Criteria<E, C, T>, T extends Criteria.TestCon
 		this.predicate = new ThrowingBiPredicate<T, E, Throwable>() {
 			@Override
 			public boolean test(final T context, final E entity) throws Throwable {
-				return predicate.test(context, entity);
+				return !predicate.test(context, entity);
 			}
 		};
 		return (C)this;
@@ -504,6 +504,19 @@ public class Criteria<E, C extends Criteria<E, C, T>, T extends Criteria.TestCon
 				},
 				newInstance()
 			);
+		}
+
+		public C negate() {
+			final ThrowingPredicate<E, ? extends Throwable> predicate = this.predicate;
+			this.predicate = new ThrowingPredicate<E, Throwable>() {
+
+				@Override
+				public boolean test(E entity) throws Throwable {
+					return !predicate.test(entity);
+				}
+
+			};
+			return (C)this;
 		}
 
 		public boolean testWithFalseResultForNullEntityOrFalseResultForNullPredicate(final E entity) {
