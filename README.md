@@ -48,7 +48,7 @@ If you are on **Java 7 and later**, use this instead:
 <dependency>
     <groupId>org.burningwave</groupId>
     <artifactId>reflection</artifactId>
-    <version>3.5.2-fjs</version>
+    <version>3.5.3-fjs</version>
 </dependency>
 ```
 
