@@ -104,6 +104,10 @@ public class Criteria<E, C extends Criteria<E, C, T>, T extends Criteria.TestCon
 		return logicOperation(this.createCopy(), criteria.createCopy(), (predicate) -> predicate::or, newInstance());
 	}
 
+	public C negate() {
+		predicate = predicate.negate();
+		return (C)this;
+	}
 
 	public T testWithFalseResultForNullEntityOrFalseResultForNullPredicate(E entity) {
 		T context = createTestContext();
@@ -317,6 +321,11 @@ public class Criteria<E, C extends Criteria<E, C, T>, T extends Criteria.TestCon
 
 		public C or(C criteria) {
 			return logicOperation(this.createCopy(), criteria.createCopy(), (predicate) -> predicate::or, newInstance());
+		}
+
+		public C negate() {
+			predicate = predicate.negate();
+			return (C)this;
 		}
 
 		public boolean testWithFalseResultForNullEntityOrFalseResultForNullPredicate(E entity) {
