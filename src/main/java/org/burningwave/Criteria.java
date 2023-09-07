@@ -86,7 +86,7 @@ public class Criteria<E, C extends Criteria<E, C, T>, T extends Criteria.TestCon
 	}
 
 	public C negate() {
-		ThrowingBiPredicate<T, E, ? extends Throwable> predicate = this.predicate;
+		final ThrowingBiPredicate<T, E, ? extends Throwable> predicate = this.predicate;
 		this.predicate = new ThrowingBiPredicate<T, E, Throwable>() {
 			@Override
 			public boolean test(final T context, final E entity) throws Throwable {
