@@ -74,27 +74,6 @@ public class Criteria<E, C extends Criteria<E, C, T>, T extends Criteria.TestCon
 		return logicOperation(this.createCopy(), criteria.createCopy(), (predicate) -> predicate::and, newInstance());
 	}
 
-
-	public C createCopy() {
-		C copy = newInstance();
-		copy.predicate = this.predicate;
-		copy.logicalOperator = this.logicalOperator;
-		return copy;
-	}
-
-
-	public Predicate<E> getPredicateOrFalsePredicateIfPredicateIsNull() {
-		return getPredicate(createTestContext(), false);
-	}
-
-	public Predicate<E> getPredicateOrTruePredicateIfPredicateIsNull() {
-		return getPredicate(createTestContext(), true);
-	}
-
-	public boolean hasNoPredicate() {
-		return this.predicate == null;
-	}
-
 	public C or(){
 		logicalOperator = (predicate) -> this.predicate.or(predicate);
 		return (C)this;
@@ -107,6 +86,25 @@ public class Criteria<E, C extends Criteria<E, C, T>, T extends Criteria.TestCon
 	public C negate() {
 		predicate = predicate.negate();
 		return (C)this;
+	}
+
+	public C createCopy() {
+		C copy = newInstance();
+		copy.predicate = this.predicate;
+		copy.logicalOperator = this.logicalOperator;
+		return copy;
+	}
+
+	public Predicate<E> getPredicateOrFalsePredicateIfPredicateIsNull() {
+		return getPredicate(createTestContext(), false);
+	}
+
+	public Predicate<E> getPredicateOrTruePredicateIfPredicateIsNull() {
+		return getPredicate(createTestContext(), true);
+	}
+
+	public boolean hasNoPredicate() {
+		return this.predicate == null;
 	}
 
 	public T testWithFalseResultForNullEntityOrFalseResultForNullPredicate(E entity) {
@@ -294,6 +292,20 @@ public class Criteria<E, C extends Criteria<E, C, T>, T extends Criteria.TestCon
 			return logicOperation(this.createCopy(), criteria.createCopy(), (predicate) -> predicate::and, newInstance());
 		}
 
+		public C or(){
+			logicalOperator = (predicate) -> this.predicate.or(predicate);
+			return (C)this;
+		}
+
+		public C or(C criteria) {
+			return logicOperation(this.createCopy(), criteria.createCopy(), (predicate) -> predicate::or, newInstance());
+		}
+
+		public C negate() {
+			predicate = predicate.negate();
+			return (C)this;
+		}
+
 		public C createCopy() {
 			C copy = newInstance();
 			copy.predicate = this.predicate;
@@ -312,20 +324,6 @@ public class Criteria<E, C extends Criteria<E, C, T>, T extends Criteria.TestCon
 
 		public boolean hasNoPredicate() {
 			return this.predicate == null;
-		}
-
-		public C or(){
-			logicalOperator = (predicate) -> this.predicate.or(predicate);
-			return (C)this;
-		}
-
-		public C or(C criteria) {
-			return logicOperation(this.createCopy(), criteria.createCopy(), (predicate) -> predicate::or, newInstance());
-		}
-
-		public C negate() {
-			predicate = predicate.negate();
-			return (C)this;
 		}
 
 		public boolean testWithFalseResultForNullEntityOrFalseResultForNullPredicate(E entity) {
