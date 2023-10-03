@@ -85,17 +85,6 @@ public class Criteria<E, C extends Criteria<E, C, T>, T extends Criteria.TestCon
 		return (C)this;
 	}
 
-	public C negate() {
-		final ThrowingBiPredicate<T, E, ? extends Throwable> predicate = this.predicate;
-		this.predicate = new ThrowingBiPredicate<T, E, Throwable>() {
-			@Override
-			public boolean test(final T context, final E entity) throws Throwable {
-				return !predicate.test(context, entity);
-			}
-		};
-		return (C)this;
-	}
-
 	public C and(final C criteria) {
 		return logicOperation(
 			this.createCopy(),
@@ -127,27 +116,6 @@ public class Criteria<E, C extends Criteria<E, C, T>, T extends Criteria.TestCon
 			},
 			newInstance()
 		);
-	}
-
-
-	public C createCopy() {
-		final C copy = newInstance();
-		copy.predicate = this.predicate;
-		copy.logicalOperator = this.logicalOperator;
-		return copy;
-	}
-
-
-	public ThrowingPredicate<E, ? extends Throwable> getPredicateOrFalsePredicateIfPredicateIsNull() {
-		return getPredicate(createTestContext(), false);
-	}
-
-	public ThrowingPredicate<E, ? extends Throwable> getPredicateOrTruePredicateIfPredicateIsNull() {
-		return getPredicate(createTestContext(), true);
-	}
-
-	public boolean hasNoPredicate() {
-		return this.predicate == null;
 	}
 
 	public C or(){
@@ -193,6 +161,36 @@ public class Criteria<E, C extends Criteria<E, C, T>, T extends Criteria.TestCon
 		);
 	}
 
+	public C negate() {
+		final ThrowingBiPredicate<T, E, ? extends Throwable> predicate = this.predicate;
+		this.predicate = new ThrowingBiPredicate<T, E, Throwable>() {
+			@Override
+			public boolean test(final T context, final E entity) throws Throwable {
+				return !predicate.test(context, entity);
+			}
+		};
+		return (C)this;
+	}
+
+	public C createCopy() {
+		final C copy = newInstance();
+		copy.predicate = this.predicate;
+		copy.logicalOperator = this.logicalOperator;
+		return copy;
+	}
+
+
+	public ThrowingPredicate<E, ? extends Throwable> getPredicateOrFalsePredicateIfPredicateIsNull() {
+		return getPredicate(createTestContext(), false);
+	}
+
+	public ThrowingPredicate<E, ? extends Throwable> getPredicateOrTruePredicateIfPredicateIsNull() {
+		return getPredicate(createTestContext(), true);
+	}
+
+	public boolean hasNoPredicate() {
+		return this.predicate == null;
+	}
 
 	public T testWithFalseResultForNullEntityOrFalseResultForNullPredicate(final E entity) {
 		final T context = createTestContext();
@@ -453,26 +451,6 @@ public class Criteria<E, C extends Criteria<E, C, T>, T extends Criteria.TestCon
 			}, newInstance());
 		}
 
-		public C createCopy() {
-			final C copy = newInstance();
-			copy.predicate = this.predicate;
-			copy.logicalOperator = this.logicalOperator;
-			return copy;
-		}
-
-		public ThrowingPredicate<E, ? extends Throwable> getPredicateOrFalsePredicateIfPredicateIsNull() {
-			return getPredicate(false);
-		}
-
-
-		public ThrowingPredicate<E, ? extends Throwable> getPredicateOrTruePredicateIfPredicateIsNull() {
-			return getPredicate(true);
-		}
-
-		public boolean hasNoPredicate() {
-			return this.predicate == null;
-		}
-
 		public C or(){
 			logicalOperator = new Function<ThrowingPredicate<E, ? extends Throwable>, ThrowingPredicate<E, ? extends Throwable>>() {
 				@Override
@@ -519,6 +497,25 @@ public class Criteria<E, C extends Criteria<E, C, T>, T extends Criteria.TestCon
 			return (C)this;
 		}
 
+		public C createCopy() {
+			final C copy = newInstance();
+			copy.predicate = this.predicate;
+			copy.logicalOperator = this.logicalOperator;
+			return copy;
+		}
+
+		public ThrowingPredicate<E, ? extends Throwable> getPredicateOrFalsePredicateIfPredicateIsNull() {
+			return getPredicate(false);
+		}
+
+		public ThrowingPredicate<E, ? extends Throwable> getPredicateOrTruePredicateIfPredicateIsNull() {
+			return getPredicate(true);
+		}
+
+		public boolean hasNoPredicate() {
+			return this.predicate == null;
+		}
+
 		public boolean testWithFalseResultForNullEntityOrFalseResultForNullPredicate(final E entity) {
 			if (entity != null) {
 				try {
@@ -529,7 +526,6 @@ public class Criteria<E, C extends Criteria<E, C, T>, T extends Criteria.TestCon
 			}
 			return false;
 		}
-
 
 		public boolean testWithFalseResultForNullEntityOrTrueResultForNullPredicate(final E entity) {
 			if (entity != null) {
