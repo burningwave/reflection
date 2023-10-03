@@ -36,8 +36,12 @@ jobs:
           distribution: 'zulu'
           architecture: ${{ matrix.architecture }}
           cache: 'maven'
-      - name: Build and test with
+      - name: Build and test with Java 7 target
+        if: ${{ fromJSON(matrix.java) <= 19 }}
         run: mvn -B clean test -DskipTests=false --file pom.xml
+      - name: Build and test with Java 8 target
+        if: ${{ fromJSON(matrix.java) > 19}}
+        run: mvn -B clean test -Darget_version=8 -DskipTests=false --file pom.xml
         
   test-and-compute-coverage:
     name: Test -> Compute coverage
@@ -60,10 +64,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Set up JDK 21
+      - name: Set up JDK 19
         uses: actions/setup-java@v3
         with:
-          java-version: 21
+          java-version: 19
           distribution: 'zulu'
           architecture: x64
           server-id: ossrh
