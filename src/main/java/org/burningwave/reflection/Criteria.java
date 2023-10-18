@@ -1,5 +1,6 @@
 package org.burningwave.reflection;
 
+@SuppressWarnings("unchecked")
 public class Criteria<E, C extends Criteria<E, C, T>, T extends Criteria.TestContext<E, C>> extends org.burningwave.Criteria<E, C, T> {
 
 	@Override
