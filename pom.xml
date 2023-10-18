@@ -94,7 +94,7 @@
 		<junit-jupiter.version>5.9.1</junit-jupiter.version>
 		<junit.version>1.9.1</junit.version>
 		<burningwave-jvm-driver.version>8.14.2</burningwave-jvm-driver.version>
-		<burningwave-common.version>0.0.2</burningwave-common.version>
+		<burningwave-common.version>0.0.4</burningwave-common.version>
 		<maven-antrun-plugin.version>3.0.0</maven-antrun-plugin.version>
 		<maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
 		<maven-deploy-plugin.version>2.8.2</maven-deploy-plugin.version>
