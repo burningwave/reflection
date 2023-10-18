@@ -6,7 +6,7 @@ import java.nio.ByteBuffer;
 import java.security.ProtectionDomain;
 import java.util.Collection;
 
-import org.burningwave.reflection.Classes;
+import org.burningwave.Classes;
 import org.burningwave.reflection.MethodCriteria;
 import org.burningwave.reflection.Methods;
 

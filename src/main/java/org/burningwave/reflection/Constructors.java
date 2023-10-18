@@ -38,8 +38,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
+import org.burningwave.Classes;
+import org.burningwave.Executor;
 import org.burningwave.Throwables;
-import org.burningwave.function.Executor;
 
 
 @SuppressWarnings("unchecked")

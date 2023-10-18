@@ -55,8 +55,9 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.burningwave.Classes;
 import org.burningwave.Throwables;
-import org.burningwave.function.TriFunction;
+import org.burningwave.TriFunction;
 
 @SuppressWarnings("unchecked")
 public class Members {

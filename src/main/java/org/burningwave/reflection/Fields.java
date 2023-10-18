@@ -36,6 +36,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
+import org.burningwave.Classes;
 import org.burningwave.Throwables;
 
 import io.github.toolfactory.jvm.util.Strings;

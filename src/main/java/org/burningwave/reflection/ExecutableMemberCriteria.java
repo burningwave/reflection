@@ -35,8 +35,9 @@ import java.util.List;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 
+import org.burningwave.Classes;
 import org.burningwave.Criteria;
-import org.burningwave.function.TriPredicate;
+import org.burningwave.TriPredicate;
 import org.burningwave.reflection.Members.Handler;
 
 @SuppressWarnings("unchecked")

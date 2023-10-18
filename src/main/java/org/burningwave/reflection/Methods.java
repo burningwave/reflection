@@ -42,10 +42,11 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import org.burningwave.Classes;
+import org.burningwave.Executor;
 import org.burningwave.Strings;
 import org.burningwave.Throwables;
-import org.burningwave.function.Executor;
-import org.burningwave.function.ThrowingFunction;
+import org.burningwave.ThrowingFunction;
 
 @SuppressWarnings("unchecked")
 public class Methods extends Members.Handler.OfExecutable<Method, MethodCriteria> {

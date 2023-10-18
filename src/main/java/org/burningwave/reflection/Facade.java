@@ -43,14 +43,14 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.burningwave.Executor;
 import org.burningwave.Strings;
 import org.burningwave.Throwables;
-import org.burningwave.function.Executor;
-import org.burningwave.function.ThrowingBiConsumer;
-import org.burningwave.function.ThrowingBiFunction;
-import org.burningwave.function.ThrowingFunction;
-import org.burningwave.function.ThrowingTriConsumer;
-import org.burningwave.function.ThrowingTriFunction;
+import org.burningwave.ThrowingBiConsumer;
+import org.burningwave.ThrowingBiFunction;
+import org.burningwave.ThrowingFunction;
+import org.burningwave.ThrowingTriConsumer;
+import org.burningwave.ThrowingTriFunction;
 
 @SuppressWarnings("unchecked")
 public class Facade {

@@ -1,5 +1,6 @@
 package org.burningwave.reflection;
 
+import org.burningwave.Classes;
 import org.burningwave.reflection.service.Service;
 import org.junit.jupiter.api.Test;
 

@@ -32,8 +32,6 @@ import java.lang.reflect.Constructor;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
 
-import org.burningwave.Criteria;
-
 public class ConstructorCriteria extends ExecutableMemberCriteria<
 	Constructor<?>, ConstructorCriteria, Criteria.TestContext<Constructor<?>, ConstructorCriteria>
 > {

@@ -32,7 +32,7 @@ module org.burningwave.reflection {
     requires static jdk.unsupported;
     requires static io.github.toolfactory.jvm;
     requires static org.burningwave.jvm;
+    requires org.burningwave;
 
-    exports org.burningwave.function;
     exports org.burningwave.reflection;
 }
