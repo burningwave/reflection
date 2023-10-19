@@ -255,7 +255,7 @@
 						<Bundle-Vendor>${organization.name}</Bundle-Vendor>
 						<Bundle-Description>${project.description}</Bundle-Description>
 						<Bundle-Version>${project.version}</Bundle-Version>
-						<Require-Capability>osgi.ee;filter:="(&amp;(osgi.ee=JavaSE)(version=1.7))"</Require-Capability>
+						<Require-Capability>osgi.ee;filter:="(&amp;(osgi.ee=JavaSE)(version=1.8))"</Require-Capability>
 						<Import-Package>io.github.toolfactory.jvm;version="9.6.0";resolution:=optional,org.burningwave.jvm;version="${burningwave-jvm-driver.version}";resolution:=optional,org.burningwave;version="${burningwave-common.version}"</Import-Package>
 						<Multi-Release>true</Multi-Release>
     					<_dsannotations>*</_dsannotations><!-- Enable processing of OSGI DS component annotations -->
