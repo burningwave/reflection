@@ -91,10 +91,10 @@
 
 		<coveralls-maven-plugin.version>4.3.0</coveralls-maven-plugin.version>
 		<jacoco-maven-plugin.version>0.7.6.201602180812</jacoco-maven-plugin.version>
-		<junit-jupiter.version>5.9.1</junit-jupiter.version>
-		<junit.version>1.9.1</junit.version>
-		<burningwave-jvm-driver.version>8.14.2</burningwave-jvm-driver.version>
-		<burningwave-common.version>0.0.6</burningwave-common.version>
+		<junit-jupiter.version>5.10.0</junit-jupiter.version>
+		<junit.version>1.10.0</junit.version>
+		<burningwave-jvm-driver.version>8.15.0</burningwave-jvm-driver.version>
+		<burningwave-common.version>0.0.8</burningwave-common.version>
 		<maven-antrun-plugin.version>3.0.0</maven-antrun-plugin.version>
 		<maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
 		<maven-deploy-plugin.version>2.8.2</maven-deploy-plugin.version>
@@ -226,7 +226,40 @@
 					<useModulePath>false</useModulePath>
 				</configuration>
 			</plugin>
-
+			
+			<plugin>
+				<groupId>org.apache.felix</groupId>
+				<artifactId>maven-bundle-plugin</artifactId>
+				<version>${maven-bundle-plugin.version}</version>
+				<extensions>true</extensions>
+                <executions>
+                    <execution>
+                        <id>generate-manifest</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>manifest</goal>
+                        </goals>
+                    </execution>
+                </executions>
+				<configuration>
+					<manifestLocation>${project.build.outputDirectory}/META-INF/</manifestLocation>
+					<instructions>					
+						<built-by>Burningwave</built-by>
+							<Bundle-Category>Framework</Bundle-Category>
+							<Bundle-License>https://github.com/burningwave/reflection/blob/master/LICENSE</Bundle-License>
+							<Bundle-ManifestVersion>2</Bundle-ManifestVersion>
+							<Bundle-Name>Reflection</Bundle-Name>
+							<Bundle-SymbolicName>${project.groupId}.${project.artifactId}</Bundle-SymbolicName>
+							<Bundle-Vendor>Burningwave</Bundle-Vendor>
+							<Bundle-Description>${project.description}</Bundle-Description>
+							<Bundle-Version>${project.version}</Bundle-Version>
+							<Require-Capability>osgi.ee;filter:="(&amp;(osgi.ee=JavaSE)(version=1.8))"</Require-Capability>
+							<Import-Package>io.github.toolfactory.jvm;version="9.6.0";resolution:=optional,org.burningwave.jvm;version="${burningwave-jvm-driver.version}";resolution:=optional,org.burningwave;version="${burningwave-common.version}"</Import-Package>
+							<Multi-Release>true</Multi-Release>
+					</instructions>
+				</configuration>
+		 	</plugin>
+		 	
 			<plugin>
 				<artifactId>maven-jar-plugin</artifactId>
 				<version>${maven-jar-plugin.version}</version>
@@ -237,28 +270,11 @@
 					</excludes>
 					<archive>
 						<addMavenDescriptor>false</addMavenDescriptor>
-						<manifest>
-							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-							<addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
-						</manifest>
-						<manifestEntries>
-							<built-by>Burningwave</built-by>
-							<Bundle-Category>Framework</Bundle-Category>
-							<Bundle-License>https://github.com/burningwave/reflection/blob/master/LICENSE</Bundle-License>
-							<Bundle-ManifestVersion>2</Bundle-ManifestVersion>
-							<Bundle-Name>Reflection</Bundle-Name>
-							<Bundle-SymbolicName>${project.groupId}.${project.artifactId}</Bundle-SymbolicName>
-							<Bundle-Vendor>Burningwave</Bundle-Vendor>
-							<Bundle-Description>${project.description}</Bundle-Description>
-							<Bundle-Version>${project.version}</Bundle-Version>
-							<Require-Capability>osgi.ee;filter:="(&amp;(osgi.ee=JavaSE)(version=1.8))"</Require-Capability>
-							<Import-Package>io.github.toolfactory.jvm;version="9.4.4";resolution:=optional,org.burningwave.jvm;version="8.14.2";resolution:=optional,org.burningwave;version="0.0.6"</Import-Package>
-							<Export-Package>org.burningwave.reflection;version="4.0.0";uses:="io.github.toolfactory.jvm.function.template,org.burningwave,org.burningwave.function"</Export-Package>
-							<Multi-Release>true</Multi-Release>
-						</manifestEntries>
+						<manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
 					</archive>
 				</configuration>
 			</plugin>
+			
 			<plugin>
 				<artifactId>maven-deploy-plugin</artifactId>
 				<version>${maven-deploy-plugin.version}</version>
