@@ -41,9 +41,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.burningwave.Throwables;
+import org.burningwave.ThrowingBiFunction;
 import org.burningwave.ThrowingFunction;
 
-import io.github.toolfactory.jvm.function.template.ThrowingBiFunction;
 
 @SuppressWarnings("unchecked")
 public abstract class FieldAccessor {

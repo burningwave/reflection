@@ -43,8 +43,9 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.burningwave.Synchronizer;
+import org.burningwave.ThrowingBiConsumer;
 
-import io.github.toolfactory.jvm.function.template.ThrowingBiConsumer;
+
 
 
 class Cache {

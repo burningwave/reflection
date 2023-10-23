@@ -37,9 +37,10 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 import org.burningwave.Classes;
+import org.burningwave.Strings;
 import org.burningwave.Throwables;
 
-import io.github.toolfactory.jvm.util.Strings;
+
 
 
 public class Fields extends Members.Handler<Field, FieldCriteria> {
@@ -102,7 +103,7 @@ public class Fields extends Members.Handler<Field, FieldCriteria> {
 		if (members.size() < 1) {
 			Throwables.INSTANCE.throwException(
 				new NoSuchFieldException(
-					Strings.compile("Field {} not found in {} hierarchy", fieldName, targetClass.getName())
+					Strings.INSTANCE.compile("Field {} not found in {} hierarchy", fieldName, targetClass.getName())
 				)
 			);
 		}
@@ -114,7 +115,7 @@ public class Fields extends Members.Handler<Field, FieldCriteria> {
 		if (members.size() != 1) {
 			Throwables.INSTANCE.throwException(
 				new NoSuchFieldException(
-					Strings.compile("Field {} not found or found more than one field in {} hierarchy", memberName, targetClass.getName())
+						Strings.INSTANCE.compile("Field {} not found or found more than one field in {} hierarchy", memberName, targetClass.getName())
 				)
 			);
 		}
