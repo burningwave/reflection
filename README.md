@@ -39,7 +39,7 @@ If you are on Java 8 and later, to include Burningwave Reflection library in you
 <dependency>
     <groupId>org.burningwave</groupId>
     <artifactId>reflection</artifactId>
-    <version>4.2.0</version>
+    <version>4.3.0</version>
 </dependency>
 ```
 
