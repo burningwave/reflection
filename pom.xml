@@ -9,7 +9,7 @@
 	                                                                                                            
 	The MIT License (MIT)                                                                                       
 	                                                                                                            
-	Copyright (c) 2022-2023 Roberto Gentili                                                                          
+	Copyright (c) 2022 Roberto Gentili                                                                          
 	                                                                                                            
 	Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 	documentation files (the "Software"), to deal in the Software without restriction, including without        
@@ -31,7 +31,7 @@
 
 	<groupId>org.burningwave</groupId>
 	<artifactId>reflection</artifactId>
-	<version>3.6.4-fjs-SNAPSHOT</version>
+	<version>3.7.0-fjs-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>Burningwave Reflection</name>
@@ -95,7 +95,7 @@
 		<jacoco-maven-plugin.version>0.7.6.201602180812</jacoco-maven-plugin.version>
 		<junit-jupiter.version>5.9.1</junit-jupiter.version>
 		<junit.version>4.12</junit.version>
-		<burningwave-jvm-driver.version>8.15.0</burningwave-jvm-driver.version>
+		<burningwave-jvm-driver.version>8.16.0</burningwave-jvm-driver.version>
 		<maven-antrun-plugin.version>3.1.0</maven-antrun-plugin.version>
 		<maven-bundle-plugin.version>5.1.9</maven-bundle-plugin.version>
 		<maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
