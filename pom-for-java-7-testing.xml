@@ -31,7 +31,7 @@
 
 	<groupId>org.burningwave</groupId>
 	<artifactId>reflection</artifactId>
-	<version>3.7.1-fjs-SNAPSHOT</version>
+	<version>3.8.0-fjs-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	
@@ -49,7 +49,7 @@
 		<coveralls-maven-plugin.version>4.3.0</coveralls-maven-plugin.version>
 		<jacoco-maven-plugin.version>0.7.6.201602180812</jacoco-maven-plugin.version>
 		<junit.version>4.12</junit.version>
-		<burningwave-jvm-driver.version>8.16.1</burningwave-jvm-driver.version>
+		<burningwave-jvm-driver.version>8.17.1</burningwave-jvm-driver.version>
 		<maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
 		<maven-surefire-plugin.version>3.0.0-M5</maven-surefire-plugin.version>
 	</properties>
