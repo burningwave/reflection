@@ -93,7 +93,7 @@
 		<jacoco-maven-plugin.version>0.7.6.201602180812</jacoco-maven-plugin.version>
 		<junit-jupiter.version>5.10.0</junit-jupiter.version>
 		<junit.version>1.10.0</junit.version>
-		<burningwave-jvm-driver.version>8.17.1</burningwave-jvm-driver.version>
+		<burningwave-jvm-driver.version>8.19.0</burningwave-jvm-driver.version>
 		<burningwave-common.version>0.4.1</burningwave-common.version>
 		<maven-antrun-plugin.version>3.1.0</maven-antrun-plugin.version>
 		<maven-bundle-plugin.version>5.1.9</maven-bundle-plugin.version>
