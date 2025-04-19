@@ -42,7 +42,8 @@ jobs:
         if: ${{ fromJSON(matrix.java) > 19}}
         run: mvn -B clean test -Dtarget_version=8 -DskipTests=false --file pom.xml
         
-        
+
+#To ensure compatibility with the Java 7 version the build must never be run with a JDK version higher than 19
   release:
     name: Release if requested
     needs: [build-and-test-with-Java-8-and-later]
